@@ -9,17 +9,18 @@ interface Props {
     pokemon: PokemonCard;
     onDelete: (id: string) => void;
     onEdit: (id: string) => void;
-
+    onClick?: () => void;
 }
 export function CollectionCard({
     collection,
     pokemon,
     onDelete,
     onEdit,
-
+    onClick,
 }: Props) {
     return (
         <div
+            onClick={onClick}
             className="group relative cursor-pointer rounded-xl border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
             <CollectionCardImage pokemon={pokemon} />
