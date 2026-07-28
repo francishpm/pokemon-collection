@@ -9,6 +9,9 @@ export const cards: PokemonCard[] = [
       small: "https://via.placeholder.com/80x110",
       large: "https://via.placeholder.com/300x420",
     },
+
+    supertype: "Pokémon",
+    subtypes: ["Basic"],
     set: {
       id: "surging-sparks",
       name: "Surging Sparks",
@@ -24,6 +27,9 @@ export const cards: PokemonCard[] = [
       small: "https://via.placeholder.com/80x110",
       large: "https://via.placeholder.com/300x420",
     },
+
+    supertype: "Pokémon",
+    subtypes: ["Basic"],
     set: {
       id: "sv151",
       name: "Scarlet & Violet 151",
@@ -39,6 +45,10 @@ export const cards: PokemonCard[] = [
       small: "https://via.placeholder.com/80x110",
       large: "https://via.placeholder.com/300x420",
     },
+
+    supertype: "Pokémon",
+    subtypes: ["Basic"],
+
     set: {
       id: "prismatic",
       name: "Prismatic Evolutions",
@@ -54,6 +64,9 @@ export const cards: PokemonCard[] = [
       small: "https://via.placeholder.com/80x110",
       large: "https://via.placeholder.com/300x420",
     },
+
+    supertype: "Pokémon",
+    subtypes: ["Basic"],
     set: {
       id: "temporal",
       name: "Temporal Forces",
@@ -69,6 +82,9 @@ export const cards: PokemonCard[] = [
       small: "https://via.placeholder.com/80x110",
       large: "https://via.placeholder.com/300x420",
     },
+
+    supertype: "Pokémon",
+    subtypes: ["Basic"],
     set: {
       id: "sv151",
       name: "Scarlet & Violet 151",
@@ -84,6 +100,9 @@ export const cards: PokemonCard[] = [
       small: "https://via.placeholder.com/80x110",
       large: "https://via.placeholder.com/300x420",
     },
+
+    supertype: "Pokémon",
+    subtypes: ["Basic"],
     set: {
       id: "twilight",
       name: "Twilight Masquerade",
