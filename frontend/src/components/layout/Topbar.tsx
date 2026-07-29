@@ -27,7 +27,11 @@ const pages = {
   },
 };
 
-export function Topbar() {
+interface TopbarProps {
+  onAddCard?: () => void;
+}
+
+export function Topbar({ onAddCard }: TopbarProps) {
   const pathname = usePathname();
 
   const page =
@@ -51,7 +55,7 @@ export function Topbar() {
 
       <div className="flex items-center gap-3">
 
-        <Button>
+        <Button onClick={onAddCard}>
           <Plus className="mr-2 h-4 w-4" />
           Adicionar carta
         </Button>
