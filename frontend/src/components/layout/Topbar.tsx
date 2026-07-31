@@ -3,6 +3,7 @@
 import { Bell, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
+import { useUiStore } from "@/store/uiStore";
 
 const pages = {
   "/": {
@@ -27,12 +28,10 @@ const pages = {
   },
 };
 
-interface TopbarProps {
-  onAddCard?: () => void;
-}
-
-export function Topbar({ onAddCard }: TopbarProps) {
+export function Topbar() {
   const pathname = usePathname();
+  // Chamamos a ação global
+  const openSearchModal = useUiStore((state) => state.openSearchModal);
 
   const page =
     pages[pathname as keyof typeof pages] ?? {
@@ -42,20 +41,14 @@ export function Topbar({ onAddCard }: TopbarProps) {
 
   return (
     <header className="flex items-center justify-between border-b bg-white px-8 py-6">
-
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          {page.title}
-        </h1>
-
-        <p className="mt-1 text-sm text-slate-500">
-          {page.subtitle}
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{page.title}</h1>
+        <p className="mt-1 text-sm text-slate-500">{page.subtitle}</p>
       </div>
 
       <div className="flex items-center gap-3">
-
-        <Button onClick={onAddCard}>
+        {/* Dispara o modal de qualquer página */}
+        <Button onClick={openSearchModal}>
           <Plus className="mr-2 h-4 w-4" />
           Adicionar carta
         </Button>
@@ -67,9 +60,7 @@ export function Topbar({ onAddCard }: TopbarProps) {
         <Button variant="outline" size="icon">
           <User className="h-5 w-5" />
         </Button>
-
       </div>
-
     </header>
   );
 }

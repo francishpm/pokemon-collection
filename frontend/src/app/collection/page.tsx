@@ -3,178 +3,65 @@
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useMemo, useState } from "react";
-import { PokemonCard } from "@/types/pokemon-card";
-import { searchCards } from "@/services/pokemonApi";
-import { getPokemonCached } from "@/services/pokemonCache";
-import { CardSearchResults } from "@/components/collection/CardSearchResults";
-import { AddCardDialog } from "@/components/collection/AddCardDialog";
+import { useMemo, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
-import { CollectionCard as CollectionCardType } from "@/types/collection-card";
-
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { CollectionCard } from "@/components/collection/CollectionCard";
+import { AddCardDialog } from "@/components/collection/AddCardDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CollectionCard as CollectionCardType } from "@/types/collection-card";
+import { PokemonCard } from "@/types/pokemon-card";
+import { useUiStore } from "@/store/uiStore";
 
 export default function CollectionPage() {
-  const [open, setOpen] = useState(false);
+  const [localSearch, setLocalSearch] = useState("");
+  const [editingCard, setEditingCard] = useState<CollectionCardType | null>(null);
+  const [selectedCardForEdit, setSelectedCardForEdit] = useState<PokemonCard | null>(null);
 
-  const [search, setSearch] = useState("");
-
-  const [apiCards, setApiCards] = useState<PokemonCard[]>([]);
-
-  const [loading, setLoading] = useState(false);
-
-  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
-  const [editingCard, setEditingCard] =
-    useState<CollectionCardType | null>(null);
-
-  const [openAddDialog, setOpenAddDialog] = useState(false);
-
-  const [selectedCollectionCard, setSelectedCollectionCard] = useState<{
-    collection: CollectionCardType;
-    pokemon: PokemonCard;
-  } | null>(null);
-
-  const {
-    collectionView,
-    removeCard,
-  } = useCollection();
-
-  const resetSearch = () => {
-    setSearch("");
-    setApiCards([]);
-  };
-
-  const handleAddCard = (card: PokemonCard) => {
-    setEditingCard(null); // <- adicione esta linha
-
-    setSelectedCard(card);
-
-    resetSearch();
-
-    setOpen(false);
-
-    setOpenAddDialog(true);
-  };
+  const { collectionView, removeCard } = useCollection();
+  
+  // Usamos a store para abrir o modal em vez de um estado local
+  const openSearchModal = useUiStore((state) => state.openSearchModal);
 
   const handleDelete = (id: string) => {
-    if (!confirm("Deseja realmente excluir esta carta?")) {
-      return;
-    }
-
+    if (!confirm("Deseja realmente excluir esta carta?")) return;
     removeCard(id);
   };
 
   const handleEdit = (id: string) => {
-    const card = collectionView.find(
-      (item) => item.collection.id === id
-    );
-
+    const card = collectionView.find((item) => item.collection.id === id);
     if (!card) return;
-
     setEditingCard(card.collection);
-    setSelectedCard(card.pokemon);
-    setOpenAddDialog(true);
+    setSelectedCardForEdit(card.pokemon);
   };
 
-  useEffect(() => {
-    const loadCards = async () => {
-      const term = search.trim();
+  const filteredCollection = useMemo(() => {
+    const term = localSearch.trim().toLowerCase();
+    if (!term) return collectionView;
 
-      const isNumber = /^\d+$/.test(term);
-      const isFullNumber = /^\d+\/\d+$/.test(term);
-
-      if (
-        term.length < 3 &&
-        !isNumber &&
-        !isFullNumber
-      ) {
-        setApiCards([]);
-        return;
-      }
-
-      try {
-        setLoading(true);
-
-        console.log("Pesquisando:", term);
-        const result = await searchCards(term);
-        console.log("Resultado:", term, result.length);
-
-        setApiCards(result);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const timeout = setTimeout(loadCards, 350);
-
-    return () => clearTimeout(timeout);
-  }, [search]);
-
-  useEffect(() => {
-    if (!selectedCard) return;
-
-    console.log("Carta selecionada:", selectedCard);
-  }, [selectedCard]);
-
-  const cards = useMemo(() => {
-    const term = search.trim().toLowerCase();
-
-    if (!term) return [];
-
-    return apiCards.filter((card) => {
-      const fullNumber =
-        `${card.number}/${card.set.printedTotal}`.toLowerCase();
-
+    return collectionView.filter(({ pokemon }) => {
+      const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
       return (
-        card.name.toLowerCase().includes(term) ||
-        card.number.toLowerCase().includes(term) ||
+        pokemon.name.toLowerCase().includes(term) ||
+        pokemon.number.toLowerCase().includes(term) ||
         fullNumber.includes(term) ||
-        card.set.name.toLowerCase().includes(term)
+        pokemon.set.name.toLowerCase().includes(term)
       );
     });
-  }, [apiCards, search]);
+  }, [collectionView, localSearch]);
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Minha Coleção
-        </h1>
-
-        <p className="mt-2 text-muted-foreground">
-          Gerencie todas as cartas da sua coleção Pokémon.
-        </p>
-      </div>
-
       <div className="flex flex-col gap-4 md:flex-row">
         <div className="relative flex-1">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            size={18}
-          />
-
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
-            placeholder="Pesquisar cartas..."
+            placeholder="Pesquisar na sua coleção..."
             className="pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
           />
         </div>
-
-        <Button
-          className="gap-2"
-          onClick={() => setOpen(true)}
-        >
+        <Button className="gap-2" onClick={openSearchModal}>
           <Plus size={18} />
           Adicionar Carta
         </Button>
@@ -182,80 +69,50 @@ export default function CollectionPage() {
 
       {collectionView.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center">
-          <h2 className="text-xl font-semibold">
-            Nenhuma carta cadastrada
-          </h2>
-
+          <h2 className="text-xl font-semibold">Nenhuma carta cadastrada</h2>
           <p className="mt-2 text-muted-foreground">
             Sua coleção aparecerá aqui assim que você adicionar sua primeira carta.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-          {
-            collectionView.map(({ collection, pokemon }) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
-                pokemon={pokemon}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-                onClick={() =>
-                  setSelectedCollectionCard({
-                    collection,
-                    pokemon,
-                  })
-                }
-              />
-            ))
-          }
+          {filteredCollection.map(({ collection, pokemon }) => (
+            <CollectionCard
+              key={collection.id}
+              collection={collection}
+              pokemon={pokemon}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+            />
+          ))}
         </div>
       )}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Adicionar Carta</DialogTitle>
 
-            <DialogDescription>
-              Pesquise uma carta Pokémon para adicionar à sua coleção.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <Input
-              placeholder="Pesquisar carta..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            <div className="max-h-[450px] overflow-y-auto rounded-lg border">
-              <CardSearchResults
-                cards={cards}
-                loading={loading}
-                onAdd={handleAddCard}
-              />
-
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Modal exclusivo para Edição de carta já cadastrada */}
       <Dialog
-        open={openAddDialog}
-        onOpenChange={setOpenAddDialog}
+        open={!!editingCard}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingCard(null);
+            setSelectedCardForEdit(null);
+          }
+        }}
       >
         <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Editar Carta</DialogTitle>
+            <DialogDescription>Altere os detalhes da sua carta.</DialogDescription>
+          </DialogHeader>
           <AddCardDialog
-            card={selectedCard}
+            card={selectedCardForEdit}
             editingCard={editingCard}
             onSuccess={() => {
-              setOpenAddDialog(false);
-              setSelectedCard(null);
               setEditingCard(null);
+              setSelectedCardForEdit(null);
             }}
           />
         </DialogContent>
       </Dialog>
-     
     </div>
   );
 }
