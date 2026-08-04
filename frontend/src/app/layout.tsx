@@ -1,57 +1,40 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { GlobalModals } from "@/components/layout/GlobalModals";
+import { Toaster } from "sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CardDex",
-  description: "Gerenciador de Coleção de Cartas Pokémon",
+  title: "CardDex - Gerenciador de Coleção Pokémon",
+  description: "Gerencie sua coleção de cartas Pokémon TCG",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="h-full">
-        <div className="flex h-screen bg-slate-50 overflow-hidden">
-          {/* Sidebar Global e Fixa */}
-          <Sidebar />
-
-          {/* Área Principal (Topbar + Conteúdo da Página) */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <Topbar />
-            
-            {/* O scroll acontece apenas aqui dentro */}
-            <main className="flex-1 overflow-y-auto p-8">
-              <div className="mx-auto max-w-7xl">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <div className="flex h-screen overflow-hidden bg-background">
+            <Sidebar />
+            <div className="flex flex-col flex-1 h-full overflow-hidden">
+              <Topbar />
+              <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
                 {children}
-              </div>
-            </main>
+              </main>
+            </div>
           </div>
-        </div>
-
-        {/* Utilitários Globais invisíveis até serem chamados */}
-        <GlobalModals />
-        <Toaster richColors position="bottom-right" />
+          <GlobalModals />
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

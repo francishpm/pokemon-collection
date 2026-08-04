@@ -10,6 +10,15 @@ export function CollectionCardInfo({
     collection,
     pokemon,
 }: Props) {
+    // Garante que a data YYYY-MM-DD seja formatada certinho para o BR
+    const formatarData = (dataStr?: string) => {
+        if (!dataStr) return "";
+        const [ano, mes, dia] = dataStr.split("T")[0].split("-");
+        return `${dia}/${mes}/${ano}`;
+    };
+
+    const dataFormatada = formatarData(collection.acquisitionDate);
+
     return (
         <div className="mt-1 flex flex-col items-center gap-1 text-center">
             <h3 className="line-clamp-2 h-11 text-base font-bold leading-5">
@@ -21,26 +30,31 @@ export function CollectionCardInfo({
             </p>
 
             <div className="flex justify-center gap-2">
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <span className="rounded-full bg-emerald-100 px-3 py-0.5 text-[10px] font-semibold text-emerald-700">
                     {collection.condition}
                 </span>
 
-                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                <span className="rounded-full bg-blue-100 px-3 py-0.5 text-[10px] font-semibold text-blue-700">
                     {collection.language}
                 </span>
             </div>
 
-            <div className="mt-1">
-                {collection.acquisitionValue ? (
-                    <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-700">
-                        {collection.acquisitionValue.toLocaleString("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                        })}
+            <div className="mt-1.5 flex flex-col items-center">
+                {/* VALOR DA LIGA (Ou Aviso) */}
+                {collection.ligaValue ? (
+                    <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-sm font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-transparent">
+                        {collection.ligaValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </span>
                 ) : (
-                    <span className="text-xs italic text-muted-foreground">
-                        Preço não informado
+                    <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-800 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+                        ⚠️ Faltando Preço
+                    </span>
+                )}
+
+                {/* DATA DE ATUALIZAÇÃO */}
+                {dataFormatada && (
+                    <span className="text-[10px] text-muted-foreground mt-1 font-medium">
+                        Atualizado em: {dataFormatada}
                     </span>
                 )}
             </div>

@@ -1,13 +1,15 @@
 import { create } from "zustand";
 
-interface UiStore {
+interface UiState {
   isSearchModalOpen: boolean;
-  openSearchModal: () => void;
+  modalTarget: "collection" | "wishlist" | "trades"; // Adicionado "trades"
+  openSearchModal: (target?: "collection" | "wishlist" | "trades") => void;
   closeSearchModal: () => void;
 }
 
-export const useUiStore = create<UiStore>((set) => ({
+export const useUiStore = create<UiState>((set) => ({
   isSearchModalOpen: false,
-  openSearchModal: () => set({ isSearchModalOpen: true }),
+  modalTarget: "collection",
+  openSearchModal: (target = "collection") => set({ isSearchModalOpen: true, modalTarget: target }),
   closeSearchModal: () => set({ isSearchModalOpen: false }),
 }));

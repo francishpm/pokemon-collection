@@ -1,74 +1,124 @@
 "use client";
 
-import { StatCard } from "@/components/dashboard/StatCard";
-import { PokedexProgressCard } from "@/components/dashboard/PokedexProgressCard";
-import { getGreeting } from "@/lib/greeting";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useCollectionStore } from "@/store/collectionStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Layers, DollarSign, Globe, TrendingUp } from "lucide-react";
 import { useCollection } from "@/hooks/useCollection";
+import { PokedexProgressCard } from "@/components/dashboard/PokedexProgressCard";
 import { RecentCardsCard } from "@/components/dashboard/RecentCardsCard";
 
-export default function Home() {
+export default function DashboardPage() {
+  const [userName, setUserName] = useState("Treinador");
+
+  const fetchCards = useCollectionStore((state) => state.fetchCards);
+
   const {
     collectionView,
     totalCards,
     totalInvestido,
     valorMercado,
     lucroPrejuizo,
-    carregandoValores,
-    pokedexCount,
-    totalPokemon,
-    pokedexProgress,
   } = useCollection();
 
-  // Função para formatar moeda
-  const formatBRL = (value: number) => {
-    return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  };
+  useEffect(() => {
+    const initData = async () => {
+      // 1. Pega o nome do usuário logado (inclusive o nome customizado se houver)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.full_name) {
+        const firstName = user.user_metadata.full_name.split(" ")[0];
+        setUserName(firstName);
+      } else if (user?.email) {
+        setUserName(user.email.split("@")[0]);
+      }
+
+      // 2. Carrega as cartas da nuvem
+      await fetchCards();
+    };
+
+    initData();
+  }, [fetchCards]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6 md:p-8">
+      {/* Saudação */}
       <div>
-        <h2 className="text-3xl font-bold text-gray-900">
-          {getGreeting()}, Francis 👋
-        </h2>
-        <p className="mt-2 text-gray-600">
-          Bem-vindo ao seu gerenciador de coleção.
-        </p>
+        <h2 className="text-3xl font-extrabold tracking-tight">Boa noite, {userName} 👋</h2>
+        <p className="text-slate-500 mt-1">Bem-vindo ao seu gerenciador de coleção.</p>
       </div>
 
-      {/* BLOCO FINANCEIRO */}
-      <div className="grid gap-6 md:grid-cols-4">
-        <StatCard
-          icon="🎴"
-          title="Total de Cartas"
-          value={totalCards.toString()}
-        />
-        <StatCard
-          icon="💰"
-          title="Valor Investido (Custo)"
-          value={carregandoValores ? "..." : formatBRL(totalInvestido)}
-        />
-        <StatCard
-          icon="🌎"
-          title="Média de Mercado Atual"
-          value={carregandoValores ? "..." : formatBRL(valorMercado)}
-        />
-        <StatCard
-          icon={lucroPrejuizo >= 0 ? "📈" : "📉"}
-          title="Valorização / Lucro"
-          value={carregandoValores ? "..." : `${lucroPrejuizo >= 0 ? "+" : ""} ${formatBRL(lucroPrejuizo)}`}
-        />
+      {/* Cards de Métricas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Total de Cartas</CardTitle>
+            <Layers className="h-5 w-5 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalCards}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Valor Investido (Custo)</CardTitle>
+            <DollarSign className="h-5 w-5 text-amber-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              R$ {totalInvestido.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Média de Mercado Atual</CardTitle>
+            <Globe className="h-5 w-5 text-blue-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {valorMercado.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Valorização / Lucro</CardTitle>
+            <TrendingUp className="h-5 w-5 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${lucroPrejuizo >= 0
+                  ? "text-emerald-600"
+                  : "text-red-600"
+                }`}
+            >
+              {lucroPrejuizo.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+                signDisplay: "always",
+              })}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* Seção inferior componentizada */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <RecentCardsCard cards={collectionView} />
         </div>
-        <div className="lg:col-span-1">
-          <PokedexProgressCard
-            pokedexCount={pokedexCount}
-            totalPokemon={totalPokemon}
-            pokedexProgress={pokedexProgress}
-          />
+
+        <div>
+          <PokedexProgressCard collectionView={collectionView} />
         </div>
       </div>
     </div>

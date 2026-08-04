@@ -19,11 +19,12 @@ export interface CollectionCard {
   language: CardLanguage;
 
   condition: CardCondition;
-  
+
   acquisitionValue?: number;
 
   acquisitionDate?: string;
-  
+  ligaValue?: number;
+
   createdAt: string;
 
   notes?: string;

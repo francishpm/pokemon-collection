@@ -53,26 +53,32 @@ export function useCollection() {
                     const pago = collection.acquisitionValue ?? 0;
                     somaInvestido += pago;
 
-                    let precoGlobalUsd = 0;
-                    const prices = pokemon.tcgplayer?.prices;
+                    // MÁGICA NOVA: Se tem valor da Liga, usa ele e ignora o resto!
+                    if (collection.ligaValue && collection.ligaValue > 0) {
+                        somaMercado += collection.ligaValue;
+                    } else {
+                        // Se não tem valor da liga, tenta a API gringa
+                        let precoGlobalUsd = 0;
+                        const prices = pokemon.tcgplayer?.prices;
 
-                    if (prices) {
-                        for (const key in prices) {
-                            if (prices[key]?.market) {
-                                precoGlobalUsd = prices[key].market;
-                                break;
-                            } else if (prices[key]?.mid && precoGlobalUsd === 0) {
-                                precoGlobalUsd = prices[key].mid;
-                            } else if (prices[key]?.low && precoGlobalUsd === 0) {
-                                precoGlobalUsd = prices[key].low;
+                        if (prices) {
+                            for (const key in prices) {
+                                if (prices[key]?.market) {
+                                    precoGlobalUsd = prices[key].market;
+                                    break;
+                                } else if (prices[key]?.mid && precoGlobalUsd === 0) {
+                                    precoGlobalUsd = prices[key].mid;
+                                } else if (prices[key]?.low && precoGlobalUsd === 0) {
+                                    precoGlobalUsd = prices[key].low;
+                                }
                             }
                         }
-                    }
 
-                    const precoConvertido = precoGlobalUsd * dolarAtual;
-                    
-                    // O TRUQUE DE MESTRE: Se a API for zero, usamos o valor pago temporariamente para não afundar o gráfico
-                    somaMercado += precoConvertido > 0 ? precoConvertido : pago;
+                        const precoConvertido = precoGlobalUsd * dolarAtual;
+                        
+                        // O TRUQUE DE MESTRE: Se a API for zero, usamos o valor pago temporariamente para não afundar o gráfico
+                        somaMercado += precoConvertido > 0 ? precoConvertido : pago;
+                    }
                 });
 
                 setTotalInvestido(somaInvestido);

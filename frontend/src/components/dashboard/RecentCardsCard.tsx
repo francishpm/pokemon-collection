@@ -19,33 +19,29 @@ export function RecentCardsCard({
     .slice(0, 5);
 
   return (
-    <Card>
+    // Adicionamos 'h-full flex flex-col' para ele esticar até o final
+    <Card className="h-full flex flex-col shadow-sm border-slate-200">
 
       <CardHeader>
-        <CardTitle>🕒 Últimas cartas adicionadas</CardTitle>
+        <CardTitle className="text-lg font-semibold">🕒 Últimas cartas adicionadas</CardTitle>
       </CardHeader>
 
-      <CardContent>
+      {/* Adicionamos 'flex-1 justify-center' para ele centralizar as cartas no espaço extra */}
+      <CardContent className="flex-1 flex flex-col justify-center">
 
         {recentCards.length === 0 ? (
-
           <p className="text-sm text-gray-500">
             Nenhuma carta cadastrada.
           </p>
-
         ) : (
-
           <div className="flex gap-6 overflow-x-auto pb-2">
-
             {recentCards.map((card) => (
               <CollectionMiniCard
                 key={card.collection.id}
                 card={card}
               />
             ))}
-
           </div>
-
         )}
 
       </CardContent>

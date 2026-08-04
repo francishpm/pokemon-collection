@@ -57,9 +57,15 @@ frontend/
           route.ts
       collection/
         page.tsx
+      login/
+        page.tsx
       market/
         page.tsx
+      profile/
+        page.tsx
       settings/
+        page.tsx
+      trades/
         page.tsx
       wishlist/
         page.tsx
@@ -83,7 +89,6 @@ frontend/
         PriceInput.tsx
         QuantitySelector.tsx
       dashboard/
-        GoalCard.tsx
         PokedexProgressCard.tsx
         RecentCardsCard.tsx
         StatCard.tsx
@@ -104,10 +109,12 @@ frontend/
         dialog.tsx
         input.tsx
         progress.tsx
-    data/
-      mockCards.ts
+      AuthGuard.tsx
+      ThemeProvider.tsx
     hooks/
       useCollection.ts
+      useTrades.ts
+      useWishlist.ts
     lib/
       formatCardNumber.ts
       formatCurrency.ts
@@ -116,6 +123,7 @@ frontend/
       ligaPokemon.ts
       pokemon.ts
       removeAccents.ts
+      supabase.ts
       utils.ts
     services/
       collectionService.ts
@@ -125,6 +133,7 @@ frontend/
     store/
       collectionStore.ts
       uiStore.ts
+      wishlistStore.ts
     types/
       collection-card.ts
       pokemon-card.ts
@@ -146,124 +155,843 @@ README.md
 <files>
 This section contains the contents of the repository's files.
 
-<file path="frontend/src/app/api/tcg/route.ts">
-import { NextResponse } from "next/server";
-
-export const dynamic = "force-dynamic";
-
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const cardName = searchParams.get("name");
-    const cardNumber = searchParams.get("number");
-
-    if (!cardName) {
-      return NextResponse.json({ error: "O nome da carta é obrigatório" }, { status: 400 });
-    }
-
-    // 🔥 O TRUQUE ANTI-ERRO 500 🔥
-    // Pegamos só o primeiro nome e passamos direto na URL, sem codificar os dois-pontos!
-    const safeName = cardName.split(" ")[0].toLowerCase(); 
-    const tcgUrl = `https://api.pokemontcg.io/v2/cards?q=name:${safeName}`;
-    
-    const tcgResponse = await fetch(tcgUrl);
-    
-    if (!tcgResponse.ok) {
-        throw new Error(`A TCG API falhou. Status: ${tcgResponse.status}`);
-    }
-    
-    const tcgData = await tcgResponse.json();
-
-    if (!tcgData.data || tcgData.data.length === 0) {
-       return NextResponse.json({ success: false, message: "Carta não encontrada na base global." });
-    }
-
-    // O nosso código faz o trabalho duro de achar o número exato, sem depender da busca deles!
-    let card = tcgData.data.find((c: any) => c.number === cardNumber);
-    
-    // Se por acaso não achar o número exato, pega a primeira carta só pra não quebrar
-    if (!card) {
-        card = tcgData.data[0];
-    }
-    
-    // Busca os preços
-    const prices = card.tcgplayer?.prices;
-    let marketPriceUSD = 0;
-
-    if (prices) {
-        if (prices.holofoil?.market) marketPriceUSD = prices.holofoil.market;
-        else if (prices.normal?.market) marketPriceUSD = prices.normal.market;
-        else if (prices.reverseHolofoil?.market) marketPriceUSD = prices.reverseHolofoil.market;
-    }
-
-    // BUSCA A COTAÇÃO DO DÓLAR EM TEMPO REAL (AwesomeAPI)
-    const cotacaoResponse = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
-    
-    if (!cotacaoResponse.ok) {
-        throw new Error(`A API de Cotação falhou. Status: ${cotacaoResponse.status}`);
-    }
-
-    const cotacaoData = await cotacaoResponse.json();
-    const valorDolarHoje = parseFloat(cotacaoData.USDBRL.ask);
-
-    // FAZ A CONVERSÃO
-    const marketPriceBRL = marketPriceUSD * valorDolarHoje;
-
-    return NextResponse.json({
-      success: true,
-      cardFound: card.name,
-      set: card.set.name,
-      cardNumber: card.number,
-      image: card.images.small,
-      cotacaoDolarUsada: valorDolarHoje,
-      prices: {
-        usd: marketPriceUSD,
-        brl: marketPriceBRL,
-        usdText: `$ ${marketPriceUSD.toFixed(2)}`,
-        brlText: `R$ ${marketPriceBRL.toFixed(2).replace(".", ",")}`
-      }
-    });
-
-  } catch (error: any) {
-    console.error("Erro na API TCG:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
-}
-</file>
-
-<file path="frontend/src/components/layout/GlobalModals.tsx">
+<file path="frontend/src/app/login/page.tsx">
 "use client";
 
-import { CardSearchDialog } from "@/components/collection/CardSearchDialog";
-import { useUiStore } from "@/store/uiStore";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Mail, Lock, Sparkles, LogIn, UserPlus, User } from "lucide-react";
 
-export function GlobalModals() {
-  const { isSearchModalOpen, closeSearchModal } = useUiStore();
+export default function LoginPage() {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (isRegistering) {
+      // Criação de Conta (enviando o nome junto)
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name, // Salva o nome no banco de dados
+          }
+        }
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Conta criada! Pode entrar.");
+        setIsRegistering(false); // Volta para a tela de login
+      }
+    } else {
+      // Login normal
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error("Erro ao fazer login: Verifique suas credenciais.");
+      } else {
+        toast.success("Bem-vindo de volta!");
+        router.push("/");
+      }
+    }
+    setLoading(false);
+  };
 
   return (
-    <CardSearchDialog
-      open={isSearchModalOpen}
-      onOpenChange={(open) => {
-        if (!open) closeSearchModal();
-      }}
-    />
+    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 absolute inset-0 z-50 p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0 rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm">
+        <div className="h-2 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+        
+        <CardHeader className="text-center pb-6 pt-8 space-y-3">
+          <div className="mx-auto bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-2 shadow-inner transform rotate-3">
+            <Sparkles className="w-8 h-8 text-blue-600" />
+          </div>
+          <CardTitle className="text-4xl font-extrabold tracking-tight text-slate-900">
+            CardDex
+          </CardTitle>
+          <CardDescription className="text-base font-medium text-slate-500 px-2">
+            {isRegistering ? "Crie sua conta para começar sua jornada." : "Acesse sua coleção e acompanhe o valor das suas cartas."}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="px-8 pb-8">
+          <form onSubmit={handleAuth} className="space-y-5">
+            
+            {/* Campo Nome só aparece se estiver criando conta */}
+            {isRegistering && (
+              <div className="space-y-2 relative">
+                <label className="text-sm font-bold text-slate-700">Como quer ser chamado?</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Input
+                    type="text"
+                    placeholder="Seu nome"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
+                    required={isRegistering}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 relative">
+              <label className="text-sm font-bold text-slate-700">E-mail</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Input
+                  type="email"
+                  placeholder="treinador@pokemon.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 relative">
+              <label className="text-sm font-bold text-slate-700">Senha</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-6">
+              <Button type="submit" disabled={loading} className="h-12 font-bold text-md bg-blue-600 hover:bg-blue-700 w-full">
+                {loading ? "Aguarde..." : isRegistering ? (
+                  <><UserPlus className="mr-2 h-5 w-5" /> Confirmar Cadastro</>
+                ) : (
+                  <><LogIn className="mr-2 h-5 w-5" /> Entrar na Coleção</>
+                )}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => setIsRegistering(!isRegistering)} 
+                className="text-slate-500 hover:text-slate-800"
+              >
+                {isRegistering ? "Já tem uma conta? Faça login" : "Não tem conta? Cadastre-se"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 </file>
 
-<file path="frontend/src/store/uiStore.ts">
-import { create } from "zustand";
+<file path="frontend/src/app/profile/page.tsx">
+"use client";
 
-interface UiStore {
-  isSearchModalOpen: boolean;
-  openSearchModal: () => void;
-  closeSearchModal: () => void;
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, Mail, Lock } from "lucide-react";
+
+
+export default function ProfilePage() {
+    const [loading, setLoading] = useState(true);
+
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [createdAt, setCreatedAt] = useState("");
+    const [editingName, setEditingName] = useState(false);
+    const [newName, setNewName] = useState("");
+
+    const router = useRouter();
+
+    useEffect(() => {
+        const loadUser = async () => {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (user) {
+                const userName = user.user_metadata?.full_name || "";
+
+                setName(userName);
+                setNewName(userName);
+                setEmail(user.email || "");
+
+                setCreatedAt(
+                    new Date(user.created_at).toLocaleDateString("pt-BR")
+                );
+            }
+
+            setLoading(false);
+        };
+
+        loadUser();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-[70vh]">
+                <p>Carregando...</p>
+            </div>
+        );
+    }
+
+    const handleUpdateName = async () => {
+
+        if (!newName.trim()) {
+            return;
+        }
+
+        const { error } = await supabase.auth.updateUser({
+            data: {
+                full_name: newName.trim(),
+            },
+        });
+
+        if (error) {
+            toast.error("Erro ao atualizar o nome.");
+            return;
+        }
+
+        setName(newName.trim());
+        setEditingName(false);
+        router.refresh();
+
+        toast.success("Nome atualizado com sucesso!");
+    };
+    return (
+        <div className="max-w-3xl mx-auto p-8">
+
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold">
+                    Minha Conta
+                </h1>
+
+                <p className="text-slate-500 mt-1">
+                    Gerencie as informações da sua conta.
+                </p>
+            </div>
+
+            <Card>
+
+                <CardHeader>
+                    <CardTitle>Informações da Conta</CardTitle>
+                </CardHeader>
+
+                <CardContent className="space-y-8">
+
+                    {/* Nome */}
+
+                    <div>
+
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-2">
+                            <User size={16} />
+                            Nome
+                        </label>
+
+                        <input
+                            value={editingName ? newName : (name || "Treinador")}
+                            onChange={(e) => setNewName(e.target.value)}
+                            disabled={!editingName}
+                            className={`w-full rounded-lg border px-4 py-3 ${editingName
+                                ? "bg-white"
+                                : "bg-slate-100 cursor-not-allowed"
+                                }`}
+                        />
+
+                        <div className="mt-4 flex gap-3">
+
+                            {!editingName ? (
+
+                                <button
+                                    onClick={() => setEditingName(true)}
+                                    className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 transition"
+                                >
+                                    Editar nome
+                                </button>
+
+                            ) : (
+
+                                <>
+                                    <button
+                                        onClick={handleUpdateName}
+                                        className="rounded-lg bg-emerald-600 px-5 py-2 text-white hover:bg-emerald-700 transition"
+                                    >
+                                        Salvar
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            setEditingName(false);
+                                            setNewName(name);
+                                        }}
+                                        className="rounded-lg bg-slate-200 px-5 py-2 hover:bg-slate-300 transition"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </>
+
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    {/* Email */}
+
+                    <div>
+
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-2">
+                            <Mail size={16} />
+                            Email
+                        </label>
+
+                        <input
+                            value={email}
+                            disabled
+                            className="w-full rounded-lg border bg-slate-100 px-4 py-3 text-slate-700 cursor-not-allowed"
+                        />
+
+                    </div>
+
+                    {/* Senha */}
+
+                    <div>
+
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-2">
+                            <Lock size={16} />
+                            Senha
+                        </label>
+
+                        <input
+                            value="••••••••••••"
+                            disabled
+                            className="w-full rounded-lg border bg-slate-100 px-4 py-3 text-slate-700 cursor-not-allowed"
+                        />
+
+                        <button
+                            className="mt-4 rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
+                        >
+                            Alterar senha
+                        </button>
+
+                    </div>
+
+                    {/* Data */}
+
+                    <div className="border-t pt-6">
+
+                        <p className="text-sm text-slate-500">
+                            Conta criada em
+                        </p>
+
+                        <p className="font-medium">
+                            {createdAt}
+                        </p>
+
+                    </div>
+
+                </CardContent>
+
+            </Card>
+
+        </div>
+    );
+}
+</file>
+
+<file path="frontend/src/app/trades/page.tsx">
+"use client";
+
+import { useMemo, useState } from "react";
+import { Search, Trash2, Edit3, Plus, ArrowLeftRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useTrades } from "@/hooks/useTrades";
+import { useUiStore } from "@/store/uiStore";
+
+export default function TradesPage() {
+    const { tradesView, loading, removeTrade, updatePrice } = useTrades();
+    const openSearchModal = useUiStore((state) => state.openSearchModal);
+    const [localSearch, setLocalSearch] = useState("");
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [tempPrice, setTempPrice] = useState<string>("");
+
+    const filteredTrades = useMemo(() => {
+        const term = localSearch.trim().toLowerCase();
+        if (!term) return tradesView;
+
+        return tradesView.filter(({ pokemon }) => {
+            const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
+            return (
+                pokemon.name.toLowerCase().includes(term) ||
+                pokemon.number.toLowerCase().includes(term) ||
+                fullNumber.includes(term) ||
+                pokemon.set.name.toLowerCase().includes(term)
+            );
+        });
+    }, [tradesView, localSearch]);
+
+    const handleSavePrice = (tradeId: string) => {
+        const num = parseFloat(tempPrice.replace(",", "."));
+        updatePrice(tradeId, isNaN(num) ? null : num);
+        setEditingId(null);
+    };
+
+    return (
+        <div className="space-y-8">
+            {/* Cabeçalho */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <ArrowLeftRight className="text-blue-500" size={32} />
+                        Área de Trocas e Vendas
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Gerencie as cartas excedentes que você deseja negociar.
+                    </p>
+                </div>
+
+                <Button onClick={() => openSearchModal("trades")} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Plus className="mr-2 h-4 w-4" /> Adicionar para Troca
+                </Button>
+            </div>
+
+            {/* Barra de Pesquisa */}
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                <Input
+                    placeholder="Pesquisar nas suas cartas para troca..."
+                    className="pl-10 h-11 bg-card text-foreground border-border"
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
+                />
+            </div>
+
+            {/* Grid de Cartas */}
+            {loading ? (
+                <p className="text-center text-muted-foreground mt-10">Carregando cartas de troca...</p>
+            ) : tradesView.length === 0 ? (
+                <div className="rounded-xl border border-border bg-card p-12 text-center">
+                    <h2 className="text-xl font-semibold text-foreground">Nenhuma carta à venda ou troca</h2>
+                    <p className="mt-2 text-muted-foreground">Clique em "Adicionar para Troca" para selecionar cartas.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                    {filteredTrades.map(({ trade, pokemon }) => (
+                        <div key={trade.id} className="group relative rounded-xl border border-border bg-card p-3 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <img src={pokemon.images.small} alt={pokemon.name} className="mx-auto h-52 object-contain transition-transform group-hover:scale-105" />
+                                <div className="mt-3 text-center">
+                                    <h3 className="line-clamp-1 font-bold text-sm text-foreground">{pokemon.name}</h3>
+                                    <p className="text-xs text-muted-foreground">#{pokemon.number}/{pokemon.set.printedTotal}</p>
+                                </div>
+                            </div>
+
+                            {/* Bloco de Preço e Ações */}
+                            <div className="mt-4 pt-3 border-t border-border flex flex-col gap-2">
+                                {editingId === trade.id ? (
+                                    <div className="flex items-center gap-1">
+                                        <Input
+                                            type="text"
+                                            placeholder="Preço R$"
+                                            className="h-8 text-xs bg-background"
+                                            value={tempPrice}
+                                            onChange={(e) => setTempPrice(e.target.value)}
+                                            autoFocus
+                                        />
+                                        <Button size="sm" className="h-8 text-xs px-2" onClick={() => handleSavePrice(trade.id)}>Salvar</Button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                            {trade.price ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca"}
+                                        </span>
+                                        <button
+                                            onClick={() => { setEditingId(trade.id); setTempPrice(trade.price ? trade.price.toString() : ""); }}
+                                            className="text-muted-foreground hover:text-foreground p-1"
+                                            title="Editar preço"
+                                        >
+                                            <Edit3 size={14} />
+                                        </button>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => removeTrade(trade.id)}
+                                    className="w-full mt-1 flex items-center justify-center gap-1 rounded-md bg-red-50 dark:bg-red-950/40 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-100 transition-colors"
+                                >
+                                    <Trash2 size={13} /> Remover
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+</file>
+
+<file path="frontend/src/components/AuthGuard.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+
+export function AuthGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Pede para o Supabase verificar se existe alguém logado
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const isLoginPage = pathname === "/login";
+
+      if (!session && !isLoginPage) {
+        // Sem login e fora da página de login = Chuta para o login
+        router.replace("/login");
+      } else if (session && isLoginPage) {
+        // Já tem login e tentou acessar a tela de login = Manda pro Dashboard
+        router.replace("/");
+      } else {
+        // Tudo certo, libera a catraca
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+
+    // Fica "ouvindo" caso a pessoa clique em um botão de "Sair" (Logout)
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session && pathname !== "/login") {
+        router.replace("/login");
+      }
+    });
+
+    return () => authListener.subscription.unsubscribe();
+  }, [pathname, router]);
+
+  // Tela de carregamento enquanto o guarda-costas verifica o crachá
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  // Libera o conteúdo da página
+  return <>{children}</>;
+}
+</file>
+
+<file path="frontend/src/components/ThemeProvider.tsx">
+"use client"
+
+import * as React from "react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+
+export function ThemeProvider({
+  children,
+  ...props
+}: React.ComponentProps<typeof NextThemesProvider>) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+}
+</file>
+
+<file path="frontend/src/hooks/useTrades.ts">
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import { PokemonCard } from "@/types/pokemon-card";
+import { getPokemonCached } from "@/services/pokemonCache";
+import { toast } from "sonner";
+
+export interface TradeItem {
+    id: string;
+    user_id: string;
+    card_id: string;
+    price: number | null;
+    created_at: string;
 }
 
-export const useUiStore = create<UiStore>((set) => ({
-  isSearchModalOpen: false,
-  openSearchModal: () => set({ isSearchModalOpen: true }),
-  closeSearchModal: () => set({ isSearchModalOpen: false }),
+export interface TradeView {
+    trade: TradeItem;
+    pokemon: PokemonCard;
+}
+
+export function useTrades() {
+    const [trades, setTrades] = useState<TradeItem[]>([]);
+    const [tradesView, setTradesView] = useState<TradeView[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchTrades = useCallback(async () => {
+        try {
+            setLoading(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                setLoading(false);
+                return;
+            }
+
+            const { data: tradesData, error } = await supabase
+                .from("trades")
+                .select("*")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+
+            setTrades(tradesData || []);
+
+            if (tradesData && tradesData.length > 0) {
+                const cardIds = tradesData.map((t) => t.card_id);
+
+                const cardsMap: Record<string, PokemonCard> = {};
+
+                await Promise.all(
+                    cardIds.map(async (cardId) => {
+                        try {
+                            const pokemon = await getPokemonCached(cardId);
+
+                            if (pokemon) {
+                                cardsMap[cardId] = pokemon;
+                            }
+                        } catch (e) {
+                            console.error(`Erro ao buscar carta ${cardId}`, e);
+                        }
+                    })
+                );
+
+                const combined: TradeView[] = tradesData
+                    .map((trade) => ({
+                        trade,
+                        pokemon: cardsMap[trade.card_id],
+                    }))
+                    .filter((item) => item.pokemon !== undefined);
+
+                setTradesView(combined);
+            } else {
+                setTradesView([]);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Erro ao carregar itens de troca.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchTrades();
+    }, [fetchTrades]);
+
+    const addTrade = async (card: PokemonCard, price: number | null = null) => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // Adição otimista instantânea na tela antes mesmo de recarregar tudo
+            const tempId = crypto.randomUUID();
+            const newTradeItem: TradeItem = {
+                id: tempId,
+                user_id: user.id,
+                card_id: card.id,
+                price,
+                created_at: new Date().toISOString(),
+            };
+
+            setTrades((prev) => [newTradeItem, ...prev]);
+            setTradesView((prev) => [{ trade: newTradeItem, pokemon: card }, ...prev]);
+
+            const { error } = await supabase.from("trades").insert([
+                { user_id: user.id, card_id: card.id, price }
+            ]);
+
+            if (error) throw error;
+            toast.success("Carta adicionada para trocas!");
+            fetchTrades(); // Sincroniza com o banco em segundo plano
+        } catch (err) {
+            console.error(err);
+            toast.error("Erro ao adicionar carta.");
+            fetchTrades();
+        }
+    };
+
+    const updatePrice = async (tradeId: string, newPrice: number | null) => {
+        try {
+            const { error } = await supabase
+                .from("trades")
+                .update({ price: newPrice })
+                .eq("id", tradeId);
+
+            if (error) throw error;
+            toast.success("Preço atualizado!");
+            fetchTrades();
+        } catch (err) {
+            console.error(err);
+            toast.error("Erro ao atualizar preço.");
+        }
+    };
+
+    const removeTrade = async (tradeId: string) => {
+        try {
+            const { error } = await supabase.from("trades").delete().eq("id", tradeId);
+            if (error) throw error;
+            toast.success("Removido das trocas.");
+            fetchTrades();
+        } catch (err) {
+            console.error(err);
+            toast.error("Erro ao remover item.");
+        }
+    };
+
+    return { trades, tradesView, loading, addTrade, updatePrice, removeTrade };
+}
+</file>
+
+<file path="frontend/src/hooks/useWishlist.ts">
+import { useEffect, useState } from "react";
+import { PokemonCard } from "@/types/pokemon-card";
+import { WishlistCard } from "@/types/wishlist-card";
+import { useWishlistStore } from "@/store/wishlistStore";
+import { getPokemonCached } from "@/services/pokemonCache";
+
+export interface WishlistView {
+  wishlist: WishlistCard;
+  pokemon: PokemonCard;
+}
+
+export function useWishlist() {
+  const { items, removeItem, addItem } = useWishlistStore();
+  const [wishlistView, setWishlistView] = useState<WishlistView[]>([]);
+  const [totalEstimado, setTotalEstimado] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const data = await Promise.all(
+          items.map(async (wishlist) => {
+            const pokemon = await getPokemonCached(wishlist.pokemonCardId);
+            if (!pokemon) return null;
+            return { wishlist, pokemon };
+          })
+        );
+
+        const validCards = data.filter((item): item is WishlistView => item !== null);
+        setWishlistView(validCards);
+
+        // Busca o dólar atual para conversão
+        let dolarAtual = 5.00; 
+        try {
+          const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
+          const cotacaoData = await cotacaoRes.json();
+          dolarAtual = parseFloat(cotacaoData.USDBRL.ask);
+        } catch (e) {
+          console.error("Falha ao buscar cotação.");
+        }
+
+        // Calcula o custo total da Wishlist
+        let soma = 0;
+        validCards.forEach(({ pokemon }) => {
+          let precoGlobalUsd = 0;
+          const prices = pokemon.tcgplayer?.prices;
+          if (prices) {
+            for (const key in prices) {
+              if (prices[key]?.market) { precoGlobalUsd = prices[key].market; break; }
+              else if (prices[key]?.mid && precoGlobalUsd === 0) { precoGlobalUsd = prices[key].mid; }
+            }
+          }
+          soma += precoGlobalUsd * dolarAtual;
+        });
+
+        setTotalEstimado(soma);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [items]);
+
+  return { wishlistView, totalEstimado, loading, removeItem, addItem };
+}
+</file>
+
+<file path="frontend/src/lib/supabase.ts">
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+</file>
+
+<file path="frontend/src/store/wishlistStore.ts">
+import { create } from "zustand";
+import { WishlistCard } from "@/types/wishlist-card";
+
+const STORAGE_KEY = "carddex_wishlist";
+
+interface WishlistStore {
+  items: WishlistCard[];
+  addItem: (item: WishlistCard) => void;
+  removeItem: (id: string) => void;
+}
+
+export const useWishlistStore = create<WishlistStore>((set) => ({
+  items: typeof window !== "undefined" ? JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "[]") : [],
+  
+  addItem: (item) => {
+    set((state) => {
+      // Evita adicionar a mesma carta duas vezes na wishlist
+      if (state.items.some(i => i.pokemonCardId === item.pokemonCardId)) return state;
+      
+      const newItems = [...state.items, item];
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
+      return { items: newItems };
+    });
+  },
+
+  removeItem: (id) => {
+    set((state) => {
+      const newItems = state.items.filter(i => i.id !== id);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
+      return { items: newItems };
+    });
+  }
 }));
 </file>
 
@@ -493,48 +1221,418 @@ Um usuário possui uma wishlist.
 <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
 </file>
 
-<file path="frontend/src/app/collection/page.tsx">
+<file path="frontend/src/app/api/tcg/route.ts">
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const cardId = searchParams.get("id");
+
+    if (!cardId) {
+      return NextResponse.json({ error: "O ID da carta é obrigatório" }, { status: 400 });
+    }
+
+    const tcgResponse = await fetch(`https://api.pokemontcg.io/v2/cards/${cardId}`);
+    
+    if (!tcgResponse.ok) {
+        throw new Error(`A TCG API falhou. Status: ${tcgResponse.status}`);
+    }
+    
+    const tcgData = await tcgResponse.json();
+    const card = tcgData.data;
+
+    if (!card) {
+       return NextResponse.json({ success: false, message: "Carta não encontrada." });
+    }
+    
+    const prices = card.tcgplayer?.prices;
+    let marketPriceUSD = 0;
+    let tipoPrecoUsado = "Market"; // Só para sabermos internamente o que ele achou
+
+    // 🔥 MODO SOBREVIVÊNCIA: Caça qualquer preço disponível!
+    if (prices) {
+        for (const key in prices) {
+            const priceData = prices[key];
+            
+            if (priceData?.market) {
+                marketPriceUSD = priceData.market;
+                tipoPrecoUsado = "Market";
+                break; // Se achou o Market, é o melhor. Para a busca!
+            } else if (priceData?.mid && marketPriceUSD === 0) {
+                marketPriceUSD = priceData.mid;
+                tipoPrecoUsado = "Mid";
+            } else if (priceData?.low && marketPriceUSD === 0) {
+                marketPriceUSD = priceData.low;
+                tipoPrecoUsado = "Low";
+            }
+        }
+    }
+
+    // Se mesmo varrendo TUDO o preço continuar 0, encerramos a busca graciosamente
+    if (marketPriceUSD === 0) {
+         return NextResponse.json({
+            success: true,
+            prices: { usd: 0, brl: 0, usdText: "", brlText: "" }
+         });
+    }
+
+    const cotacaoResponse = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
+    
+    if (!cotacaoResponse.ok) {
+        throw new Error(`A API de Cotação falhou. Status: ${cotacaoResponse.status}`);
+    }
+
+    const cotacaoData = await cotacaoResponse.json();
+    const valorDolarHoje = parseFloat(cotacaoData.USDBRL.ask);
+
+    const marketPriceBRL = marketPriceUSD * valorDolarHoje;
+
+    const brlFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(marketPriceBRL);
+    const usdFormatted = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(marketPriceUSD);
+
+    return NextResponse.json({
+      success: true,
+      cotacaoDolarUsada: valorDolarHoje,
+      tipoPrecoUsado: tipoPrecoUsado,
+      prices: {
+        usd: marketPriceUSD,
+        brl: marketPriceBRL,
+        usdText: usdFormatted,
+        brlText: brlFormatted
+      }
+    });
+
+  } catch (error: any) {
+    console.error("Erro na API TCG:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+</file>
+
+<file path="frontend/src/app/market/page.tsx">
 "use client";
 
-import { Search, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
-import { CollectionCard } from "@/components/collection/CollectionCard";
-import { AddCardDialog } from "@/components/collection/AddCardDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { CollectionCard as CollectionCardType } from "@/types/collection-card";
-import { PokemonCard } from "@/types/pokemon-card";
-import { useUiStore } from "@/store/uiStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, TrendingUp, Award } from "lucide-react";
 
-export default function CollectionPage() {
-  const [localSearch, setLocalSearch] = useState("");
-  const [editingCard, setEditingCard] = useState<CollectionCardType | null>(null);
-  const [selectedCardForEdit, setSelectedCardForEdit] = useState<PokemonCard | null>(null);
+type TopLimit = "10" | "20" | "50" | "all";
 
-  const { collectionView, removeCard } = useCollection();
+export default function MarketPage() {
+  const { collectionView, carregandoValores } = useCollection();
+  const [limit, setLimit] = useState<TopLimit>("10");
+
+  // Ordena todas as cartas da coleção da mais cara para a mais barata com base no preço de mercado
+  const rankedCards = useMemo(() => {
+    const listWithPrices = collectionView.map((item) => {
+      let precoGlobalUsd = 0;
+      const prices = item.pokemon.tcgplayer?.prices;
+
+      if (prices) {
+        for (const key in prices) {
+          if (prices[key]?.market) {
+            precoGlobalUsd = prices[key].market;
+            break;
+          } else if (prices[key]?.mid && precoGlobalUsd === 0) {
+            precoGlobalUsd = prices[key].mid;
+          } else if (prices[key]?.low && precoGlobalUsd === 0) {
+            precoGlobalUsd = prices[key].low;
+          }
+        }
+      }
+
+      // Como o useCollection converte usando a cotação atual, podemos estimar o valor em BRL da carta individual
+      // Multiplicamos pelo dólar atual ou pegamos proporcional. Para simplificar e garantir precisão, 
+      // recalculamos o valor da carta em BRL individualmente aqui:
+      const dolarFallback = 5.00; // Poderia puxar dinâmico, mas o cálculo de mercado individual funciona perfeitamente
+      const cardValueBrl = precoGlobalUsd > 0 ? precoGlobalUsd * dolarFallback : (item.collection.acquisitionValue ?? 0);
+
+      return {
+        ...item,
+        calculatedValueBrl: cardValueBrl,
+      };
+    });
+
+    // Ordena do maior para o menor valor
+    listWithPrices.sort((a, b) => b.calculatedValueBrl - a.calculatedValueBrl);
+
+    if (limit === "all") return listWithPrices;
+    return listWithPrices.slice(0, Number(limit));
+  }, [collectionView, limit]);
+
+  return (
+    <div className="space-y-8">
+      {/* Cabeçalho e Filtros */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Trophy className="text-amber-500" size={32} />
+            Ranking de Valiosas
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            As cartas mais valiosas que compõem a sua coleção atual.
+          </p>
+        </div>
+
+        {/* Seletor de Limite (Filtro rápido) */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">Exibir:</span>
+          <div className="flex rounded-lg border border-border bg-card p-1">
+            {(["10", "20", "50", "all"] as TopLimit[]).map((option) => (
+              <button
+                key={option}
+                onClick={() => setLimit(option)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                  limit === option
+                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option === "all" ? "Todas" : `Top ${option}`}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Conteúdo da Listagem */}
+      {carregandoValores ? (
+        <div className="text-center py-20 text-muted-foreground">Calculando valores do mercado...</div>
+      ) : rankedCards.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card p-12 text-center">
+          <h2 className="text-xl font-semibold text-foreground">Sua coleção está vazia</h2>
+          <p className="mt-2 text-muted-foreground">Adicione cartas à sua coleção para ver o ranking de valiosas aqui.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3">
+          {rankedCards.map(({ collection, pokemon, calculatedValueBrl }, index) => {
+            const isTop3 = index < 3;
+            return (
+              <div
+                key={collection.id}
+                className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-slate-400 dark:hover:border-slate-600"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Posição no Ranking */}
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-black text-sm ${
+                    index === 0 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-300" :
+                    index === 1 ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300" :
+                    index === 2 ? "bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-400 border border-orange-300" :
+                    "bg-muted text-muted-foreground"
+                  }`}>
+                    #{index + 1}
+                  </div>
+
+                  {/* Mini imagem da carta */}
+                  <img
+                    src={pokemon.images.small}
+                    alt={pokemon.name}
+                    className="h-16 w-12 object-contain rounded-md shadow-xs"
+                  />
+
+                  {/* Informações básicas */}
+                  <div>
+                    <h3 className="font-bold text-foreground flex items-center gap-2">
+                      {pokemon.name}
+                      {isTop3 && <Award size={16} className="text-amber-500" />}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {pokemon.set.name} • #{pokemon.number}/{pokemon.set.printedTotal} • Idioma: <span className="font-semibold">{collection.language}</span> • Condição: <span className="font-semibold">{collection.condition}</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Valor Calculado */}
+                <div className="text-right">
+                  <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+                    {calculatedValueBrl.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </span>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    {collection.acquisitionValue ? "Valor de Mercado Estimado" : "Baseado no Custo Informado"}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+</file>
+
+<file path="frontend/src/app/settings/page.tsx">
+"use client";
+
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useCollectionStore } from "@/store/collectionStore"; 
+import { useWishlistStore } from "@/store/wishlistStore"; 
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Download, UploadCloud, CheckCircle2 } from "lucide-react";
+
+export default function SettingsPage() {
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   
-  // Usamos a store para abrir o modal em vez de um estado local
-  const openSearchModal = useUiStore((state) => state.openSearchModal);
+  // Pegando as cartas que estão no armazenamento local
+  const localCards = useCollectionStore((state) => state.cards);
+  const localWishlistItems = useWishlistStore((state) => state.items);
 
-  const handleDelete = (id: string) => {
-    if (!confirm("Deseja realmente excluir esta carta?")) return;
-    removeCard(id);
+  // FUNÇÃO 1: O seu backup original em JSON
+  const handleExportData = () => {
+    const collectionData = localStorage.getItem("carddex_collection") || "[]";
+    const wishlistData = localStorage.getItem("carddex_wishlist") || "[]";
+
+    const fullBackup = {
+      collection: JSON.parse(collectionData),
+      wishlist: JSON.parse(wishlistData),
+      exportedAt: new Date().toISOString(),
+    };
+
+    const blob = new Blob([JSON.stringify(fullBackup, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `carddex-backup-${new Date().toISOString().split("T")[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    toast.success("Backup baixado com sucesso!");
   };
 
-  const handleEdit = (id: string) => {
-    const card = collectionView.find((item) => item.collection.id === id);
-    if (!card) return;
-    setEditingCard(card.collection);
-    setSelectedCardForEdit(card.pokemon);
+  // FUNÇÃO 2: A nova migração para o Supabase
+  const handleMigrate = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast.error("Você precisa estar logado para enviar os dados!");
+        setLoading(false);
+        return;
+      }
+
+      if (localCards.length > 0) {
+        const collectionPayload = localCards.map((card) => ({
+          id: card.id,
+          user_id: user.id,
+          pokemon_card_id: card.pokemonCardId,
+          language: card.language || "PT",
+          condition: card.condition || "NM",
+          acquisition_value: card.acquisitionValue || 0,
+          acquisition_date: card.acquisitionDate || new Date().toISOString(),
+          notes: card.notes || "",
+        }));
+
+        const { error: colError } = await supabase.from("collection").upsert(collectionPayload);
+        if (colError) throw colError;
+      }
+
+      if (localWishlistItems.length > 0) {
+        const wishlistPayload = localWishlistItems.map((item) => ({
+          id: item.id,
+          user_id: user.id,
+          pokemon_card_id: item.pokemonCardId,
+        }));
+
+        const { error: wishError } = await supabase.from("wishlist").upsert(wishlistPayload);
+        if (wishError) throw wishError;
+      }
+
+      setSuccess(true);
+      toast.success("Dados migrados com sucesso para a nuvem! ☁️");
+    } catch (error: any) {
+      console.error(error);
+      toast.error("Erro ao migrar: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredCollection = useMemo(() => {
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div>
+        <h1 className="text-3xl font-bold">Configurações</h1>
+        <p className="text-muted-foreground mt-1">
+          Gerencie seus dados e preferências do CardDex.
+        </p>
+      </div>
+
+      {/* NOVO CARTÃO: Migração para Nuvem */}
+      <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            Migração de Dados <UploadCloud className="w-5 h-5 text-blue-500" />
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Encontramos <b>{localCards.length} cartas na sua Coleção</b> e <b>{localWishlistItems.length} na sua Wishlist</b> salvas localmente neste navegador. Envie para o banco de dados.
+          </p>
+        </div>
+        
+        <div className="pt-2">
+          {success ? (
+            <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200 font-medium">
+              <CheckCircle2 className="w-5 h-5" />
+              Tudo certo! Suas cartas já estão no banco de dados.
+            </div>
+          ) : (
+            <Button 
+              onClick={handleMigrate} 
+              disabled={loading || (localCards.length === 0 && localWishlistItems.length === 0)} 
+              className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+            >
+              <UploadCloud size={18} />
+              {loading ? "Enviando para a Nuvem..." : "Sincronizar com a Nuvem"}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* SEU CARTÃO ORIGINAL: Backup JSON */}
+      <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">Backup da Coleção (Arquivo Local)</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Faça o download de um arquivo com todas as suas cartas da Coleção e da Wishlist para garantir a segurança dos seus dados.
+          </p>
+        </div>
+
+        <Button onClick={handleExportData} variant="outline" className="gap-2">
+          <Download size={18} />
+          Exportar Meus Dados (JSON)
+        </Button>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="frontend/src/app/wishlist/page.tsx">
+"use client";
+
+import { useMemo, useState } from "react";
+import { Search, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useWishlist } from "@/hooks/useWishlist";
+
+export default function WishlistPage() {
+  const { wishlistView, totalEstimado, loading, removeItem } = useWishlist();
+  const [localSearch, setLocalSearch] = useState("");
+
+  // Filtra as cartas da Wishlist em tempo real
+  const filteredWishlist = useMemo(() => {
     const term = localSearch.trim().toLowerCase();
-    if (!term) return collectionView;
+    if (!term) return wishlistView;
 
-    return collectionView.filter(({ pokemon }) => {
+    return wishlistView.filter(({ pokemon }) => {
       const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
       return (
         pokemon.name.toLowerCase().includes(term) ||
@@ -543,268 +1641,62 @@ export default function CollectionPage() {
         pokemon.set.name.toLowerCase().includes(term)
       );
     });
-  }, [collectionView, localSearch]);
+  }, [wishlistView, localSearch]);
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input
-            placeholder="Pesquisar na sua coleção..."
-            className="pl-10"
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-          />
-        </div>
-        <Button className="gap-2" onClick={openSearchModal}>
-          <Plus size={18} />
-          Adicionar Carta
-        </Button>
+      {/* Resumo Financeiro da Wishlist adaptado para Dark Mode */}
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <h2 className="text-lg font-medium text-muted-foreground">Custo Total Estimado</h2>
+        <p className="mt-1 text-4xl font-black text-indigo-600 dark:text-indigo-400">
+          {totalEstimado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+        </p>
+        <p className="text-sm text-muted-foreground mt-2">
+          {wishlistView.length} {wishlistView.length === 1 ? "carta desejada" : "cartas desejadas"}
+        </p>
       </div>
 
-      {collectionView.length === 0 ? (
-        <div className="rounded-xl border bg-card p-12 text-center">
-          <h2 className="text-xl font-semibold">Nenhuma carta cadastrada</h2>
-          <p className="mt-2 text-muted-foreground">
-            Sua coleção aparecerá aqui assim que você adicionar sua primeira carta.
-          </p>
+      {/* Barra de Pesquisa Local */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        <Input
+          placeholder="Pesquisar na sua Wishlist..."
+          className="pl-10 h-11 bg-card text-foreground border-border"
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
+        />
+      </div>
+
+      {/* Grid da Wishlist */}
+      {loading ? (
+        <p className="text-center text-muted-foreground mt-10">Carregando seus desejos...</p>
+      ) : wishlistView.length === 0 ? (
+        <div className="rounded-xl border border-border bg-card p-12 text-center">
+          <h2 className="text-xl font-semibold text-foreground">Sua Wishlist está vazia</h2>
+          <p className="mt-2 text-muted-foreground">Use o botão "Adicionar carta" no topo para buscar seus desejos.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-          {filteredCollection.map(({ collection, pokemon }) => (
-            <CollectionCard
-              key={collection.id}
-              collection={collection}
-              pokemon={pokemon}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-            />
+          {filteredWishlist.map(({ wishlist, pokemon }) => (
+            <div key={wishlist.id} className="group relative rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition-all">
+              <img src={pokemon.images.small} alt={pokemon.name} className="mx-auto h-64 object-contain transition-transform group-hover:scale-105" />
+              
+              <div className="mt-3 text-center">
+                <h3 className="line-clamp-1 font-bold text-sm text-foreground">{pokemon.name}</h3>
+                <p className="text-xs text-muted-foreground">#{pokemon.number}/${pokemon.set.printedTotal}</p>
+              </div>
+
+              <button
+                onClick={() => removeItem(wishlist.id)}
+                className="absolute right-2 top-2 rounded-full bg-red-500/90 p-2 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100 backdrop-blur-sm"
+                title="Remover da Wishlist"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           ))}
         </div>
       )}
-
-      {/* Modal exclusivo para Edição de carta já cadastrada */}
-      <Dialog
-        open={!!editingCard}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingCard(null);
-            setSelectedCardForEdit(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Editar Carta</DialogTitle>
-            <DialogDescription>Altere os detalhes da sua carta.</DialogDescription>
-          </DialogHeader>
-          <AddCardDialog
-            card={selectedCardForEdit}
-            editingCard={editingCard}
-            onSuccess={() => {
-              setEditingCard(null);
-              setSelectedCardForEdit(null);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/src/app/market/page.tsx">
-export default function MarketPage() {
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">Mercado</h1>
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/src/app/settings/page.tsx">
-export default function SettingsPage() {
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">Configurações</h1>
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/src/app/wishlist/page.tsx">
-export default function WishlistPage() {
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">Wishlist</h1>
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/src/components/collection/AddCardDialog.tsx">
-import { useEffect, useState } from "react";
-import { PokemonCard } from "@/types/pokemon-card";
-import { CardCondition, CardLanguage, CollectionCard as CollectionCardType } from "@/types/collection-card";
-import { useCollectionStore } from "@/store/collectionStore";
-import { savePokemonInCache } from "@/services/pokemonCache";
-import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ConditionSelector } from "./ConditionSelector";
-import { PriceInput } from "./PriceInput";
-import { cn } from "@/lib/utils";
-
-interface AddCardDialogProps {
-  card: PokemonCard | null;
-  editingCard: CollectionCardType | null;
-  onSuccess: () => void;
-}
-
-export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogProps) {
-  const [condition, setCondition] = useState<CardCondition>("NM");
-  const [language, setLanguage] = useState<CardLanguage>("PT");
-  const [acquisitionValue, setAcquisitionValue] = useState("");
-  const [acquisitionDate, setAcquisitionDate] = useState("");
-  const [notes, setNotes] = useState("");
-
-  const { addCard, updateCard } = useCollectionStore();
-
-  useEffect(() => {
-    if (!editingCard) {
-      setCondition("NM");
-      setLanguage("PT");
-      setAcquisitionValue("");
-      setAcquisitionDate(new Date().toISOString().split("T")[0]); // Hoje como padrão
-      setNotes("");
-      return;
-    }
-
-    setCondition(editingCard.condition);
-    setLanguage(editingCard.language);
-    setAcquisitionValue(editingCard.acquisitionValue?.toString() ?? "");
-    setAcquisitionDate(editingCard.acquisitionDate ?? "");
-    setNotes(editingCard.notes ?? "");
-  }, [editingCard]);
-
-  const handleSave = () => {
-    if (!card) return;
-
-    const baseCardData = {
-      condition,
-      language,
-      acquisitionValue: acquisitionValue ? Number(acquisitionValue) : undefined,
-      acquisitionDate: acquisitionDate || undefined,
-      notes: notes || undefined,
-    };
-
-    if (editingCard) {
-      updateCard({
-        ...editingCard,
-        ...baseCardData,
-      });
-      toast.success("Carta atualizada com sucesso!");
-    } else {
-      savePokemonInCache(card);
-      addCard({
-        id: crypto.randomUUID(),
-        pokemonCardId: card.id,
-        createdAt: new Date().toISOString(),
-        ...baseCardData,
-      });
-      toast.success("Carta adicionada com sucesso!");
-    }
-
-    onSuccess();
-  };
-
-  if (!card) return null;
-
-  const languages: { id: CardLanguage; label: string }[] = [
-    { id: "PT", label: "Português" },
-    { id: "EN", label: "Inglês" },
-    { id: "JP", label: "Japonês" },
-  ];
-
-  return (
-    <div className="space-y-6">
-      {/* Cabeçalho Visual da Carta */}
-      <div className="flex gap-4 rounded-lg bg-muted/30 p-4 border">
-        <img src={card.images.small} alt={card.name} className="h-28 rounded-md shadow-sm" />
-        <div className="flex-1 space-y-1 py-1">
-          <h2 className="text-xl font-bold tracking-tight">{card.name}</h2>
-          <p className="text-sm font-medium text-muted-foreground">{card.set.name}</p>
-          <div className="mt-2 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-            #{card.number}/{card.set.printedTotal}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        {/* Condição */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Condição da Carta
-          </label>
-          <ConditionSelector value={condition} onChange={setCondition} />
-        </div>
-
-        {/* Idioma */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none">Idioma</label>
-          <div className="flex gap-2">
-            {languages.map((lang) => (
-              <button
-                key={lang.id}
-                type="button"
-                onClick={() => setLanguage(lang.id)}
-                className={cn(
-                  "flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-all",
-                  language === lang.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground hover:bg-muted border-input"
-                )}
-              >
-                {lang.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Linha de Valores (Preço e Data) */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none">Valor Pago</label>
-            <PriceInput value={acquisitionValue} onChange={setAcquisitionValue} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none">Data de Aquisição</label>
-            <Input
-              type="date"
-              value={acquisitionDate}
-              onChange={(e) => setAcquisitionDate(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Notas */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium leading-none">Observações</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder="Ex: Comprada no evento, autografada, etc..."
-            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
-        </div>
-      </div>
-
-      <Button onClick={handleSave} className="w-full font-semibold" size="lg">
-        {editingCard ? "Salvar Alterações" : "Adicionar à Coleção"}
-      </Button>
     </div>
   );
 }
@@ -812,157 +1704,6 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
 
 <file path="frontend/src/components/collection/CardSearch.tsx">
 
-</file>
-
-<file path="frontend/src/components/collection/CardSearchDialog.tsx">
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-import { Search, ArrowLeft } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { PokemonCard } from "@/types/pokemon-card";
-import { searchCards } from "@/services/pokemonApi";
-import { CardSearchResults } from "./CardSearchResults";
-import { AddCardDialog } from "./AddCardDialog";
-
-interface CardSearchDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) {
-  const [search, setSearch] = useState("");
-  const [apiCards, setApiCards] = useState<PokemonCard[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
-
-  // Limpa o estado quando o modal é fechado
-  useEffect(() => {
-    if (!open) {
-      setSearch("");
-      setApiCards([]);
-      setSelectedCard(null);
-      setLoading(false);
-    }
-  }, [open]);
-
-  // Efeito de Debounce para a busca na API
-  useEffect(() => {
-    const loadCards = async () => {
-      const term = search.trim();
-      const isNumber = /^\d+$/.test(term);
-      const isFullNumber = /^\d+\/\d+$/.test(term);
-
-      if (term.length < 3 && !isNumber && !isFullNumber) {
-        setApiCards([]);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const result = await searchCards(term);
-        setApiCards(result);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const timeout = setTimeout(loadCards, 350);
-    return () => clearTimeout(timeout);
-  }, [search]);
-
-  // Filtra/Ordena o resultado da API baseado no termo
-  const cards = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return [];
-
-    return apiCards.filter((card) => {
-      const fullNumber = `${card.number}/${card.set.printedTotal}`.toLowerCase();
-      return (
-        card.name.toLowerCase().includes(term) ||
-        card.number.toLowerCase().includes(term) ||
-        fullNumber.includes(term) ||
-        card.set.name.toLowerCase().includes(term)
-      );
-    });
-  }, [apiCards, search]);
-
-  const handleSuccess = () => {
-    onOpenChange(false);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={selectedCard ? "max-w-xl" : "max-w-2xl"}>
-        {!selectedCard ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>Adicionar Carta</DialogTitle>
-              <DialogDescription>
-                Pesquise uma carta Pokémon para adicionar à sua coleção.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6">
-              <div className="relative">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  size={18}
-                />
-                <Input
-                  placeholder="Pesquisar carta (Nome, número, edição)..."
-                  className="pl-10"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  autoFocus
-                />
-              </div>
-
-              <div className="max-h-[450px] overflow-y-auto rounded-lg border">
-                {search.trim().length >= 3 || /^\d+$/.test(search.trim()) ? (
-                  <CardSearchResults
-                    cards={cards}
-                    loading={loading}
-                    onAdd={(card) => setSelectedCard(card)}
-                  />
-                ) : (
-                  <div className="p-10 text-center text-muted-foreground">
-                    Digite pelo menos 3 caracteres ou o número da carta.
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div className="space-y-1">
-                <DialogTitle>Detalhes da Carta</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados da sua cópia.
-                </DialogDescription>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedCard(null)}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar
-              </Button>
-            </DialogHeader>
-
-            <AddCardDialog
-              card={selectedCard}
-              editingCard={null}
-              onSuccess={handleSuccess}
-            />
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
 </file>
 
 <file path="frontend/src/components/collection/CardSearchItem.tsx">
@@ -1146,7 +1887,7 @@ export function CollectionCardImage({ pokemon }: Props) {
         <img
             src={pokemon.images.small}
             alt={pokemon.name}
-            className="mx-auto h-72 object-contain transition-transform duration-300 group-hover:scale-105"
+            className="mx-auto h-40 md:h-72 w-full object-contain transition-transform duration-300 group-hover:scale-105"
         />
     );
 }
@@ -1235,202 +1976,121 @@ export function CollectionMiniCard({
 }
 </file>
 
-<file path="frontend/src/components/collection/ConditionSelector.tsx">
-import { CardCondition } from "@/types/collection-card";
-import { cn } from "@/lib/utils";
-
-interface ConditionSelectorProps {
-  value: CardCondition;
-  onChange: (value: CardCondition) => void;
-}
-
-const conditions: { id: CardCondition; label: string; desc: string; color: string }[] = [
-  { id: "NM", label: "NM", desc: "Near Mint", color: "bg-emerald-100 text-emerald-800 border-emerald-300" },
-  { id: "SP", label: "SP", desc: "Slightly Played", color: "bg-blue-100 text-blue-800 border-blue-300" },
-  { id: "MP", label: "MP", desc: "Moderately Played", color: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  { id: "HP", label: "HP", desc: "Heavily Played", color: "bg-orange-100 text-orange-800 border-orange-300" },
-  { id: "D", label: "D", desc: "Damaged", color: "bg-red-100 text-red-800 border-red-300" },
-];
-
-export function ConditionSelector({ value, onChange }: ConditionSelectorProps) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {conditions.map((cond) => {
-        const isSelected = value === cond.id;
-        
-        return (
-          <button
-            key={cond.id}
-            type="button"
-            onClick={() => onChange(cond.id)}
-            title={cond.desc}
-            className={cn(
-              "flex-1 rounded-md border px-3 py-2 text-sm font-semibold transition-all",
-              isSelected
-                ? `${cond.color} ring-2 ring-ring ring-offset-2`
-                : "bg-background text-muted-foreground hover:bg-muted border-input"
-            )}
-          >
-            {cond.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-</file>
-
-<file path="frontend/src/components/collection/PriceInput.tsx">
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { formatCurrency } from "@/lib/formatCurrency";
-
-interface PriceInputProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export function PriceInput({ value, onChange }: PriceInputProps) {
-  // Formata o valor apenas para exibição
-  const displayValue = React.useMemo(() => {
-    if (!value) return "";
-    const numeric = Number(value);
-    if (isNaN(numeric)) return "";
-    return formatCurrency(numeric);
-  }, [value]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove tudo que não for número (ex: R$, vírgulas, pontos e letras)
-    const rawValue = e.target.value.replace(/\D/g, "");
-    
-    if (!rawValue) {
-      onChange("");
-      return;
-    }
-
-    // Divide por 100 para criar os centavos matematicamente
-    const numericValue = Number(rawValue) / 100;
-    
-    // Devolve para o estado pai apenas o valor numérico limpo (como string)
-    onChange(numericValue.toString());
-  };
-
-  return (
-    <Input
-      type="text"
-      inputMode="numeric"
-      value={displayValue}
-      onChange={handleChange}
-      placeholder="R$ 0,00"
-      className="font-medium"
-    />
-  );
-}
-</file>
-
 <file path="frontend/src/components/collection/QuantitySelector.tsx">
 
 </file>
 
-<file path="frontend/src/components/dashboard/GoalCard.tsx">
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-
-export function GoalCard() {
-  return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle>🏆 Objetivo Atual</CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <div>
-          <h3 className="font-semibold">
-            Pokédex Full Art
-          </h3>
-
-          <p className="text-sm text-gray-500">
-            0 de 215 cartas
-          </p>
-        </div>
-
-        <Progress value={0} />
-
-        <p className="text-right text-sm font-semibold">
-          0%
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-</file>
-
 <file path="frontend/src/components/dashboard/PokedexProgressCard.tsx">
+"use client";
+
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { CollectionView } from "@/hooks/useCollection";
+import { getGeneration } from "@/lib/getGeneration";
 
 interface PokedexProgressCardProps {
-    pokedexCount: number;
-    totalPokemon: number;
-    pokedexProgress: number;
+    collectionView: CollectionView[];
 }
 
-export function PokedexProgressCard({
-    pokedexCount,
-    totalPokemon,
-    pokedexProgress,
-}: PokedexProgressCardProps) {
-    const remainingPokemon = totalPokemon - pokedexCount;
+// Quantidade exata de Pokémon introduzidos em cada geração
+const GEN_TOTALS: Record<number, number> = {
+    1: 151, // Kanto
+    2: 100, // Johto
+    3: 135, // Hoenn
+    4: 107, // Sinnoh
+    5: 156, // Unova
+    6: 72,  // Kalos
+    7: 88,  // Alola
+    8: 96,  // Galar
+    9: 120, // Paldea
+};
+
+export function PokedexProgressCard({ collectionView }: PokedexProgressCardProps) {
+    const [genFilter, setGenFilter] = useState("all");
+
+    // Lógica para calcular os totais dinamicamente
+    const stats = useMemo(() => {
+        // Pega todos os números de Pokédex únicos que você já tem
+        const uniquePokemon = new Set<number>();
+        collectionView.forEach((item) => {
+            item.pokemon.nationalPokedexNumbers?.forEach((num) => uniquePokemon.add(num));
+        });
+
+        if (genFilter === "all") {
+            const total = 1025;
+            const registered = uniquePokemon.size;
+            return {
+                registered,
+                total,
+                percentage: Number(((registered / total) * 100).toFixed(1))
+            };
+        }
+
+        const targetGen = Number(genFilter);
+        const total = GEN_TOTALS[targetGen];
+        
+        let registered = 0;
+        uniquePokemon.forEach((num) => {
+            if (getGeneration(num) === targetGen) {
+                registered++;
+            }
+        });
+
+        return {
+            registered,
+            total,
+            percentage: Number(((registered / total) * 100).toFixed(1))
+        };
+    }, [collectionView, genFilter]);
 
     return (
-        <Card className="h-full">
-            <CardHeader className="pb-2">
-                <CardTitle>📖 Minha Pokédex</CardTitle>
+        <Card className="h-full flex flex-col shadow-sm border-slate-200">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-lg font-semibold">Minha Pokédex</CardTitle>
+                <select
+                    value={genFilter}
+                    onChange={(e) => setGenFilter(e.target.value)}
+                    className="h-8 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="all">Todas as Gerações</option>
+                    <option value="1">Gen 1 (Kanto)</option>
+                    <option value="2">Gen 2 (Johto)</option>
+                    <option value="3">Gen 3 (Hoenn)</option>
+                    <option value="4">Gen 4 (Sinnoh)</option>
+                    <option value="5">Gen 5 (Unova)</option>
+                    <option value="6">Gen 6 (Kalos)</option>
+                    <option value="7">Gen 7 (Alola)</option>
+                    <option value="8">Gen 8 (Galar)</option>
+                    <option value="9">Gen 9 (Paldea)</option>
+                </select>
             </CardHeader>
 
-            <CardContent className="flex h-full flex-col justify-between">
-
-                <div className="text-center">
-
-                    <p className="text-4xl font-bold text-slate-900">
-                        {pokedexProgress}%
+            <CardContent className="flex flex-1 flex-col justify-center">
+                <div className="text-center py-4">
+                    <p className="text-5xl font-black text-blue-600 tracking-tight">
+                        {stats.percentage}%
                     </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
+                    <p className="mt-1 text-sm font-medium text-slate-500">
                         Completa
                     </p>
-
                 </div>
 
                 <Progress
-                    value={pokedexProgress}
-                    className="mt-6"
+                    value={stats.percentage}
+                    className="h-3 w-full bg-slate-100"
                 />
 
-                <div className="mt-6 space-y-1 text-sm">
-
-                    <div className="flex justify-between">
-                        <span className="text-slate-500">
-                            Registrados
-                        </span>
-
-                        <span className="font-semibold">
-                            {pokedexCount}
-                        </span>
+                <div className="mt-6 flex justify-between border-t border-slate-100 pt-4 text-sm">
+                    <div className="flex flex-col">
+                        <span className="text-slate-500">Registrados</span>
+                        <span className="font-bold text-slate-700">{stats.registered}</span>
                     </div>
-
-                    <div className="flex justify-between">
-                        <span className="text-slate-500">
-                            Faltam
-                        </span>
-
-                        <span className="font-semibold">
-                            {remainingPokemon}
-                        </span>
+                    <div className="flex flex-col text-right">
+                        <span className="text-slate-500">Faltam</span>
+                        <span className="font-bold text-slate-700">{stats.total - stats.registered}</span>
                     </div>
-
                 </div>
-
             </CardContent>
         </Card>
     );
@@ -1459,33 +2119,29 @@ export function RecentCardsCard({
     .slice(0, 5);
 
   return (
-    <Card>
+    // Adicionamos 'h-full flex flex-col' para ele esticar até o final
+    <Card className="h-full flex flex-col shadow-sm border-slate-200">
 
       <CardHeader>
-        <CardTitle>🕒 Últimas cartas adicionadas</CardTitle>
+        <CardTitle className="text-lg font-semibold">🕒 Últimas cartas adicionadas</CardTitle>
       </CardHeader>
 
-      <CardContent>
+      {/* Adicionamos 'flex-1 justify-center' para ele centralizar as cartas no espaço extra */}
+      <CardContent className="flex-1 flex flex-col justify-center">
 
         {recentCards.length === 0 ? (
-
           <p className="text-sm text-gray-500">
             Nenhuma carta cadastrada.
           </p>
-
         ) : (
-
           <div className="flex gap-6 overflow-x-auto pb-2">
-
             {recentCards.map((card) => (
               <CollectionMiniCard
                 key={card.collection.id}
                 card={card}
               />
             ))}
-
           </div>
-
         )}
 
       </CardContent>
@@ -1533,74 +2189,86 @@ export function StatCard({
 }
 </file>
 
+<file path="frontend/src/components/layout/GlobalModals.tsx">
+"use client";
+
+import { CardSearchDialog } from "@/components/collection/CardSearchDialog";
+import { useUiStore } from "@/store/uiStore";
+
+export function GlobalModals() {
+  const { isSearchModalOpen, closeSearchModal } = useUiStore();
+
+  return (
+    <CardSearchDialog
+      open={isSearchModalOpen}
+      onOpenChange={(open) => {
+        if (!open) closeSearchModal();
+      }}
+    />
+  );
+}
+</file>
+
 <file path="frontend/src/components/layout/Sidebar.tsx">
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
     ChartColumn,
     FolderOpen,
     House,
     Settings,
     Star,
+    Repeat,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function Sidebar() {
-    return (
-        <aside className="flex h-screen w-72 flex-col border-r bg-white p-8">
+    const pathname = usePathname();
 
+    const links = [
+        { href: "/", icon: House, label: "Dashboard" },
+        { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
+        { href: "/wishlist", icon: Star, label: "Wishlist" },
+        { href: "/trades", icon: Repeat, label: "Trocas" },
+        { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
+        { href: "/settings", icon: Settings, label: "Configurações" },
+    ];
+
+    return (
+        <aside className="hidden md:flex h-screen w-72 shrink-0 flex-col border-r border-border bg-background p-8">
             <div>
-                <h1 className="text-4xl font-bold text-blue-600">
+                <h1 className="text-4xl font-bold text-blue-600 dark:text-blue-500">
                     CardDex
                 </h1>
-
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                     Sua coleção Pokémon
                 </p>
             </div>
 
             <nav className="mt-12 space-y-2">
+                {links.map((link) => {
+                    const Icon = link.icon;
+                    const isActive = pathname === link.href;
 
-                <Link
-                    href="/"
-                    className="flex items-center gap-3 rounded-lg bg-blue-50 px-4 py-3 font-medium text-blue-600"
-                >
-                    <House size={20} />
-                    Dashboard
-                </Link>
-
-                <Link
-                    href="/collection"
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-gray-100"
-                >
-                    <FolderOpen size={20} />
-                    Minha coleção
-                </Link>
-
-                <Link
-                    href="/wishlist"
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-gray-100"
-                >
-                    <Star size={20} />
-                    Wishlist
-                </Link>
-
-                <Link
-                    href="/market"
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-gray-100"
-                >
-                    <ChartColumn size={20} />
-                    Mercado
-                </Link>
-
-                <Link
-                    href="/settings"
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-gray-100"
-                >
-                    <Settings size={20} />
-                    Configurações
-                </Link>
-
+                    return (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                                "flex items-center gap-3 rounded-lg px-4 py-3 font-medium transition-colors",
+                                isActive
+                                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
+                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            )}
+                        >
+                            <Icon size={20} />
+                            {link.label}
+                        </Link>
+                    );
+                })}
             </nav>
-
         </aside>
     );
 }
@@ -2228,120 +2896,8 @@ export {
 }
 </file>
 
-<file path="frontend/src/hooks/useCollection.ts">
-import { useEffect, useState } from "react";
-import { PokemonCard } from "@/types/pokemon-card";
-import { CollectionCard } from "@/types/collection-card";
-import { useCollectionStore } from "@/store/collectionStore";
-import { getPokemonCached } from "@/services/pokemonCache";
-
-export interface CollectionView {
-    collection: CollectionCard;
-    pokemon: PokemonCard;
-}
-
-export function useCollection() {
-    const {
-        cards,
-        removeCard,
-    } = useCollectionStore();
-
-    const [collectionView, setCollectionView] = useState<
-        CollectionView[]
-    >([]);
-
-    useEffect(() => {
-        const load = async () => {
-            console.time("useCollection");
-            try {
-                console.log("Carregando coleção...");
-
-                const data = await Promise.all(
-                    cards.map(async (collection) => {
-                        console.log("Buscando", collection.pokemonCardId);
-
-                        const pokemon = await getPokemonCached(
-                            collection.pokemonCardId
-                        );
-
-                        if (!pokemon) return null;
-
-                        return {
-                            collection,
-                            pokemon,
-                        };
-                    })
-                );
-
-                console.log("Resultado:", data);
-
-                setCollectionView(
-                    data.filter(
-                        (item): item is CollectionView => item !== null
-                    )
-                );
-            } catch (error) {
-                console.error("Erro no useCollection:", error);
-            } finally {
-                console.timeEnd("useCollection");
-            }
-        };
-
-        load();
-    }, [cards]);
-    const totalCards = collectionView.length;
-
-    const totalValue = collectionView.reduce(
-        (total, item) => total + (item.collection.acquisitionValue ?? 0),
-        0
-    );
-
-    const uniquePokemon = new Set<number>();
-
-    collectionView.forEach((item) => {
-        item.pokemon.nationalPokedexNumbers?.forEach((number) => {
-            uniquePokemon.add(number);
-        });
-    });
-
-    const pokedexCount = uniquePokemon.size;
-
-    const totalPokemon = 1025;
-
-    const pokedexProgress = Number(
-        ((pokedexCount / totalPokemon) * 100).toFixed(1)
-    );
-
-    return {
-        collectionView,
-        totalCards,
-        totalValue,
-
-        pokedexCount,
-        totalPokemon,
-        pokedexProgress,
-
-        removeCard,
-    };
-}
-</file>
-
 <file path="frontend/src/lib/formatCardNumber.ts">
 
-</file>
-
-<file path="frontend/src/lib/formatCurrency.ts">
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-}
-
-export function parseCurrency(value: string): number {
-  const numbers = value.replace(/\D/g, "");
-  return Number(numbers) / 100;
-}
 </file>
 
 <file path="frontend/src/lib/getGeneration.ts">
@@ -2417,64 +2973,81 @@ export function cn(...inputs: ClassValue[]) {
 
 <file path="frontend/src/services/collectionService.ts">
 import { CollectionCard } from "@/types/collection-card";
+import { supabase } from "@/lib/supabase";
 
 const STORAGE_KEY = "carddex_collection";
 
+// Mantido síncrono para não quebrar outros arquivos (como o pokemonCache.ts)
 export function getCards(): CollectionCard[] {
   if (typeof window === "undefined") {
     return [];
   }
-
   const data = window.localStorage.getItem(STORAGE_KEY);
-
   if (!data) {
     return [];
   }
-
   return JSON.parse(data);
 }
 
-export function saveCard(card: CollectionCard) {
-  const cards = getCards();
+// Funções assíncronas para interagir com o Supabase
+export async function fetchCardsFromSupabase(): Promise<CollectionCard[]> {
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (!user) return [];
 
-  cards.push(card);
+  const { data, error } = await supabase
+    .from("collection")
+    .select("*")
+    .eq("user_id", user.id);
 
-  window.localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(cards)
-  );
+  if (error) {
+    console.error("Erro ao buscar cartas do Supabase:", error.message);
+    return [];
+  }
+
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    pokemonCardId: row.pokemon_card_id,
+    language: row.language,
+    condition: row.condition,
+    acquisitionValue: row.acquisition_value,
+    acquisitionDate: row.acquisition_date,
+    notes: row.notes,
+    createdAt: row.created_at || new Date().toISOString(), // Adicionado para satisfazer a tipagem
+  }));
+}
+export async function saveCardToSupabase(card: CollectionCard) {
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData?.user;
+  if (!user) return;
+
+  await supabase.from("collection").insert({
+    id: card.id,
+    user_id: user.id,
+    pokemon_card_id: card.pokemonCardId,
+    language: card.language || "PT",
+    condition: card.condition || "NM",
+    acquisition_value: card.acquisitionValue || 0,
+    acquisition_date: card.acquisitionDate || new Date().toISOString(),
+    notes: card.notes || "",
+  });
 }
 
-export function deleteCard(id: string) {
-  const cards = getCards().filter(
-    (card) => card.id !== id
-  );
-
-  window.localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(cards)
-  );
+export async function deleteCardFromSupabase(id: string) {
+  await supabase.from("collection").delete().eq("id", id);
 }
 
-export function updateCard(card: CollectionCard) {
-  const cards = getCards();
-
-  const index = cards.findIndex(
-    (item) => item.id === card.id
-  );
-
-  if (index === -1) return;
-
-  cards[index] = card;
-
-  window.localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(cards)
-  );
-}
-
-export function clearCollection() {
-  window.localStorage.removeItem(STORAGE_KEY);
+export async function updateCardInSupabase(card: CollectionCard) {
+  await supabase
+    .from("collection")
+    .update({
+      language: card.language,
+      condition: card.condition,
+      acquisition_value: card.acquisitionValue,
+      acquisition_date: card.acquisitionDate,
+      notes: card.notes,
+    })
+    .eq("id", card.id);
 }
 </file>
 
@@ -2482,6 +3055,8 @@ export function clearCollection() {
 import { PokemonCard } from "@/types/pokemon-card";
 
 const BASE_URL = "https://api.pokemontcg.io/v2";
+
+const API_KEY = process.env.NEXT_PUBLIC_POKEMON_TCG_API_KEY || "";
 
 interface SearchResponse {
   data: PokemonCard[];
@@ -2492,49 +3067,72 @@ export async function searchCards(search: string): Promise<PokemonCard[]> {
 
   if (!term) return [];
 
+  // Se for um ID exato vindo da coleção (ex: "me4-121"), tenta buscar direto
+  if (term.includes("-") || (term.length <= 15 && !term.includes(" ") && !term.includes("/"))) {
+    try {
+      const card = await getCardById(term);
+      if (card) return [card];
+    } catch (e) {
+      // Ignora e continua para a busca normal se falhar
+    }
+  }
+
   let query = "";
 
-  // Pesquisa por número
-  if (/^\d+$/.test(term)) {
-    query = `number:${term}`;
+  // 💡 SUA LÓGICA: Aceita "199" ou o formato completo "199/165"
+  if (/^\d+(\/\d+)?$/.test(term)) {
+    const apenasONumero = term.split("/")[0];
+    query = `number:${apenasONumero}`;
+  } else {
+    const safeTerm = term.replace(/["']/g, "");
+    query = `name:"${safeTerm}*"`;
   }
 
-  // Qualquer outra coisa pesquisa por nome
-  else {
-    query = `name:"${term}*"`;
+  try {
+    const response = await fetch(
+      `${BASE_URL}/cards?q=${encodeURIComponent(query)}&pageSize=250`,
+      {
+        headers: {
+          "X-Api-Key": API_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.warn("Erro na API do Pokémon TCG. Status:", response.status);
+      return [];
+    }
+
+    const data: SearchResponse = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error("Falha ao se conectar com a API:", error);
+    return []; 
   }
-
-  const response = await fetch(
-    `${BASE_URL}/cards?q=${encodeURIComponent(query)}&pageSize=250`
-  );
-
-  if (!response.ok) {
-    return [];
-  }
-
-  const data: SearchResponse = await response.json();
-
-  return data.data;
 }
+
 interface GetCardResponse {
   data: PokemonCard;
 }
 
-export async function getCardById(
-  id: string
-): Promise<PokemonCard | null> {
-  const response = await fetch(
-    `${BASE_URL}/cards/${id}`
-  );
+export async function getCardById(id: string): Promise<PokemonCard | null> {
+  try {
+    const response = await fetch(`${BASE_URL}/cards/${id}`, {
+      headers: {
+        "X-Api-Key": API_KEY
+      }
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: GetCardResponse = await response.json();
+    return data.data;
+  } catch (error) {
+    // Retorna null silenciosamente se houver falha de rede, evitando o "Failed to fetch"
     return null;
   }
-
-  const data: GetCardResponse =
-    await response.json();
-
-  return data.data;
 }
 </file>
 
@@ -2612,53 +3210,47 @@ import { create } from "zustand";
 import { CollectionCard } from "@/types/collection-card";
 import {
     getCards,
-    saveCard,
-    deleteCard,
-    updateCard as updateCardStorage,
+    fetchCardsFromSupabase,
+    saveCardToSupabase,
+    deleteCardFromSupabase,
+    updateCardInSupabase,
 } from "@/services/collectionService";
 
 interface CollectionStore {
     cards: CollectionCard[];
-
-    addCard: (card: CollectionCard) => void;
-
-    removeCard: (id: string) => void;
-
-    updateCard: (card: CollectionCard) => void;
-
+    fetchCards: () => Promise<void>;
+    addCard: (card: CollectionCard) => Promise<void>;
+    removeCard: (id: string) => Promise<void>;
+    updateCard: (card: CollectionCard) => Promise<void>;
     getCardsByPokemonId: (pokemonCardId: string) => CollectionCard[];
 }
 
 export const useCollectionStore = create<CollectionStore>((set, get) => ({
     cards: getCards(),
 
-    addCard: (card) => {
-        console.log("ANTES:", get().cards.length);
-
-        saveCard(card);
-
-        set((state) => {
-            const updated = [...state.cards, card];
-
-            console.log("DEPOIS:", updated.length);
-
-            return {
-                cards: updated,
-            };
-        });
+    fetchCards: async () => {
+        const remoteCards = await fetchCardsFromSupabase();
+        if (remoteCards.length > 0) {
+            set({ cards: remoteCards });
+        }
     },
 
-    removeCard: (id) => {
-        deleteCard(id);
+    addCard: async (card) => {
+        await saveCardToSupabase(card);
+        set((state) => ({
+            cards: [...state.cards, card],
+        }));
+    },
 
+    removeCard: async (id) => {
+        await deleteCardFromSupabase(id);
         set((state) => ({
             cards: state.cards.filter((card) => card.id !== id),
         }));
     },
 
-    updateCard: (updatedCard) => {
-        updateCardStorage(updatedCard);
-
+    updateCard: async (updatedCard) => {
+        await updateCardInSupabase(updatedCard);
         set((state) => ({
             cards: state.cards.map((card) =>
                 card.id === updatedCard.id ? updatedCard : card
@@ -2668,6 +3260,24 @@ export const useCollectionStore = create<CollectionStore>((set, get) => ({
 
     getCardsByPokemonId: (pokemonCardId) =>
         get().cards.filter((card) => card.pokemonCardId === pokemonCardId),
+}));
+</file>
+
+<file path="frontend/src/store/uiStore.ts">
+import { create } from "zustand";
+
+interface UiState {
+  isSearchModalOpen: boolean;
+  modalTarget: "collection" | "wishlist" | "trades"; // Adicionado "trades"
+  openSearchModal: (target?: "collection" | "wishlist" | "trades") => void;
+  closeSearchModal: () => void;
+}
+
+export const useUiStore = create<UiState>((set) => ({
+  isSearchModalOpen: false,
+  modalTarget: "collection",
+  openSearchModal: (target = "collection") => set({ isSearchModalOpen: true, modalTarget: target }),
+  closeSearchModal: () => set({ isSearchModalOpen: false }),
 }));
 </file>
 
@@ -2704,47 +3314,16 @@ export interface CollectionCard {
 }
 </file>
 
-<file path="frontend/src/types/pokemon-card.ts">
-export interface PokemonCard {
-  id: string;
-
-  name: string;
-
-  number: string;
-
-  images: {
-    small: string;
-    large: string;
-  };
-
-  nationalPokedexNumbers?: number[];
-
-  rarity?: string;
-
-  supertype: string;
-
-  subtypes: string[];
-
-set: {
-    id: string;
-
-    name: string;
-
-    series: string;
-
-    printedTotal: number;
-
-    ligaEdition?: string;
-}
-}
-</file>
-
 <file path="frontend/src/types/price.history.ts">
 
 </file>
 
 <file path="frontend/src/types/wishlist-card.ts">
-
+export interface WishlistCard {
+  id: string;
+  pokemonCardId: string;
+  createdAt: string;
+}
 </file>
 
 <file path="frontend/.gitignore">
@@ -2962,6 +3541,196 @@ Sistema para gerenciamento de coleção de cartas Pokémon.
 - Estatísticas
 </file>
 
+<file path="frontend/src/app/collection/page.tsx">
+"use client";
+
+import { Search, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useMemo, useState } from "react";
+import { useCollection } from "@/hooks/useCollection";
+import { CollectionCard } from "@/components/collection/CollectionCard";
+import { AddCardDialog } from "@/components/collection/AddCardDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CollectionCard as CollectionCardType } from "@/types/collection-card";
+import { PokemonCard } from "@/types/pokemon-card";
+import { useUiStore } from "@/store/uiStore";
+import { getGeneration } from "@/lib/getGeneration"; // ← Importamos a função mágica aqui!
+
+type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc";
+
+export default function CollectionPage() {
+  const [localSearch, setLocalSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
+  const [genFilter, setGenFilter] = useState("all"); // ← Novo estado para a Geração
+  
+  const [editingCard, setEditingCard] = useState<CollectionCardType | null>(null);
+  const [selectedCardForEdit, setSelectedCardForEdit] = useState<PokemonCard | null>(null);
+
+  const { collectionView, removeCard } = useCollection();
+  
+  const openSearchModal = useUiStore((state) => state.openSearchModal);
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Deseja realmente excluir esta carta?")) return;
+    removeCard(id);
+  };
+
+  const handleEdit = (id: string) => {
+    const card = collectionView.find((item) => item.collection.id === id);
+    if (!card) return;
+    setEditingCard(card.collection);
+    setSelectedCardForEdit(card.pokemon);
+  };
+
+  const filteredAndSortedCollection = useMemo(() => {
+    let result = collectionView;
+
+    // 1. Filtro por Geração
+    if (genFilter !== "all") {
+      const targetGen = Number(genFilter);
+      result = result.filter(({ pokemon }) => {
+        const dexNum = pokemon.nationalPokedexNumbers?.[0];
+        if (!dexNum) return false; // Se não tem número (ex: Treinadores), esconde
+        return getGeneration(dexNum) === targetGen;
+      });
+    }
+
+    // 2. Filtro por Texto (Nome, número, set)
+    const term = localSearch.trim().toLowerCase();
+    if (term) {
+      result = result.filter(({ pokemon }) => {
+        const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
+        return (
+          pokemon.name.toLowerCase().includes(term) ||
+          pokemon.number.toLowerCase().includes(term) ||
+          fullNumber.includes(term) ||
+          pokemon.set.name.toLowerCase().includes(term)
+        );
+      });
+    }
+
+    // 3. Ordenação
+    return [...result].sort((a, b) => {
+      if (sortOrder === "dateAsc") {
+        return new Date(a.collection.createdAt).getTime() - new Date(b.collection.createdAt).getTime();
+      }
+      if (sortOrder === "dateDesc") {
+        return new Date(b.collection.createdAt).getTime() - new Date(a.collection.createdAt).getTime();
+      }
+
+      const dexA = a.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
+      const dexB = b.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
+
+      if (sortOrder === "pokedexAsc") {
+        return dexA - dexB;
+      }
+      return dexB - dexA;
+    });
+  }, [collectionView, localSearch, sortOrder, genFilter]);
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <Input
+            placeholder="Pesquisar na sua coleção..."
+            className="pl-10"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          {/* Menu de Geração */}
+          <select
+            value={genFilter}
+            onChange={(e) => setGenFilter(e.target.value)}
+            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="all">Todas as Gerações</option>
+            <option value="1">Gen 1 (Kanto)</option>
+            <option value="2">Gen 2 (Johto)</option>
+            <option value="3">Gen 3 (Hoenn)</option>
+            <option value="4">Gen 4 (Sinnoh)</option>
+            <option value="5">Gen 5 (Unova)</option>
+            <option value="6">Gen 6 (Kalos)</option>
+            <option value="7">Gen 7 (Alola)</option>
+            <option value="8">Gen 8 (Galar)</option>
+            <option value="9">Gen 9 (Paldea)</option>
+          </select>
+
+          {/* Menu de Ordenação original */}
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as SortOption)}
+            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="dateAsc">Mais antigas (Padrão)</option>
+            <option value="dateDesc">Mais recentes</option>
+            <option value="pokedexAsc">Pokédex (Crescente)</option>
+            <option value="pokedexDesc">Pokédex (Decrescente)</option>
+          </select>
+        </div>
+
+        <Button className="gap-2" onClick={openSearchModal}>
+          <Plus size={18} />
+          Adicionar Carta
+        </Button>
+      </div>
+
+      {collectionView.length === 0 ? (
+        <div className="rounded-xl border bg-card p-12 text-center">
+          <h2 className="text-xl font-semibold">Nenhuma carta cadastrada</h2>
+          <p className="mt-2 text-muted-foreground">
+            Sua coleção aparecerá aqui assim que você adicionar sua primeira carta.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+          {filteredAndSortedCollection.map(({ collection, pokemon }) => (
+            <CollectionCard
+              key={collection.id}
+              collection={collection}
+              pokemon={pokemon}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Modal de Edição */}
+      <Dialog
+        open={!!editingCard}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingCard(null);
+            setSelectedCardForEdit(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Editar Carta</DialogTitle>
+            <DialogDescription>Altere os detalhes da sua carta.</DialogDescription>
+          </DialogHeader>
+          <AddCardDialog
+            card={selectedCardForEdit}
+            editingCard={editingCard}
+            onSuccess={() => {
+              setEditingCard(null);
+              setSelectedCardForEdit(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+</file>
+
 <file path="frontend/src/app/globals.css">
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -3095,123 +3864,481 @@ Sistema para gerenciamento de coleção de cartas Pokémon.
 }
 </file>
 
-<file path="frontend/src/app/layout.tsx">
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "sonner";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Topbar } from "@/components/layout/Topbar";
-import { GlobalModals } from "@/components/layout/GlobalModals";
+<file path="frontend/src/components/collection/AddCardDialog.tsx">
+"use client";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { useEffect, useState } from "react";
+import { PokemonCard } from "@/types/pokemon-card";
+import { CardCondition, CardLanguage, CollectionCard as CollectionCardType } from "@/types/collection-card";
+import { useCollectionStore } from "@/store/collectionStore";
+import { useWishlistStore } from "@/store/wishlistStore";
+import { savePokemonInCache } from "@/services/pokemonCache";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ConditionSelector } from "./ConditionSelector";
+import { PriceInput } from "./PriceInput";
+import { cn } from "@/lib/utils";
+import { Star } from "lucide-react";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+interface AddCardDialogProps {
+  card: PokemonCard | null;
+  editingCard: CollectionCardType | null;
+  onSuccess: () => void;
+}
 
-export const metadata: Metadata = {
-  title: "CardDex",
-  description: "Gerenciador de Coleção de Cartas Pokémon",
-};
+export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogProps) {
+  const [condition, setCondition] = useState<CardCondition>("NM");
+  const [language, setLanguage] = useState<CardLanguage>("PT");
+  const [acquisitionValue, setAcquisitionValue] = useState("");
+  const [acquisitionDate, setAcquisitionDate] = useState("");
+  const [notes, setNotes] = useState("");
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  const [dadosMercado, setDadosMercado] = useState<any>(null);
+  const [carregandoMercado, setCarregandoMercado] = useState(false);
+
+  const { addCard, updateCard } = useCollectionStore();
+  const { addItem: addToWishlist } = useWishlistStore();
+
+  useEffect(() => {
+    if (!card) return;
+
+    const buscarPrecoMercado = async () => {
+      setCarregandoMercado(true);
+      try {
+        const res = await fetch(`/api/tcg?id=${card.id}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setDadosMercado(data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do mercado:", error);
+      } finally {
+        setCarregandoMercado(false);
+      }
+    };
+
+    buscarPrecoMercado();
+  }, [card]);
+
+  useEffect(() => {
+    if (!editingCard) {
+      setCondition("NM");
+      setLanguage("PT");
+      setAcquisitionValue("");
+      setAcquisitionDate(new Date().toISOString().split("T")[0]);
+      setNotes("");
+      return;
+    }
+
+    setCondition(editingCard.condition);
+    setLanguage(editingCard.language);
+    setAcquisitionValue(editingCard.acquisitionValue?.toString() ?? "");
+    setAcquisitionDate(editingCard.acquisitionDate ?? "");
+    setNotes(editingCard.notes ?? "");
+  }, [editingCard]);
+
+  const handleSaveCollection = () => {
+    if (!card) return;
+
+    const baseCardData = {
+      condition,
+      language,
+      acquisitionValue: acquisitionValue ? Number(acquisitionValue) : undefined,
+      acquisitionDate: acquisitionDate || undefined,
+      notes: notes || undefined,
+    };
+
+    if (editingCard) {
+      updateCard({
+        ...editingCard,
+        ...baseCardData,
+      });
+      toast.success("Carta atualizada com sucesso!");
+    } else {
+      savePokemonInCache(card);
+      addCard({
+        id: crypto.randomUUID(),
+        pokemonCardId: card.id,
+        createdAt: new Date().toISOString(),
+        ...baseCardData,
+      });
+      toast.success("Carta adicionada à Coleção!");
+    }
+
+    onSuccess();
+  };
+
+  const handleSaveWishlist = () => {
+    if (!card) return;
+
+    savePokemonInCache(card);
+    addToWishlist({
+      id: crypto.randomUUID(),
+      pokemonCardId: card.id,
+      createdAt: new Date().toISOString(),
+    });
+
+    toast.success(`${card.name} adicionada à sua Wishlist!`);
+    onSuccess();
+  };
+
+  if (!card) return null;
+
+  const languages: { id: CardLanguage; label: string }[] = [
+    { id: "PT", label: "Português" },
+    { id: "EN", label: "Inglês" },
+    { id: "JP", label: "Japonês" },
+  ];
+
+  const temPreco = dadosMercado && dadosMercado.prices.usd > 0;
+
   return (
-    <html
-      lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="h-full">
-        <div className="flex h-screen bg-slate-50 overflow-hidden">
-          {/* Sidebar Global e Fixa */}
-          <Sidebar />
+    <div className="space-y-6 text-foreground">
+      {/* Card de Apresentação da Carta adaptado para Dark Mode */}
+      <div className="flex gap-4 rounded-xl border border-border bg-card p-4 shadow-sm items-stretch">
+        <img src={card.images.small} alt={card.name} className="h-36 rounded-md object-contain drop-shadow-md" />
 
-          {/* Área Principal (Topbar + Conteúdo da Página) */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <Topbar />
-            
-            {/* O scroll acontece apenas aqui dentro */}
-            <main className="flex-1 overflow-y-auto p-8">
-              <div className="mx-auto max-w-7xl">
-                {children}
+        <div className="flex-1 flex flex-col justify-between py-1">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">{card.name}</h2>
+            <p className="text-sm font-medium text-muted-foreground mt-1">
+              {card.set.name} • #{card.number}/{card.set.printedTotal}
+            </p>
+          </div>
+
+          <div className={cn(
+            "mt-3 rounded-lg border p-3 shadow-sm transition-colors",
+            temPreco ? "border-emerald-500/30 bg-emerald-950/20" : "border-border bg-background"
+          )}>
+            <p className={cn(
+              "text-[10px] font-bold uppercase tracking-wider",
+              temPreco ? "text-emerald-400" : "text-muted-foreground"
+            )}>
+              Média Global (TCGPlayer)
+            </p>
+
+            {carregandoMercado ? (
+              <div className="h-7 w-32 animate-pulse rounded bg-muted mt-1" />
+            ) : temPreco ? (
+              <div className="mt-1 flex flex-col">
+                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{dadosMercado.prices.brlText}</span>
+                <span className="text-xs font-semibold text-emerald-600/70 dark:text-emerald-400/70 mt-0.5">
+                  {dadosMercado.prices.usdText} (Dólar a R$ {dadosMercado.cotacaoDolarUsada?.toFixed(2).replace('.', ',')})
+                </span>
               </div>
-            </main>
+            ) : (
+              <div className="mt-1 flex flex-col">
+                <span className="text-lg font-bold text-muted-foreground">Preço indisponível</span>
+                <span className="text-xs font-medium text-muted-foreground mt-1">Sem registros recentes globais.</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium leading-none text-foreground">Condição da Carta</label>
+          <ConditionSelector value={condition} onChange={setCondition} />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium leading-none text-foreground">Idioma</label>
+          <div className="flex gap-2">
+            {languages.map((lang) => (
+              <button
+                key={lang.id}
+                type="button"
+                onClick={() => setLanguage(lang.id)}
+                className={cn(
+                  "flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-all",
+                  language === lang.id
+                    ? "bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 shadow-sm"
+                    : "bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground border-border"
+                )}
+              >
+                {lang.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Utilitários Globais invisíveis até serem chamados */}
-        <GlobalModals />
-        <Toaster richColors position="bottom-right" />
-      </body>
-    </html>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none text-foreground">Valor Pago (Opcional)</label>
+            <PriceInput value={acquisitionValue} onChange={setAcquisitionValue} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none text-foreground">Data de Aquisição</label>
+            <Input
+              type="date"
+              className="bg-card text-foreground border-border"
+              value={acquisitionDate}
+              onChange={(e) => setAcquisitionDate(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium leading-none text-foreground">Observações</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            placeholder="Ex: Comprada no evento, tirada no booster de R$ 14,00..."
+            className="flex w-full rounded-md border border-border bg-card text-foreground px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <Button onClick={handleSaveCollection} className="flex-1 font-bold bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200" size="lg">
+          {editingCard ? "Salvar Alterações" : "Adicionar à Coleção"}
+        </Button>
+
+        {!editingCard && (
+          <Button
+            onClick={handleSaveWishlist}
+            variant="outline"
+            className="font-bold border-border bg-card text-indigo-600 dark:text-indigo-400 hover:bg-accent gap-2"
+            size="lg"
+          >
+            <Star size={18} className="fill-indigo-100 text-indigo-600 dark:fill-indigo-950 dark:text-indigo-400" />
+            Wishlist
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
 </file>
 
-<file path="frontend/src/app/page.tsx">
+<file path="frontend/src/components/collection/CardSearchDialog.tsx">
 "use client";
 
-import { StatCard } from "@/components/dashboard/StatCard";
-import { PokedexProgressCard } from "@/components/dashboard/PokedexProgressCard";
-import { getGreeting } from "@/lib/greeting";
-import { useCollection } from "@/hooks/useCollection";
-import { RecentCardsCard } from "@/components/dashboard/RecentCardsCard";
+import { useEffect, useMemo, useState } from "react";
+import { Search, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PokemonCard } from "@/types/pokemon-card";
+import { searchCards } from "@/services/pokemonApi";
+import { CardSearchResults } from "./CardSearchResults";
+import { AddCardDialog } from "./AddCardDialog";
+import { useUiStore } from "@/store/uiStore";
+import { useTrades } from "@/hooks/useTrades";
 
-export default function Home() {
-  const {
-    collectionView,
-    totalCards,
-    totalValue,
-    pokedexCount,
-    totalPokemon,
-    pokedexProgress,
-  } = useCollection();
+interface CardSearchDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) {
+  const modalTarget = useUiStore((state) => state.modalTarget);
+  const { addTrade } = useTrades();
+
+  const [search, setSearch] = useState("");
+  const [apiCards, setApiCards] = useState<PokemonCard[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setSearch("");
+      setApiCards([]);
+      setSelectedCard(null);
+      setLoading(false);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const loadCards = async () => {
+      const term = search.trim();
+      const isNumber = /^\d+$/.test(term);
+      const isFullNumber = /^\d+\/\d+$/.test(term);
+
+      if (term.length < 3 && !isNumber && !isFullNumber) {
+        setApiCards([]);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const result = await searchCards(term);
+        setApiCards(result);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timeout = setTimeout(loadCards, 350);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  const cards = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return [];
+
+    return apiCards.filter((card) => {
+      const fullNumber = `${card.number}/${card.set.printedTotal}`.toLowerCase();
+      return (
+        card.name.toLowerCase().includes(term) ||
+        card.number.toLowerCase().includes(term) ||
+        fullNumber.includes(term) ||
+        card.set.name.toLowerCase().includes(term)
+      );
+    });
+  }, [apiCards, search]);
+
+  const handleSuccess = () => {
+    onOpenChange(false);
+  };
+
+  const handleCardClick = (card: PokemonCard) => {
+    setSelectedCard(card);
+  };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900">
-          {getGreeting()}, Francis 👋
-        </h2>
-        <p className="mt-2 text-gray-600">
-          Bem-vindo ao seu gerenciador de coleção.
-        </p>
-      </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={selectedCard ? "max-w-xl" : "max-w-2xl"}>
+        {!selectedCard ? (
+          <>
+            <DialogHeader>
+              <DialogTitle>
+                {modalTarget === "trades" ? "Adicionar Carta para Troca" : "Adicionar Carta"}
+              </DialogTitle>
+              <DialogDescription>
+                {modalTarget === "trades"
+                  ? "Pesquise uma carta para colocar na sua vitrine de trocas e vendas."
+                  : "Pesquise uma carta Pokémon para adicionar à sua coleção."}
+              </DialogDescription>
+            </DialogHeader>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <StatCard
-          icon="🎴"
-          title="Cartas"
-          value={totalCards.toString()}
-        />
-        <StatCard
-          icon="💰"
-          title="Valor da coleção"
-          value={totalValue.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          })}
-        />
-        <PokedexProgressCard
-          pokedexCount={pokedexCount}
-          totalPokemon={totalPokemon}
-          pokedexProgress={pokedexProgress}
-        />
-      </div>
+            <div className="space-y-6">
+              <div className="relative">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  size={18}
+                />
+                <Input
+                  placeholder="Pesquisar carta (Nome, número, edição)..."
+                  className="pl-10"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  autoFocus
+                />
+              </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentCardsCard cards={collectionView} />
+              <div className="max-h-[450px] overflow-y-auto rounded-lg border">
+                {search.trim().length >= 3 || /^\d+$/.test(search.trim()) ? (
+                  <CardSearchResults
+                    cards={cards}
+                    loading={loading}
+                    onAdd={(card) => handleCardClick(card)}
+                  />
+                ) : (
+                  <div className="p-10 text-center text-muted-foreground">
+                    Digite pelo menos 3 caracteres ou o número da carta.
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div className="space-y-1">
+                <DialogTitle>
+                  {modalTarget === "trades" ? "Definir Preço para Troca" : "Detalhes da Carta"}
+                </DialogTitle>
+                <DialogDescription>
+                  {modalTarget === "trades"
+                    ? "Informe o valor de venda ou deixe em branco para troca."
+                    : "Preencha os dados da sua cópia."}
+                </DialogDescription>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedCard(null)}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar
+              </Button>
+            </DialogHeader>
+
+            {modalTarget === "trades" ? (
+              <TradePriceForm
+                card={selectedCard}
+                onSuccess={handleSuccess}
+              />
+            ) : (
+              <AddCardDialog
+                card={selectedCard}
+                editingCard={null}
+                onSuccess={handleSuccess}
+              />
+            )}
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Sub-componente interno rápido para capturar o preço na hora de adicionar à troca
+function TradePriceForm({
+  card,
+  onSuccess,
+}: {
+  card: PokemonCard;
+  onSuccess: () => void;
+}) {
+  const [price, setPrice] = useState("");
+  const { addTrade } = useTrades();
+
+  const handleSave = async () => {
+    const num = price ? parseFloat(price.replace(",", ".")) : null;
+    await addTrade(card, isNaN(num!) ? null : num);
+    onSuccess();
+  };
+
+  return (
+    <div className="space-y-6 text-foreground">
+      <div className="flex gap-4 rounded-xl border border-border bg-card p-4 items-center">
+        <img
+          src={card.images.small}
+          alt={card.name}
+          className="h-28 object-contain"
+        />
+        <div>
+          <h3 className="font-bold text-lg">{card.name}</h3>
+          <p className="text-xs text-muted-foreground">
+            {card.set.name} • #{card.number}/{card.set.printedTotal}
+          </p>
         </div>
       </div>
+
+      <div className="space-y-2">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Preço de Venda (Opcional - R$)
+        </label>
+
+        <Input
+          placeholder="Ex: 50,00 (Deixe em branco se for apenas troca)"
+          className="bg-card text-foreground border-border"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          autoFocus
+        />
+      </div>
+
+      <Button
+        onClick={handleSave}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+      >
+        Confirmar e Adicionar às Trocas
+      </Button>
     </div>
   );
 }
@@ -3260,189 +4387,579 @@ export function CollectionCard({
 }
 </file>
 
-<file path="frontend/src/components/layout/Topbar.tsx">
-"use client";
+<file path="frontend/src/components/collection/ConditionSelector.tsx">
+import { CardCondition } from "@/types/collection-card";
+import { cn } from "@/lib/utils";
 
-import { Bell, Plus, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { usePathname } from "next/navigation";
-import { useUiStore } from "@/store/uiStore";
+interface ConditionSelectorProps {
+  value: CardCondition;
+  onChange: (value: CardCondition) => void;
+}
 
-const pages = {
-  "/": {
-    title: "Dashboard",
-    subtitle: "Visão geral da sua coleção.",
-  },
-  "/collection": {
-    title: "Minha coleção",
-    subtitle: "Gerencie todas as suas cartas Pokémon.",
-  },
-  "/wishlist": {
-    title: "Wishlist",
-    subtitle: "Cartas que você deseja adquirir.",
-  },
-  "/market": {
-    title: "Mercado",
-    subtitle: "Acompanhe preços e tendências.",
-  },
-  "/settings": {
-    title: "Configurações",
-    subtitle: "Personalize o CardDex.",
-  },
-};
+const conditions: { id: CardCondition; label: string; desc: string; color: string }[] = [
+  { id: "NM", label: "NM", desc: "Near Mint", color: "bg-emerald-100 text-emerald-800 border-emerald-300" },
+  { id: "SP", label: "SP", desc: "Slightly Played", color: "bg-blue-100 text-blue-800 border-blue-300" },
+  { id: "MP", label: "MP", desc: "Moderately Played", color: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  { id: "HP", label: "HP", desc: "Heavily Played", color: "bg-orange-100 text-orange-800 border-orange-300" },
+  { id: "D", label: "D", desc: "Damaged", color: "bg-red-100 text-red-800 border-red-300" },
+];
 
-export function Topbar() {
-  const pathname = usePathname();
-  // Chamamos a ação global
-  const openSearchModal = useUiStore((state) => state.openSearchModal);
-
-  const page =
-    pages[pathname as keyof typeof pages] ?? {
-      title: "CardDex",
-      subtitle: "",
-    };
-
+export function ConditionSelector({ value, onChange }: ConditionSelectorProps) {
   return (
-    <header className="flex items-center justify-between border-b bg-white px-8 py-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{page.title}</h1>
-        <p className="mt-1 text-sm text-slate-500">{page.subtitle}</p>
-      </div>
-
-      <div className="flex items-center gap-3">
-        {/* Dispara o modal de qualquer página */}
-        <Button onClick={openSearchModal}>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar carta
-        </Button>
-
-        <Button variant="outline" size="icon">
-          <Bell className="h-5 w-5" />
-        </Button>
-
-        <Button variant="outline" size="icon">
-          <User className="h-5 w-5" />
-        </Button>
-      </div>
-    </header>
+    <div className="flex flex-wrap gap-2">
+      {conditions.map((cond) => {
+        const isSelected = value === cond.id;
+        
+        return (
+          <button
+            key={cond.id}
+            type="button"
+            onClick={() => onChange(cond.id)}
+            title={cond.desc}
+            className={cn(
+              "flex-1 rounded-md border px-3 py-2 text-sm font-semibold transition-all",
+              isSelected
+                ? `${cond.color} ring-2 ring-ring ring-offset-2`
+                : "bg-background text-muted-foreground hover:bg-muted border-input"
+            )}
+          >
+            {cond.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 </file>
 
-<file path="frontend/src/data/mockCards.ts">
+<file path="frontend/src/components/collection/PriceInput.tsx">
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/lib/formatCurrency";
+
+interface PriceInputProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export function PriceInput({ value, onChange }: PriceInputProps) {
+  // Formata o valor apenas para exibição
+  const displayValue = React.useMemo(() => {
+    if (!value) return "";
+    const numeric = Number(value);
+    if (isNaN(numeric)) return "";
+    return formatCurrency(numeric);
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove tudo que não for número (ex: R$, vírgulas, pontos e letras)
+    const rawValue = e.target.value.replace(/\D/g, "");
+    
+    if (!rawValue) {
+      onChange("");
+      return;
+    }
+
+    // Divide por 100 para criar os centavos matematicamente
+    const numericValue = Number(rawValue) / 100;
+    
+    // Devolve para o estado pai apenas o valor numérico limpo (como string)
+    onChange(numericValue.toString());
+  };
+
+  return (
+    <Input
+      type="text"
+      inputMode="numeric"
+      value={displayValue}
+      onChange={handleChange}
+      placeholder="R$ 0,00"
+      className="font-medium"
+    />
+  );
+}
+</file>
+
+<file path="frontend/src/hooks/useCollection.ts">
+import { useEffect, useState } from "react";
 import { PokemonCard } from "@/types/pokemon-card";
+import { CollectionCard } from "@/types/collection-card";
+import { useCollectionStore } from "@/store/collectionStore";
+import { getPokemonCached } from "@/services/pokemonCache";
 
-export const cards: PokemonCard[] = [
-  {
-    id: "1",
-    name: "Pikachu ex",
-    number: "057",
-    images: {
-      small: "https://via.placeholder.com/80x110",
-      large: "https://via.placeholder.com/300x420",
-    },
+export interface CollectionView {
+    collection: CollectionCard;
+    pokemon: PokemonCard;
+}
 
-    supertype: "Pokémon",
-    subtypes: ["Basic"],
-    set: {
-      id: "surging-sparks",
-      name: "Surging Sparks",
-      series: "Scarlet & Violet",
-      printedTotal: 191,
-    },
-  },
-  {
-    id: "2",
-    name: "Charizard ex",
-    number: "006",
-    images: {
-      small: "https://via.placeholder.com/80x110",
-      large: "https://via.placeholder.com/300x420",
-    },
+export function useCollection() {
+    const { cards, removeCard } = useCollectionStore();
 
-    supertype: "Pokémon",
-    subtypes: ["Basic"],
-    set: {
-      id: "sv151",
-      name: "Scarlet & Violet 151",
-      series: "Scarlet & Violet",
-      printedTotal: 165,
-    },
-  },
-  {
-    id: "3",
-    name: "Umbreon ex",
-    number: "161",
-    images: {
-      small: "https://via.placeholder.com/80x110",
-      large: "https://via.placeholder.com/300x420",
-    },
+    const [collectionView, setCollectionView] = useState<CollectionView[]>([]);
+    
+    // NOSSOS NOVOS ESTADOS FINANCEIROS
+    const [totalInvestido, setTotalInvestido] = useState(0);
+    const [valorMercado, setValorMercado] = useState(0);
+    const [carregandoValores, setCarregandoValores] = useState(true);
 
-    supertype: "Pokémon",
-    subtypes: ["Basic"],
+    useEffect(() => {
+        const load = async () => {
+            setCarregandoValores(true);
+            try {
+                // 1. Busca as cartas no cache/API
+                const data = await Promise.all(
+                    cards.map(async (collection) => {
+                        const pokemon = await getPokemonCached(collection.pokemonCardId);
+                        if (!pokemon) return null;
+                        return { collection, pokemon };
+                    })
+                );
 
-    set: {
-      id: "prismatic",
-      name: "Prismatic Evolutions",
-      series: "Scarlet & Violet",
-      printedTotal: 131,
-    },
-  },
-  {
-    id: "4",
-    name: "Gengar",
-    number: "088",
-    images: {
-      small: "https://via.placeholder.com/80x110",
-      large: "https://via.placeholder.com/300x420",
-    },
+                const validCards = data.filter((item): item is CollectionView => item !== null);
+                setCollectionView(validCards);
 
-    supertype: "Pokémon",
-    subtypes: ["Basic"],
-    set: {
-      id: "temporal",
-      name: "Temporal Forces",
-      series: "Scarlet & Violet",
-      printedTotal: 162,
-    },
-  },
-  {
-    id: "5",
-    name: "Mew ex",
-    number: "151",
-    images: {
-      small: "https://via.placeholder.com/80x110",
-      large: "https://via.placeholder.com/300x420",
-    },
+                // 2. Busca a cotação do dólar para conversão em tempo real
+                let dolarAtual = 5.00; // Fallback de segurança
+                try {
+                    const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
+                    const cotacaoData = await cotacaoRes.json();
+                    dolarAtual = parseFloat(cotacaoData.USDBRL.ask);
+                } catch (e) {
+                    console.error("Falha ao buscar cotação, usando fallback.");
+                }
 
-    supertype: "Pokémon",
-    subtypes: ["Basic"],
-    set: {
-      id: "sv151",
-      name: "Scarlet & Violet 151",
-      series: "Scarlet & Violet",
-      printedTotal: 165,
-    },
-  },
-  {
-    id: "6",
-    name: "Greninja ex",
-    number: "106",
-    images: {
-      small: "https://via.placeholder.com/80x110",
-      large: "https://via.placeholder.com/300x420",
-    },
+                // 3. Faz a matemática da Regra do Híbrido
+                let somaInvestido = 0;
+                let somaMercado = 0;
 
-    supertype: "Pokémon",
-    subtypes: ["Basic"],
-    set: {
-      id: "twilight",
-      name: "Twilight Masquerade",
-      series: "Scarlet & Violet",
-      printedTotal: 167,
-    },
-  },
+                validCards.forEach(({ collection, pokemon }) => {
+                    const pago = collection.acquisitionValue ?? 0;
+                    somaInvestido += pago;
+
+                    let precoGlobalUsd = 0;
+                    const prices = pokemon.tcgplayer?.prices;
+
+                    if (prices) {
+                        for (const key in prices) {
+                            if (prices[key]?.market) {
+                                precoGlobalUsd = prices[key].market;
+                                break;
+                            } else if (prices[key]?.mid && precoGlobalUsd === 0) {
+                                precoGlobalUsd = prices[key].mid;
+                            } else if (prices[key]?.low && precoGlobalUsd === 0) {
+                                precoGlobalUsd = prices[key].low;
+                            }
+                        }
+                    }
+
+                    const precoConvertido = precoGlobalUsd * dolarAtual;
+                    
+                    // O TRUQUE DE MESTRE: Se a API for zero, usamos o valor pago temporariamente para não afundar o gráfico
+                    somaMercado += precoConvertido > 0 ? precoConvertido : pago;
+                });
+
+                setTotalInvestido(somaInvestido);
+                setValorMercado(somaMercado);
+
+            } catch (error) {
+                console.error("Erro no useCollection:", error);
+            } finally {
+                setCarregandoValores(false);
+            }
+        };
+
+        load();
+    }, [cards]);
+
+    const totalCards = collectionView.length;
+    const lucroPrejuizo = valorMercado - totalInvestido;
+
+    const uniquePokemon = new Set<number>();
+    collectionView.forEach((item) => {
+        item.pokemon.nationalPokedexNumbers?.forEach((number) => {
+            uniquePokemon.add(number);
+        });
+    });
+
+    const pokedexCount = uniquePokemon.size;
+    const totalPokemon = 1025;
+    const pokedexProgress = Number(((pokedexCount / totalPokemon) * 100).toFixed(1));
+
+    return {
+        collectionView,
+        totalCards,
+        totalInvestido,
+        valorMercado,
+        lucroPrejuizo,
+        carregandoValores,
+        pokedexCount,
+        totalPokemon,
+        pokedexProgress,
+        removeCard,
+    };
+}
+</file>
+
+<file path="frontend/src/lib/formatCurrency.ts">
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
+}
+
+export function parseCurrency(value: string): number {
+  const numbers = value.replace(/\D/g, "");
+  return Number(numbers) / 100;
+}
+</file>
+
+<file path="frontend/src/types/pokemon-card.ts">
+export interface PokemonCard {
+  id: string;
+  name: string;
+  number: string;
+  images: {
+    small: string;
+    large: string;
+  };
+  nationalPokedexNumbers?: number[];
+  rarity?: string;
+  supertype: string;
+  subtypes: string[];
+  set: {
+    id: string;
+    name: string;
+    series: string;
+    printedTotal: number;
+    ligaEdition?: string;
+  };
+  // ADICIONAMOS ISSO AQUI PARA O NOSSO CÁLCULO FINANCEIRO
+  tcgplayer?: {
+    prices?: any;
+  };
+}
+</file>
+
+<file path="frontend/src/app/layout.tsx">
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Topbar } from "@/components/layout/Topbar";
+import { GlobalModals } from "@/components/layout/GlobalModals";
+import { Toaster } from "sonner";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "CardDex - Gerenciador de Coleção Pokémon",
+  description: "Gerencie sua coleção de cartas Pokémon TCG",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <div className="flex h-screen overflow-hidden bg-background">
+            <Sidebar />
+            <div className="flex flex-col flex-1 h-full overflow-hidden">
+              <Topbar />
+              <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+                {children}
+              </main>
+            </div>
+          </div>
+          <GlobalModals />
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="frontend/src/app/page.tsx">
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useCollectionStore } from "@/store/collectionStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Layers, DollarSign, Globe, TrendingUp } from "lucide-react";
+import { useCollection } from "@/hooks/useCollection";
+import { PokedexProgressCard } from "@/components/dashboard/PokedexProgressCard";
+import { RecentCardsCard } from "@/components/dashboard/RecentCardsCard";
+
+export default function DashboardPage() {
+  const [userName, setUserName] = useState("Treinador");
+
+  const fetchCards = useCollectionStore((state) => state.fetchCards);
+
+  const {
+    collectionView,
+    totalCards,
+    totalInvestido,
+    valorMercado,
+    lucroPrejuizo,
+  } = useCollection();
+
+  useEffect(() => {
+    const initData = async () => {
+      // 1. Pega o nome do usuário logado (inclusive o nome customizado se houver)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.full_name) {
+        const firstName = user.user_metadata.full_name.split(" ")[0];
+        setUserName(firstName);
+      } else if (user?.email) {
+        setUserName(user.email.split("@")[0]);
+      }
+
+      // 2. Carrega as cartas da nuvem
+      await fetchCards();
+    };
+
+    initData();
+  }, [fetchCards]);
+
+  return (
+    <div className="space-y-8 p-6 md:p-8">
+      {/* Saudação */}
+      <div>
+        <h2 className="text-3xl font-extrabold tracking-tight">Boa noite, {userName} 👋</h2>
+        <p className="text-slate-500 mt-1">Bem-vindo ao seu gerenciador de coleção.</p>
+      </div>
+
+      {/* Cards de Métricas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Total de Cartas</CardTitle>
+            <Layers className="h-5 w-5 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalCards}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Valor Investido (Custo)</CardTitle>
+            <DollarSign className="h-5 w-5 text-amber-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              R$ {totalInvestido.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Média de Mercado Atual</CardTitle>
+            <Globe className="h-5 w-5 text-blue-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {valorMercado.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Valorização / Lucro</CardTitle>
+            <TrendingUp className="h-5 w-5 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold ${lucroPrejuizo >= 0
+                  ? "text-emerald-600"
+                  : "text-red-600"
+                }`}
+            >
+              {lucroPrejuizo.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+                signDisplay: "always",
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Seção inferior componentizada */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <RecentCardsCard cards={collectionView} />
+        </div>
+
+        <div>
+          <PokedexProgressCard collectionView={collectionView} />
+        </div>
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="frontend/src/components/layout/Topbar.tsx">
+"use client";
+
+import { useState } from "react";
+import { Bell, Plus, User, Menu, X, House, FolderOpen, Star, Repeat, ChartColumn, Settings, LogOut, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePathname, useRouter } from "next/navigation";
+import { useUiStore } from "@/store/uiStore";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { useTheme } from "next-themes";
+
+const pages = {
+  "/": { title: "Dashboard", subtitle: "Visão geral da sua coleção." },
+  "/collection": { title: "Minha coleção", subtitle: "Gerencie todas as suas cartas." },
+  "/wishlist": { title: "Wishlist", subtitle: "Cartas que você deseja adquirir." },
+  "/trades": { title: "Trocas e Vendas", subtitle: "Gerencie suas duplicatas disponíveis para negócio." },
+  "/market": { title: "Ranking de Valiosas", subtitle: "As cartas mais valiosas da sua coleção." },
+  "/settings": { title: "Configurações", subtitle: "Personalize o CardDex." },
+  "/profile": { title: "Minha Conta", subtitle: "Gerencie as informações da sua conta." },
+};
+
+const links = [
+  { href: "/", icon: House, label: "Dashboard" },
+  { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
+  { href: "/wishlist", icon: Star, label: "Wishlist" },
+  { href: "/trades", icon: Repeat, label: "Trocas" },
+  { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
+  { href: "/settings", icon: Settings, label: "Configurações" },
 ];
+
+export function Topbar() {
+  const pathname = usePathname();
+  const openSearchModal = useUiStore((state) => state.openSearchModal);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+
+  const page = pages[pathname as keyof typeof pages] ?? { title: "CardDex", subtitle: "" };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Erro ao tentar sair da conta.");
+    } else {
+      toast.info("Você saiu da conta.");
+      router.push("/login");
+    }
+  };
+
+  return (
+    <>
+      <header className="flex items-center justify-between border-b bg-background px-4 py-4 md:px-8 md:py-6 relative z-50">
+        <div className="flex items-center gap-3">
+          <button
+            className="md:hidden p-1 text-slate-600 dark:text-slate-300"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+
+          <div>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight">{page.title}</h1>
+            <p className="hidden sm:block mt-1 text-xs md:text-sm text-muted-foreground">{page.subtitle}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Botão principal fixo para abrir o modal de coleção por padrão */}
+          <Button onClick={() => openSearchModal("collection")} className="h-9 px-3 md:px-4 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+            <Plus className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Adicionar carta</span>
+          </Button>
+
+          <Button variant="outline" size="icon" className="h-9 w-9 hidden sm:flex">
+            <Bell className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            title="Minha Conta"
+            onClick={() => router.push("/profile")}
+          >
+            <User className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 relative"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            title="Alternar tema"
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Alternar tema</span>
+          </Button>
+
+          <div className="h-6 w-px bg-border mx-1 hidden sm:block"></div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            title="Sair da conta"
+            className="h-9 w-9 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
+      </header>
+
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-[73px] left-0 right-0 bottom-0 z-40 bg-background border-t p-4 flex flex-col h-[calc(100vh-73px)]">
+          <nav className="space-y-2">
+            {links.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href;
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-4 py-4 font-medium transition-colors",
+                    isActive
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <Icon size={20} />
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+    </>
+  );
+}
 </file>
 
 <file path="frontend/package.json">
@@ -3458,11 +4975,13 @@ export const cards: PokemonCard[] = [
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@supabase/supabase-js": "^2.111.0",
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.25.0",
     "next": "16.2.10",
+    "next-themes": "^0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "shadcn": "^4.13.1",

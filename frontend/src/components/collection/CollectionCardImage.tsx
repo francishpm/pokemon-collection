@@ -9,7 +9,7 @@ export function CollectionCardImage({ pokemon }: Props) {
         <img
             src={pokemon.images.small}
             alt={pokemon.name}
-            className="mx-auto h-72 object-contain transition-transform duration-300 group-hover:scale-105"
+            className="mx-auto h-40 md:h-72 w-full object-contain transition-transform duration-300 group-hover:scale-105"
         />
     );
 }
