@@ -12,13 +12,25 @@ export function getCards(): CollectionCard[] {
 
 export async function fetchCardsFromSupabase(): Promise<CollectionCard[]> {
   const { data: authData } = await supabase.auth.getUser();
+
+  console.log("========== FETCH COLLECTION ==========");
+  console.log("Usuário:", authData.user);
+
   const user = authData?.user;
-  if (!user) return [];
+
+  if (!user) {
+    console.log("❌ Nenhum usuário encontrado.");
+    return [];
+  }
 
   const { data, error } = await supabase
     .from("collection")
     .select("*")
     .eq("user_id", user.id);
+
+  console.log("Erro Supabase:", error);
+  console.log("Quantidade de cartas:", data?.length);
+  console.log("Dados:", data);
 
   if (error) {
     console.error("Erro ao buscar cartas do Supabase:", error.message);
@@ -31,7 +43,7 @@ export async function fetchCardsFromSupabase(): Promise<CollectionCard[]> {
     language: row.language,
     condition: row.condition,
     acquisitionValue: row.acquisition_value,
-    ligaValue: row.liga_value, // <-- NOVO AQUI
+    ligaValue: row.liga_value,
     acquisitionDate: row.acquisition_date,
     notes: row.notes,
     createdAt: row.created_at || new Date().toISOString(),
