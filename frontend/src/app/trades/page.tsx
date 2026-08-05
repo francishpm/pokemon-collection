@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Search, Trash2, Pencil, Plus, ArrowLeftRight } from "lucide-react";
+import { Search, Trash2, Pencil, Plus, ArrowLeftRight, Share2, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTrades } from "@/hooks/useTrades";
 import { useUiStore } from "@/store/uiStore";
-
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function TradesPage() {
     const { tradesView, loading, removeTrade, updatePrice, fetchTrades } = useTrades();
@@ -14,10 +15,29 @@ export default function TradesPage() {
     const [localSearch, setLocalSearch] = useState("");
     const [editingId, setEditingId] = useState<string | null>(null);
     const [tempPrice, setTempPrice] = useState<string>("");
+    
+    // Estados do botão de compartilhamento
+    const [userId, setUserId] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         fetchTrades();
+        // Pega o seu ID para formar o link de compartilhamento
+        supabase.auth.getUser().then(({ data }) => {
+            if (data.user) setUserId(data.user.id);
+        });
     }, [fetchTrades]);
+
+    const handleShare = () => {
+        if (!userId) return;
+        // Monta o link mágico e copia pro seu mouse!
+        const url = `${window.location.origin}/public/trades/${userId}`;
+        navigator.clipboard.writeText(url);
+        
+        setCopied(true);
+        toast.success("Link copiado! Mande para seus amigos.");
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const filteredTrades = useMemo(() => {
         const term = localSearch.trim().toLowerCase();
@@ -54,9 +74,21 @@ export default function TradesPage() {
                     </p>
                 </div>
 
-                <Button onClick={() => openSearchModal("trades")} className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Plus className="mr-2 h-4 w-4" /> Adicionar para Troca
-                </Button>
+                <div className="flex gap-2">
+                    {/* NOVO BOTÃO DE COMPARTILHAR */}
+                    <Button 
+                        onClick={handleShare} 
+                        variant="outline" 
+                        className="gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:border-indigo-800 dark:text-indigo-400"
+                    >
+                        {copied ? <Check size={18} className="text-emerald-500" /> : <Share2 size={18} />}
+                        <span className="hidden sm:inline">{copied ? "Copiado!" : "Copiar Link Público"}</span>
+                    </Button>
+
+                    <Button onClick={() => openSearchModal("trades")} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Plus className="mr-2 h-4 w-4" /> Adicionar para Troca
+                    </Button>
+                </div>
             </div>
 
             {/* Barra de Pesquisa */}

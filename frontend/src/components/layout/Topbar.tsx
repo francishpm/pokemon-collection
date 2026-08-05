@@ -37,6 +37,8 @@ export function Topbar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
+  if (pathname.startsWith("/public")) return null;
+
   const page = pages[pathname as keyof typeof pages] ?? { title: "CardDex", subtitle: "" };
 
   const handleLogout = async () => {

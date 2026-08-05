@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 export function Sidebar() {
     const pathname = usePathname();
 
+    if (pathname.startsWith("/public")) return null;
+
     const links = [
         { href: "/", icon: House, label: "Dashboard" },
         { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
