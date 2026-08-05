@@ -9,34 +9,59 @@ export interface CollectionView {
     pokemon: PokemonCard;
 }
 
+// --- VARIÁVEIS GLOBAIS EM MEMÓRIA ---
+// Isso evita que a tela zere toda vez que você trocar de página
+let globalCollectionView: CollectionView[] = [];
+let globalTotalInvestido = 0;
+let globalValorMercado = 0;
+let alreadyLoaded = false;
+let lastCardsLength = -1;
+
 export function useCollection() {
     const { cards, removeCard } = useCollectionStore();
 
-    const [collectionView, setCollectionView] = useState<CollectionView[]>([]);
-    
-    // NOSSOS NOVOS ESTADOS FINANCEIROS
-    const [totalInvestido, setTotalInvestido] = useState(0);
-    const [valorMercado, setValorMercado] = useState(0);
-    const [carregandoValores, setCarregandoValores] = useState(true);
+    // Iniciamos os estados já com os valores globais em vez de começar do zero
+    const [collectionView, setCollectionView] = useState<CollectionView[]>(globalCollectionView);
+    const [totalInvestido, setTotalInvestido] = useState(globalTotalInvestido);
+    const [valorMercado, setValorMercado] = useState(globalValorMercado);
+    const [carregandoValores, setCarregandoValores] = useState(!alreadyLoaded);
 
     useEffect(() => {
         const load = async () => {
+            // Se as cartas não mudaram de quantidade e já carregamos, não faz de novo!
+            if (alreadyLoaded && cards.length === lastCardsLength) {
+                setCarregandoValores(false);
+                return;
+            }
+
             setCarregandoValores(true);
             try {
-                // 1. Busca as cartas no cache/API
-                const data = await Promise.all(
-                    cards.map(async (collection) => {
+                const data: (CollectionView | null)[] = [];
+
+                // 1. BUSCA EM LOTES PARA PROTEGER A API
+                // Ao invés de mandar 44 pedidos de uma vez, mandamos de 5 em 5
+                const BATCH_SIZE = 5;
+                for (let i = 0; i < cards.length; i += BATCH_SIZE) {
+                    const lote = cards.slice(i, i + BATCH_SIZE);
+                    const promessas = lote.map(async (collection) => {
                         const pokemon = await getPokemonCached(collection.pokemonCardId);
                         if (!pokemon) return null;
                         return { collection, pokemon };
-                    })
-                );
+                    });
+                    
+                    const resultadosLote = await Promise.all(promessas);
+                    data.push(...resultadosLote);
+                    
+                    // Pausa de 500ms entre os lotes para a API do Pokémon não bloquear a gente
+                    if (i + BATCH_SIZE < cards.length) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
 
                 const validCards = data.filter((item): item is CollectionView => item !== null);
-                setCollectionView(validCards);
 
-                // 2. Busca a cotação do dólar para conversão em tempo real
-                let dolarAtual = 5.00; // Fallback de segurança
+                // 2. BUSCA O DÓLAR
+                let dolarAtual = 5.00;
                 try {
                     const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
                     const cotacaoData = await cotacaoRes.json();
@@ -45,7 +70,7 @@ export function useCollection() {
                     console.error("Falha ao buscar cotação, usando fallback.");
                 }
 
-                // 3. Faz a matemática da Regra do Híbrido
+                // 3. MATEMÁTICA
                 let somaInvestido = 0;
                 let somaMercado = 0;
 
@@ -53,11 +78,9 @@ export function useCollection() {
                     const pago = collection.acquisitionValue ?? 0;
                     somaInvestido += pago;
 
-                    // MÁGICA NOVA: Se tem valor da Liga, usa ele e ignora o resto!
                     if (collection.ligaValue && collection.ligaValue > 0) {
                         somaMercado += collection.ligaValue;
                     } else {
-                        // Se não tem valor da liga, tenta a API gringa
                         let precoGlobalUsd = 0;
                         const prices = pokemon.tcgplayer?.prices;
 
@@ -75,12 +98,19 @@ export function useCollection() {
                         }
 
                         const precoConvertido = precoGlobalUsd * dolarAtual;
-                        
-                        // O TRUQUE DE MESTRE: Se a API for zero, usamos o valor pago temporariamente para não afundar o gráfico
                         somaMercado += precoConvertido > 0 ? precoConvertido : pago;
                     }
                 });
 
+                // 4. ATUALIZA O CACHE GLOBAL PARA NÃO SUMIR MAIS
+                globalCollectionView = validCards;
+                globalTotalInvestido = somaInvestido;
+                globalValorMercado = somaMercado;
+                alreadyLoaded = true;
+                lastCardsLength = cards.length;
+
+                // 5. ATUALIZA A TELA
+                setCollectionView(validCards);
                 setTotalInvestido(somaInvestido);
                 setValorMercado(somaMercado);
 
