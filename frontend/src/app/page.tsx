@@ -20,6 +20,7 @@ export default function DashboardPage() {
     totalInvestido,
     valorMercado,
     lucroPrejuizo,
+    carregandoValores, // <-- Adicionamos isso aqui para o aviso funcionar
   } = useCollection();
 
   useEffect(() => {
@@ -42,10 +43,20 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 p-6 md:p-8">
-      {/* Saudação */}
-      <div>
-        <h2 className="text-3xl font-extrabold tracking-tight">Boa noite, {userName} 👋</h2>
-        <p className="text-slate-500 mt-1">Bem-vindo ao seu gerenciador de coleção.</p>
+      {/* Saudação com Status de Carregamento */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight">Boa noite, {userName} 👋</h2>
+          <p className="text-slate-500 mt-1">Bem-vindo ao seu gerenciador de coleção.</p>
+        </div>
+        
+        {/* Mostra esse aviso apenas enquanto as cartas estão sendo processadas pela API */}
+        {carregandoValores && (
+          <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-800/50 animate-pulse w-fit">
+            <div className="w-4 h-4 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm font-semibold">Sincronizando do servidor...</span>
+          </div>
+        )}
       </div>
 
       {/* Cards de Métricas */}
