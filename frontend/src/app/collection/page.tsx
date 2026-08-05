@@ -12,8 +12,9 @@ import { CollectionCard as CollectionCardType } from "@/types/collection-card";
 import { PokemonCard } from "@/types/pokemon-card";
 import { useUiStore } from "@/store/uiStore";
 import { getGeneration } from "@/lib/getGeneration"; 
+import { useCollectionStore } from "@/store/collectionStore"; // <-- Importação adicionada aqui
 
-type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc";
+type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc" | "priceDesc" | "priceAsc";
 type PriceFilterOption = "all" | "has_price" | "no_price";
 
 // Atualizado para 30 cartas por página (5 linhas de 6)
@@ -33,6 +34,13 @@ export default function CollectionPage() {
 
   const { collectionView, removeCard } = useCollection();
   
+  // --- BUSCA OS DADOS DO BANCO AO ABRIR A TELA ---
+  const fetchCards = useCollectionStore((state) => state.fetchCards);
+  useEffect(() => {
+    fetchCards();
+  }, [fetchCards]);
+  // -----------------------------------------------
+
   const openSearchModal = useUiStore((state) => state.openSearchModal);
 
   // Voltar para a página 1 sempre que o usuário pesquisar ou mudar um filtro
@@ -101,6 +109,25 @@ export default function CollectionPage() {
 
     // 4. Ordenação
     return [...result].sort((a, b) => {
+      // Ordenação por preço
+      if (sortOrder === "priceDesc" || sortOrder === "priceAsc") {
+        const getPrice = (item: typeof a) => {
+          if (item.collection.ligaValue && item.collection.ligaValue > 0) return item.collection.ligaValue;
+          let usd = 0;
+          const prices = item.pokemon.tcgplayer?.prices as any;
+          if (prices) {
+            if (prices.market) usd = prices.market;
+            else if (prices.mid) usd = prices.mid;
+            else if (prices.low) usd = prices.low;
+          }
+          return usd > 0 ? usd * 5.00 : (item.collection.acquisitionValue ?? 0);
+        };
+
+        const priceA = getPrice(a);
+        const priceB = getPrice(b);
+        return sortOrder === "priceDesc" ? priceB - priceA : priceA - priceB;
+      }
+
       if (sortOrder === "dateAsc") {
         return new Date(a.collection.createdAt).getTime() - new Date(b.collection.createdAt).getTime();
       }
@@ -168,7 +195,7 @@ export default function CollectionPage() {
             <option value="no_price">Somente Sem Preço API</option>
           </select>
 
-          {/* Menu de Ordenação original */}
+          {/* Menu de Ordenação original e novos */}
           <select
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as SortOption)}
@@ -178,6 +205,8 @@ export default function CollectionPage() {
             <option value="dateDesc">Mais recentes</option>
             <option value="pokedexAsc">Pokédex (Crescente)</option>
             <option value="pokedexDesc">Pokédex (Decrescente)</option>
+            <option value="priceDesc">Maior Valor (Crescente)</option>
+            <option value="priceAsc">Menor Valor (Decrescente)</option>
           </select>
         </div>
 

@@ -9,11 +9,11 @@ export interface CollectionView {
     pokemon: PokemonCard;
 }
 
-// Memória Global para não apagar quando trocar de tela
+// Memória Global
 let globalCollectionView: CollectionView[] = [];
 let globalTotalInvestido = 0;
 let globalValorMercado = 0;
-let lastCardsLength = -1;
+let lastCardsHash = ""; // Agora ele grava a "assinatura" exata dos dados
 
 export function useCollection() {
     const { cards, removeCard } = useCollectionStore();
@@ -21,14 +21,41 @@ export function useCollection() {
     const [collectionView, setCollectionView] = useState<CollectionView[]>(globalCollectionView);
     const [totalInvestido, setTotalInvestido] = useState(globalTotalInvestido);
     const [valorMercado, setValorMercado] = useState(globalValorMercado);
-    const [carregandoValores, setCarregandoValores] = useState(true);
+    
+    const [carregandoValores, setCarregandoValores] = useState(globalCollectionView.length === 0);
 
     useEffect(() => {
         let isMounted = true;
 
         const load = async () => {
-            // Se já carregou tudo e a quantidade não mudou, usa a memória!
-            if (cards.length === lastCardsLength && globalCollectionView.length === cards.length) {
+            // Cria uma "assinatura" dos dados atuais (se o preço mudar, a assinatura muda)
+            const currentHash = JSON.stringify(cards);
+
+            // 1. TENTA RECUPERAR DA SESSÃO
+            if (globalCollectionView.length === 0) {
+                const sessionData = sessionStorage.getItem("carddex_dashboard_cache");
+                if (sessionData) {
+                    const parsed = JSON.parse(sessionData);
+                    // Só usa o cache se absolutamente nenhum dado da carta mudou
+                    if (parsed.cardsHash === currentHash) {
+                        globalCollectionView = parsed.collectionView;
+                        globalTotalInvestido = parsed.totalInvestido;
+                        globalValorMercado = parsed.valorMercado;
+                        lastCardsHash = parsed.cardsHash;
+                        
+                        if (isMounted) {
+                            setCollectionView(globalCollectionView);
+                            setTotalInvestido(globalTotalInvestido);
+                            setValorMercado(globalValorMercado);
+                            setCarregandoValores(false);
+                        }
+                        return; 
+                    }
+                }
+            }
+
+            // Se nada mudou desde a última vez que renderizou, ignora o recálculo
+            if (currentHash === lastCardsHash && globalCollectionView.length > 0) {
                 if (isMounted) setCarregandoValores(false);
                 return;
             }
@@ -53,6 +80,8 @@ export function useCollection() {
                 for (let i = 0; i < cards.length; i += BATCH_SIZE) {
                     const lote = cards.slice(i, i + BATCH_SIZE);
                     
+                    const tempoInicio = performance.now();
+
                     const promessas = lote.map(async (collection) => {
                         const pokemon = await getPokemonCached(collection.pokemonCardId);
                         if (!pokemon) return null;
@@ -60,8 +89,10 @@ export function useCollection() {
                     });
                     
                     const resultadosLote = await Promise.all(promessas);
-                    const validosLote = resultadosLote.filter((item): item is CollectionView => item !== null);
                     
+                    const tempoDecorrido = performance.now() - tempoInicio;
+
+                    const validosLote = resultadosLote.filter((item): item is CollectionView => item !== null);
                     acumuladoCards = [...acumuladoCards, ...validosLote];
 
                     validosLote.forEach(({ collection, pokemon }) => {
@@ -85,24 +116,29 @@ export function useCollection() {
                         }
                     });
 
-                    // A MÁGICA AQUI: Atualiza a tela a cada 5 cartas, dando a sensação visual de contagem
                     if (isMounted) {
                         setCollectionView(acumuladoCards);
                         setTotalInvestido(somaInvestido);
                         setValorMercado(somaMercado);
                     }
 
-                    // Pausa para não irritar a API
-                    if (i + BATCH_SIZE < cards.length) {
+                    if (i + BATCH_SIZE < cards.length && tempoDecorrido > 100) {
                         await new Promise(resolve => setTimeout(resolve, 500));
                     }
                 }
 
-                // Salva o resultado final na memória global
                 globalCollectionView = acumuladoCards;
                 globalTotalInvestido = somaInvestido;
                 globalValorMercado = somaMercado;
-                lastCardsLength = cards.length;
+                lastCardsHash = currentHash; // Grava a assinatura exata
+
+                // Salva na sessão usando a assinatura
+                sessionStorage.setItem("carddex_dashboard_cache", JSON.stringify({
+                    collectionView: globalCollectionView,
+                    totalInvestido: globalTotalInvestido,
+                    valorMercado: globalValorMercado,
+                    cardsHash: lastCardsHash
+                }));
 
             } catch (error) {
                 console.error("Erro no useCollection:", error);
@@ -114,7 +150,7 @@ export function useCollection() {
         if (cards.length > 0) {
             load();
         } else {
-            setCarregandoValores(false);
+            if (isMounted) setCarregandoValores(false);
         }
 
         return () => { isMounted = false; };
