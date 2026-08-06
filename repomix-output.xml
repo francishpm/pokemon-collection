@@ -63,6 +63,10 @@ frontend/
         page.tsx
       profile/
         page.tsx
+      public/
+        trades/
+          [id]/
+            page.tsx
       settings/
         page.tsx
       trades/
@@ -472,159 +476,6 @@ export async function GET(request: Request) {
 }
 </file>
 
-<file path="frontend/src/app/login/page.tsx">
-"use client";
-
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { Mail, Lock, Sparkles, LogIn, UserPlus, User } from "lucide-react";
-
-export default function LoginPage() {
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    if (isRegistering) {
-      // Criação de Conta (enviando o nome junto)
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name, // Salva o nome no banco de dados
-          }
-        }
-      });
-
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Conta criada! Pode entrar.");
-        setIsRegistering(false); // Volta para a tela de login
-      }
-    } else {
-      // Login normal
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error("Erro ao fazer login: Verifique suas credenciais.");
-      } else {
-        toast.success("Bem-vindo de volta!");
-        router.push("/");
-      }
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 absolute inset-0 z-50 p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0 rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm">
-        <div className="h-2 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
-        
-        <CardHeader className="text-center pb-6 pt-8 space-y-3">
-          <div className="mx-auto bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-2 shadow-inner transform rotate-3">
-            <Sparkles className="w-8 h-8 text-blue-600" />
-          </div>
-          <CardTitle className="text-4xl font-extrabold tracking-tight text-slate-900">
-            CardDex
-          </CardTitle>
-          <CardDescription className="text-base font-medium text-slate-500 px-2">
-            {isRegistering ? "Crie sua conta para começar sua jornada." : "Acesse sua coleção e acompanhe o valor das suas cartas."}
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="px-8 pb-8">
-          <form onSubmit={handleAuth} className="space-y-5">
-            
-            {/* Campo Nome só aparece se estiver criando conta */}
-            {isRegistering && (
-              <div className="space-y-2 relative">
-                <label className="text-sm font-bold text-slate-700">Como quer ser chamado?</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <Input
-                    type="text"
-                    placeholder="Seu nome"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
-                    required={isRegistering}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2 relative">
-              <label className="text-sm font-bold text-slate-700">E-mail</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <Input
-                  type="email"
-                  placeholder="treinador@pokemon.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2 relative">
-              <label className="text-sm font-bold text-slate-700">Senha</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-12 bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 pt-6">
-              <Button type="submit" disabled={loading} className="h-12 font-bold text-md bg-blue-600 hover:bg-blue-700 w-full">
-                {loading ? "Aguarde..." : isRegistering ? (
-                  <><UserPlus className="mr-2 h-5 w-5" /> Confirmar Cadastro</>
-                ) : (
-                  <><LogIn className="mr-2 h-5 w-5" /> Entrar na Coleção</>
-                )}
-              </Button>
-              
-              <Button 
-                type="button" 
-                variant="ghost" 
-                onClick={() => setIsRegistering(!isRegistering)} 
-                className="text-slate-500 hover:text-slate-800"
-              >
-                {isRegistering ? "Já tem uma conta? Faça login" : "Não tem conta? Cadastre-se"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-</file>
-
 <file path="frontend/src/app/profile/page.tsx">
 "use client";
 
@@ -843,158 +694,168 @@ export default function ProfilePage() {
 }
 </file>
 
-<file path="frontend/src/app/trades/page.tsx">
+<file path="frontend/src/app/public/trades/[id]/page.tsx">
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { Search, Trash2, Pencil, Plus, ArrowLeftRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { getPokemonCached } from "@/services/pokemonCache";
+import { PokemonCard } from "@/types/pokemon-card";
+import { ArrowLeftRight, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useTrades } from "@/hooks/useTrades";
-import { useUiStore } from "@/store/uiStore";
 
+interface TradeItem {
+    id: string;
+    user_id: string;
+    card_id: string;
+    price: number | null;
+    condition?: string;
+    language?: string;
+}
 
-export default function TradesPage() {
-    const { tradesView, loading, removeTrade, updatePrice, fetchTrades } = useTrades();
-    const openSearchModal = useUiStore((state) => state.openSearchModal);
-    const [localSearch, setLocalSearch] = useState("");
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [tempPrice, setTempPrice] = useState<string>("");
+interface TradeView {
+    trade: TradeItem;
+    pokemon: PokemonCard;
+}
+
+export default function PublicTradesPage() {
+    const params = useParams();
+    const userId = params.id as string; 
+
+    const [trades, setTrades] = useState<TradeView[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
-        fetchTrades();
-    }, [fetchTrades]);
+        let isMounted = true;
 
-    const filteredTrades = useMemo(() => {
-        const term = localSearch.trim().toLowerCase();
-        if (!term) return tradesView;
+        const fetchPublicTrades = async () => {
+            if (!userId) return;
+            
+            try {
+                const { data, error } = await supabase
+                    .from("trades")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .order("created_at", { ascending: false });
 
-        return tradesView.filter(({ pokemon }) => {
-            const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
-            return (
-                pokemon.name.toLowerCase().includes(term) ||
-                pokemon.number.toLowerCase().includes(term) ||
-                fullNumber.includes(term) ||
-                pokemon.set.name.toLowerCase().includes(term)
-            );
-        });
-    }, [tradesView, localSearch]);
+                if (error) throw error;
 
-    const handleSavePrice = (tradeId: string) => {
-        const num = parseFloat(tempPrice.replace(",", "."));
-        updatePrice(tradeId, isNaN(num) ? null : num);
-        setEditingId(null);
-    };
+                if (data && data.length > 0) {
+                    let acumuladoCards: TradeView[] = [];
+
+                    // Busca todas em paralelo mas protegida contra falhas individuais
+                    const promessas = data.map(async (trade) => {
+                        try {
+                            const pokemon = await getPokemonCached(trade.card_id);
+                            if (!pokemon) return null;
+                            return { trade, pokemon };
+                        } catch (e) {
+                            return null; // Se uma falhar, não derruba as outras
+                        }
+                    });
+
+                    const resultados = await Promise.all(promessas);
+                    acumuladoCards = resultados.filter((r): r is TradeView => r !== null);
+
+                    if (isMounted) {
+                        setTrades(acumuladoCards);
+                        setLoading(false);
+                    }
+                } else {
+                    if (isMounted) setLoading(false);
+                }
+            } catch (err) {
+                console.error("Erro ao carregar vitrine:", err);
+                if (isMounted) setLoading(false);
+            }
+        };
+
+        fetchPublicTrades();
+
+        // SEGURANÇA MÁXIMA: Se por algum motivo a API travar, em 2 segundos a tela é liberada à força
+        const timer = setTimeout(() => {
+            if (isMounted) setLoading(false);
+        }, 2000);
+
+        return () => {
+            isMounted = false;
+            clearTimeout(timer);
+        };
+    }, [userId]);
+
+    const filteredTrades = trades.filter(({ pokemon }) => {
+        if (!search) return true;
+        return pokemon.name.toLowerCase().includes(search.toLowerCase());
+    });
 
     return (
-        <div className="space-y-8">
-            {/* Cabeçalho */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                        <ArrowLeftRight className="text-blue-500" size={32} />
-                        Área de Trocas e Vendas
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-12 w-full absolute top-0 left-0 z-[100] overflow-y-auto">
+            <div className="max-w-6xl mx-auto space-y-8">
+                {/* Cabeçalho Público */}
+                <div className="text-center space-y-2 mt-8">
+                    <div className="inline-flex items-center justify-center p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-2">
+                        <ArrowLeftRight className="text-blue-600 dark:text-blue-400" size={32} />
+                    </div>
+                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                        Vitrine de Trocas e Vendas
                     </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Gerencie as cartas excedentes que você deseja negociar.
+                    <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+                        Confira as cartas disponíveis para negócio. Achou algo legal? Entre em contato comigo para fechar acordo!
                     </p>
                 </div>
 
-                <Button onClick={() => openSearchModal("trades")} className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Plus className="mr-2 h-4 w-4" /> Adicionar para Troca
-                </Button>
-            </div>
-
-            {/* Barra de Pesquisa */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                <Input
-                    placeholder="Pesquisar nas suas cartas para troca..."
-                    className="pl-10 h-11 bg-card text-foreground border-border"
-                    value={localSearch}
-                    onChange={(e) => setLocalSearch(e.target.value)}
-                />
-            </div>
-
-            {/* Grid de Cartas */}
-            {loading ? (
-                <p className="text-center text-muted-foreground mt-10">Carregando cartas de troca...</p>
-            ) : tradesView.length === 0 ? (
-                <div className="rounded-xl border border-border bg-card p-12 text-center">
-                    <h2 className="text-xl font-semibold text-foreground">Nenhuma carta à venda ou troca</h2>
-                    <p className="mt-2 text-muted-foreground">Clique em "Adicionar para Troca" para selecionar cartas.</p>
+                {/* Filtro */}
+                <div className="max-w-md mx-auto relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Input
+                        placeholder="Buscar carta na vitrine..."
+                        className="pl-10 h-12 rounded-full border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
-            ) : (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                    {filteredTrades.map(({ trade, pokemon }) => (
-                        <div key={trade.id} className="group relative cursor-pointer rounded-xl border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between">
 
-                            {/* BOTÕES FLUTUANTES (Aparecem no Hover) */}
-                            <div className="absolute right-3 top-3 z-10 flex gap-2 rounded-full bg-black/50 p-2 backdrop-blur-sm opacity-0 transition-all duration-300 group-hover:opacity-100">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 rounded-full border-0 bg-white/20 text-white hover:bg-white/30"
-                                    onClick={() => { setEditingId(trade.id); setTempPrice(trade.price ? trade.price.toString() : ""); }}
-                                >
-                                    <Pencil size={15} />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 rounded-full border-0 bg-red-500/20 text-red-200 hover:bg-red-500/40"
-                                    onClick={() => removeTrade(trade.id)}
-                                >
-                                    <Trash2 size={15} />
-                                </Button>
-                            </div>
-
-                            {/* IMAGEM E INFORMAÇÕES */}
-                            <div>
-                                <img src={pokemon.images.small} alt={pokemon.name} className="mx-auto h-40 md:h-52 w-full object-contain transition-transform duration-300 group-hover:scale-105" />
-
+                {/* Cartas */}
+                {loading && trades.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center mt-12 gap-3 text-slate-500">
+                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <p className="animate-pulse font-medium">Arrumando a vitrine...</p>
+                    </div>
+                ) : trades.length === 0 && !loading ? (
+                    <div className="text-center p-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 mt-8">
+                        <p className="text-slate-500 font-medium">Nenhuma carta disponível no momento.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5 mt-8">
+                        {filteredTrades.map(({ trade, pokemon }) => (
+                            <div key={trade.id} className="relative rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                                <img src={pokemon.images.small} alt={pokemon.name} className="mx-auto h-40 md:h-52 w-full object-contain" />
+                                
                                 <div className="mt-3 flex flex-col items-center gap-1 text-center">
-                                    <h3 className="line-clamp-2 h-11 text-base font-bold leading-5">{pokemon.name}</h3>
-                                    <p className="text-xs text-muted-foreground">
-                                        #{pokemon.number}/{pokemon.set.printedTotal} • {pokemon.set.name}
-                                    </p>
-
-                                    {/* BADGES IDIOMA E CONDIÇÃO */}
+                                    <h3 className="line-clamp-2 h-11 text-sm font-bold leading-5">{pokemon.name}</h3>
+                                    
                                     <div className="flex justify-center gap-2 mt-1">
-                                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
                                             {trade.condition || "NM"}
                                         </span>
-                                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
                                             {trade.language || "PT"}
                                         </span>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* PREÇO */}
-                            <div className="mt-3 flex justify-center">
-                                {editingId === trade.id ? (
-                                    <div className="flex items-center gap-1 w-full">
-                                        <Input
-                                            type="text"
-                                            placeholder="Preço R$"
-                                            className="h-8 text-xs bg-background"
-                                            value={tempPrice}
-                                            onChange={(e) => setTempPrice(e.target.value)}
-                                            autoFocus
-                                        />
-                                        <Button size="sm" className="h-8 text-xs px-2" onClick={() => handleSavePrice(trade.id)}>Salvar</Button>
-                                    </div>
-                                ) : (
-                                    <span className="inline-flex rounded-full bg-green-100 dark:bg-emerald-900/30 px-3 py-1 text-sm font-bold text-green-700 dark:text-emerald-400">
+                                <div className="mt-3 flex justify-center">
+                                    <span className="inline-flex rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-slate-700 dark:text-slate-300">
                                         {trade.price ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca"}
                                     </span>
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -1888,63 +1749,6 @@ export {
 }
 </file>
 
-<file path="frontend/src/components/AuthGuard.tsx">
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-
-export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      // Pede para o Supabase verificar se existe alguém logado
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const isLoginPage = pathname === "/login";
-
-      if (!session && !isLoginPage) {
-        // Sem login e fora da página de login = Chuta para o login
-        router.replace("/login");
-      } else if (session && isLoginPage) {
-        // Já tem login e tentou acessar a tela de login = Manda pro Dashboard
-        router.replace("/");
-      } else {
-        // Tudo certo, libera a catraca
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-
-    // Fica "ouvindo" caso a pessoa clique em um botão de "Sair" (Logout)
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session && pathname !== "/login") {
-        router.replace("/login");
-      }
-    });
-
-    return () => authListener.subscription.unsubscribe();
-  }, [pathname, router]);
-
-  // Tela de carregamento enquanto o guarda-costas verifica o crachá
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  // Libera o conteúdo da página
-  return <>{children}</>;
-}
-</file>
-
 <file path="frontend/src/components/ThemeProvider.tsx">
 "use client"
 
@@ -2602,6 +2406,162 @@ Sistema para gerenciamento de coleção de cartas Pokémon.
 - Estatísticas
 </file>
 
+<file path="frontend/src/app/login/page.tsx">
+"use client";
+
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Mail, Lock, Sparkles, LogIn, UserPlus, User } from "lucide-react";
+
+export default function LoginPage() {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (isRegistering) {
+      // Criação de Conta (enviando o nome junto)
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name, // Salva o nome no banco de dados
+          }
+        }
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Conta criada! Pode entrar.");
+        setIsRegistering(false); // Volta para a tela de login
+      }
+    } else {
+      // Login normal
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error("Erro ao fazer login: Verifique suas credenciais.");
+      } else {
+        toast.success("Bem-vindo de volta!");
+        router.push("/");
+      }
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex min-h-screen w-full items-center justify-center absolute inset-0 z-50 p-4 bg-slate-100 dark:bg-slate-950 transition-colors">
+      {/* Fundo dinâmico que muda entre light e dark */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 via-slate-100 to-purple-100/50 dark:from-slate-900 dark:via-blue-950/20 dark:to-slate-900 transition-colors" />
+      
+      <Card className="w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white/95 dark:bg-card/95 backdrop-blur-md relative z-10 transition-colors">
+        <div className="h-2 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+        
+        <CardHeader className="text-center pb-6 pt-8 space-y-3">
+          <div className="mx-auto bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-2xl flex items-center justify-center mb-2 shadow-inner transform rotate-3 transition-colors">
+            <Sparkles className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          </div>
+          <CardTitle className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-foreground">
+            CardDex
+          </CardTitle>
+          <CardDescription className="text-base font-medium text-slate-500 dark:text-muted-foreground px-2">
+            {isRegistering ? "Crie sua conta para começar sua jornada." : "Acesse sua coleção e acompanhe o valor das suas cartas."}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="px-8 pb-8">
+          <form onSubmit={handleAuth} className="space-y-5">
+            
+            {/* Campo Nome só aparece se estiver criando conta */}
+            {isRegistering && (
+              <div className="space-y-2 relative">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Como quer ser chamado?</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
+                  <Input
+                    type="text"
+                    placeholder="Seu nome"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-10 h-12 bg-slate-50 dark:bg-background border-slate-200 dark:border-input focus-visible:ring-blue-500 dark:focus-visible:ring-blue-500"
+                    required={isRegistering}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 relative">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">E-mail</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
+                <Input
+                  type="email"
+                  placeholder="treinador@pokemon.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-12 bg-slate-50 dark:bg-background border-slate-200 dark:border-input focus-visible:ring-blue-500 dark:focus-visible:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 relative">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Senha</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 h-12 bg-slate-50 dark:bg-background border-slate-200 dark:border-input focus-visible:ring-blue-500 dark:focus-visible:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-6">
+              <Button type="submit" disabled={loading} className="h-12 font-bold text-md bg-blue-600 hover:bg-blue-700 text-white w-full">
+                {loading ? "Aguarde..." : isRegistering ? (
+                  <><UserPlus className="mr-2 h-5 w-5" /> Confirmar Cadastro</>
+                ) : (
+                  <><LogIn className="mr-2 h-5 w-5" /> Entrar na Coleção</>
+                )}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={() => setIsRegistering(!isRegistering)} 
+                className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                {isRegistering ? "Já tem uma conta? Faça login" : "Não tem conta? Cadastre-se"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+</file>
+
 <file path="frontend/src/app/market/page.tsx">
 "use client";
 
@@ -2902,6 +2862,195 @@ export default function SettingsPage() {
       </div>
     </div>
   );
+}
+</file>
+
+<file path="frontend/src/app/trades/page.tsx">
+"use client";
+
+import { useMemo, useState, useEffect } from "react";
+import { Search, Trash2, Pencil, Plus, ArrowLeftRight, Share2, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useTrades } from "@/hooks/useTrades";
+import { useUiStore } from "@/store/uiStore";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+
+export default function TradesPage() {
+    const { tradesView, loading, removeTrade, updatePrice, fetchTrades } = useTrades();
+    const openSearchModal = useUiStore((state) => state.openSearchModal);
+    const [localSearch, setLocalSearch] = useState("");
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [tempPrice, setTempPrice] = useState<string>("");
+    
+    // Estados do botão de compartilhamento
+    const [userId, setUserId] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        fetchTrades();
+        // Pega o seu ID para formar o link de compartilhamento
+        supabase.auth.getUser().then(({ data }) => {
+            if (data.user) setUserId(data.user.id);
+        });
+    }, [fetchTrades]);
+
+    const handleShare = () => {
+        if (!userId) return;
+        // Monta o link mágico e copia pro seu mouse!
+        const url = `${window.location.origin}/public/trades/${userId}`;
+        navigator.clipboard.writeText(url);
+        
+        setCopied(true);
+        toast.success("Link copiado! Mande para seus amigos.");
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const filteredTrades = useMemo(() => {
+        const term = localSearch.trim().toLowerCase();
+        if (!term) return tradesView;
+
+        return tradesView.filter(({ pokemon }) => {
+            const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
+            return (
+                pokemon.name.toLowerCase().includes(term) ||
+                pokemon.number.toLowerCase().includes(term) ||
+                fullNumber.includes(term) ||
+                pokemon.set.name.toLowerCase().includes(term)
+            );
+        });
+    }, [tradesView, localSearch]);
+
+    const handleSavePrice = (tradeId: string) => {
+        const num = parseFloat(tempPrice.replace(",", "."));
+        updatePrice(tradeId, isNaN(num) ? null : num);
+        setEditingId(null);
+    };
+
+    return (
+        <div className="space-y-8">
+            {/* Cabeçalho */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <ArrowLeftRight className="text-blue-500" size={32} />
+                        Área de Trocas e Vendas
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Gerencie as cartas excedentes que você deseja negociar.
+                    </p>
+                </div>
+
+                <div className="flex gap-2">
+                    {/* NOVO BOTÃO DE COMPARTILHAR */}
+                    <Button 
+                        onClick={handleShare} 
+                        variant="outline" 
+                        className="gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:border-indigo-800 dark:text-indigo-400"
+                    >
+                        {copied ? <Check size={18} className="text-emerald-500" /> : <Share2 size={18} />}
+                        <span className="hidden sm:inline">{copied ? "Copiado!" : "Copiar Link Público"}</span>
+                    </Button>
+
+                    <Button onClick={() => openSearchModal("trades")} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Plus className="mr-2 h-4 w-4" /> Adicionar para Troca
+                    </Button>
+                </div>
+            </div>
+
+            {/* Barra de Pesquisa */}
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                <Input
+                    placeholder="Pesquisar nas suas cartas para troca..."
+                    className="pl-10 h-11 bg-card text-foreground border-border"
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
+                />
+            </div>
+
+            {/* Grid de Cartas */}
+            {loading ? (
+                <p className="text-center text-muted-foreground mt-10">Carregando cartas de troca...</p>
+            ) : tradesView.length === 0 ? (
+                <div className="rounded-xl border border-border bg-card p-12 text-center">
+                    <h2 className="text-xl font-semibold text-foreground">Nenhuma carta à venda ou troca</h2>
+                    <p className="mt-2 text-muted-foreground">Clique em "Adicionar para Troca" para selecionar cartas.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                    {filteredTrades.map(({ trade, pokemon }) => (
+                        <div key={trade.id} className="group relative cursor-pointer rounded-xl border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between">
+
+                            {/* BOTÕES FLUTUANTES (Aparecem no Hover) */}
+                            <div className="absolute right-3 top-3 z-10 flex gap-2 rounded-full bg-black/50 p-2 backdrop-blur-sm opacity-0 transition-all duration-300 group-hover:opacity-100">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-full border-0 bg-white/20 text-white hover:bg-white/30"
+                                    onClick={() => { setEditingId(trade.id); setTempPrice(trade.price ? trade.price.toString() : ""); }}
+                                >
+                                    <Pencil size={15} />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-full border-0 bg-red-500/20 text-red-200 hover:bg-red-500/40"
+                                    onClick={() => removeTrade(trade.id)}
+                                >
+                                    <Trash2 size={15} />
+                                </Button>
+                            </div>
+
+                            {/* IMAGEM E INFORMAÇÕES */}
+                            <div>
+                                <img src={pokemon.images.small} alt={pokemon.name} className="mx-auto h-40 md:h-52 w-full object-contain transition-transform duration-300 group-hover:scale-105" />
+
+                                <div className="mt-3 flex flex-col items-center gap-1 text-center">
+                                    <h3 className="line-clamp-2 h-11 text-base font-bold leading-5">{pokemon.name}</h3>
+                                    <p className="text-xs text-muted-foreground">
+                                        #{pokemon.number}/{pokemon.set.printedTotal} • {pokemon.set.name}
+                                    </p>
+
+                                    {/* BADGES IDIOMA E CONDIÇÃO */}
+                                    <div className="flex justify-center gap-2 mt-1">
+                                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                            {trade.condition || "NM"}
+                                        </span>
+                                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                                            {trade.language || "PT"}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* PREÇO */}
+                            <div className="mt-3 flex justify-center">
+                                {editingId === trade.id ? (
+                                    <div className="flex items-center gap-1 w-full">
+                                        <Input
+                                            type="text"
+                                            placeholder="Preço R$"
+                                            className="h-8 text-xs bg-background"
+                                            value={tempPrice}
+                                            onChange={(e) => setTempPrice(e.target.value)}
+                                            autoFocus
+                                        />
+                                        <Button size="sm" className="h-8 text-xs px-2" onClick={() => handleSavePrice(trade.id)}>Salvar</Button>
+                                    </div>
+                                ) : (
+                                    <span className="inline-flex rounded-full bg-green-100 dark:bg-emerald-900/30 px-3 py-1 text-sm font-bold text-green-700 dark:text-emerald-400">
+                                        {trade.price ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca"}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 }
 </file>
 
@@ -3516,68 +3665,65 @@ export function RecentCardsCard({
 }
 </file>
 
-<file path="frontend/src/components/layout/Sidebar.tsx">
+<file path="frontend/src/components/AuthGuard.tsx">
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-    ChartColumn,
-    FolderOpen,
-    House,
-    Settings,
-    Star,
-    Repeat,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
-export function Sidebar() {
-    const pathname = usePathname();
+export function AuthGuard({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [loading, setLoading] = useState(true);
 
-    const links = [
-        { href: "/", icon: House, label: "Dashboard" },
-        { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
-        { href: "/wishlist", icon: Star, label: "Wishlist" },
-        { href: "/trades", icon: Repeat, label: "Trocas" },
-        { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
-        { href: "/settings", icon: Settings, label: "Configurações" },
-    ];
+  useEffect(() => {
+    const checkAuth = async () => {
+      // Pede para o Supabase verificar se existe alguém logado
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const isLoginPage = pathname === "/login";
+      
+      // NOVA REGRA: Verifica se é uma página pública (nossa vitrine)
+      const isPublicPage = pathname.startsWith("/public");
 
+      if (!session && !isLoginPage && !isPublicPage) {
+        // Sem login, fora da página de login e fora da vitrine = Chuta para o login
+        router.replace("/login");
+      } else if (session && isLoginPage) {
+        // Já tem login e tentou acessar a tela de login = Manda pro Dashboard
+        router.replace("/");
+      } else {
+        // Tudo certo, libera a catraca
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+
+    // Fica "ouvindo" caso a pessoa clique em um botão de "Sair"
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const isPublicPage = pathname.startsWith("/public");
+      
+      if (!session && pathname !== "/login" && !isPublicPage) {
+        router.replace("/login");
+      }
+    });
+
+    return () => authListener.subscription.unsubscribe();
+  }, [pathname, router]);
+
+  // Tela de carregamento enquanto o guarda-costas verifica o crachá
+  if (loading) {
     return (
-        <aside className="hidden md:flex h-screen w-72 shrink-0 flex-col border-r border-border bg-background p-8">
-            <div>
-                <h1 className="text-4xl font-bold text-blue-600 dark:text-blue-500">
-                    CardDex
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    Sua coleção Pokémon
-                </p>
-            </div>
-
-            <nav className="mt-12 space-y-2">
-                {links.map((link) => {
-                    const Icon = link.icon;
-                    const isActive = pathname === link.href;
-
-                    return (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className={cn(
-                                "flex items-center gap-3 rounded-lg px-4 py-3 font-medium transition-colors",
-                                isActive
-                                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
-                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                            )}
-                        >
-                            <Icon size={20} />
-                            {link.label}
-                        </Link>
-                    );
-                })}
-            </nav>
-        </aside>
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      </div>
     );
+  }
+
+  // Libera o conteúdo da página
+  return <>{children}</>;
 }
 </file>
 
@@ -3833,315 +3979,6 @@ export interface WishlistCard {
   id: string;
   pokemonCardId: string;
   createdAt: string;
-}
-</file>
-
-<file path="frontend/src/app/collection/page.tsx">
-"use client";
-
-import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useMemo, useState, useEffect } from "react";
-import { useCollection } from "@/hooks/useCollection";
-import { CollectionCard } from "@/components/collection/CollectionCard";
-import { AddCardDialog } from "@/components/collection/AddCardDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { CollectionCard as CollectionCardType } from "@/types/collection-card";
-import { PokemonCard } from "@/types/pokemon-card";
-import { useUiStore } from "@/store/uiStore";
-import { getGeneration } from "@/lib/getGeneration"; 
-
-type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc";
-type PriceFilterOption = "all" | "has_price" | "no_price";
-
-// Atualizado para 30 cartas por página (5 linhas de 6)
-const ITEMS_PER_PAGE = 30; 
-
-export default function CollectionPage() {
-  const [localSearch, setLocalSearch] = useState("");
-  const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
-  const [genFilter, setGenFilter] = useState("all"); 
-  const [priceFilter, setPriceFilter] = useState<PriceFilterOption>("all");
-  
-  // Estados para Paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  const [editingCard, setEditingCard] = useState<CollectionCardType | null>(null);
-  const [selectedCardForEdit, setSelectedCardForEdit] = useState<PokemonCard | null>(null);
-
-  const { collectionView, removeCard } = useCollection();
-  
-  const openSearchModal = useUiStore((state) => state.openSearchModal);
-
-  // Voltar para a página 1 sempre que o usuário pesquisar ou mudar um filtro
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [localSearch, sortOrder, genFilter, priceFilter]);
-
-  const handleDelete = (id: string) => {
-    if (!confirm("Deseja realmente excluir esta carta?")) return;
-    removeCard(id);
-  };
-
-  const handleEdit = (id: string) => {
-    const card = collectionView.find((item) => item.collection.id === id);
-    if (!card) return;
-    setEditingCard(card.collection);
-    setSelectedCardForEdit(card.pokemon);
-  };
-
-  const filteredAndSortedCollection = useMemo(() => {
-    let result = collectionView;
-
-    // 1. Filtro de Preço na API
-    if (priceFilter !== "all") {
-      result = result.filter(({ pokemon }) => {
-        let hasPrice = false;
-        const prices = pokemon.tcgplayer?.prices;
-        if (prices) {
-          for (const key in prices) {
-            if (prices[key]?.market || prices[key]?.mid || prices[key]?.low) {
-              hasPrice = true;
-              break;
-            }
-          }
-        }
-        
-        if (priceFilter === "has_price") return hasPrice;
-        if (priceFilter === "no_price") return !hasPrice;
-        return true;
-      });
-    }
-
-    // 2. Filtro por Geração
-    if (genFilter !== "all") {
-      const targetGen = Number(genFilter);
-      result = result.filter(({ pokemon }) => {
-        const dexNum = pokemon.nationalPokedexNumbers?.[0];
-        if (!dexNum) return false; 
-        return getGeneration(dexNum) === targetGen;
-      });
-    }
-
-    // 3. Filtro por Texto (Nome, número, set)
-    const term = localSearch.trim().toLowerCase();
-    if (term) {
-      result = result.filter(({ pokemon }) => {
-        const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
-        return (
-          pokemon.name.toLowerCase().includes(term) ||
-          pokemon.number.toLowerCase().includes(term) ||
-          fullNumber.includes(term) ||
-          pokemon.set.name.toLowerCase().includes(term)
-        );
-      });
-    }
-
-    // 4. Ordenação
-    return [...result].sort((a, b) => {
-      if (sortOrder === "dateAsc") {
-        return new Date(a.collection.createdAt).getTime() - new Date(b.collection.createdAt).getTime();
-      }
-      if (sortOrder === "dateDesc") {
-        return new Date(b.collection.createdAt).getTime() - new Date(a.collection.createdAt).getTime();
-      }
-
-      const dexA = a.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
-      const dexB = b.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
-
-      if (sortOrder === "pokedexAsc") {
-        return dexA - dexB;
-      }
-      return dexB - dexA;
-    });
-  }, [collectionView, localSearch, sortOrder, genFilter, priceFilter]);
-
-  // Cálculos de Paginação
-  const totalPages = Math.ceil(filteredAndSortedCollection.length / ITEMS_PER_PAGE);
-  const paginatedCards = filteredAndSortedCollection.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input
-            placeholder="Pesquisar na sua coleção..."
-            className="pl-10"
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2">
-          {/* Menu de Geração */}
-          <select
-            value={genFilter}
-            onChange={(e) => setGenFilter(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="all">Todas as Gerações</option>
-            <option value="1">Gen 1 (Kanto)</option>
-            <option value="2">Gen 2 (Johto)</option>
-            <option value="3">Gen 3 (Hoenn)</option>
-            <option value="4">Gen 4 (Sinnoh)</option>
-            <option value="5">Gen 5 (Unova)</option>
-            <option value="6">Gen 6 (Kalos)</option>
-            <option value="7">Gen 7 (Alola)</option>
-            <option value="8">Gen 8 (Galar)</option>
-            <option value="9">Gen 9 (Paldea)</option>
-          </select>
-
-          {/* Menu de Filtro de Preço */}
-          <select
-            value={priceFilter}
-            onChange={(e) => setPriceFilter(e.target.value as PriceFilterOption)}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="all">Com e Sem Preço</option>
-            <option value="has_price">Somente Com Preço API</option>
-            <option value="no_price">Somente Sem Preço API</option>
-          </select>
-
-          {/* Menu de Ordenação original */}
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as SortOption)}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="dateAsc">Mais antigas (Padrão)</option>
-            <option value="dateDesc">Mais recentes</option>
-            <option value="pokedexAsc">Pokédex (Crescente)</option>
-            <option value="pokedexDesc">Pokédex (Decrescente)</option>
-          </select>
-        </div>
-
-        <Button className="gap-2" onClick={() => openSearchModal("collection")}>
-          <Plus size={18} />
-          Adicionar Carta
-        </Button>
-      </div>
-
-      {collectionView.length === 0 ? (
-        <div className="rounded-xl border bg-card p-12 text-center">
-          <h2 className="text-xl font-semibold">Nenhuma carta cadastrada</h2>
-          <p className="mt-2 text-muted-foreground">
-            Sua coleção aparecerá aqui assim que você adicionar sua primeira carta.
-          </p>
-        </div>
-      ) : filteredAndSortedCollection.length === 0 ? (
-        <div className="rounded-xl border bg-card p-12 text-center">
-          <h2 className="text-xl font-semibold">Nenhuma carta encontrada</h2>
-          <p className="mt-2 text-muted-foreground">
-            Sua busca ou seus filtros não retornaram nenhum resultado.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-            {paginatedCards.map(({ collection, pokemon }) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
-                pokemon={pokemon}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-              />
-            ))}
-          </div>
-          
-          {/* Controles de Paginação (Inteligente) */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-8 pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="gap-1 hidden sm:flex"
-              >
-                <ChevronLeft size={16} /> Anterior
-              </Button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  if (
-                    page === 1 ||
-                    page === totalPages ||
-                    (page >= currentPage - 1 && page <= currentPage + 1)
-                  ) {
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        className={`w-9 h-9 p-0 ${
-                          currentPage === page ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" : ""
-                        }`}
-                        onClick={() => setCurrentPage(page)}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  }
-
-                  if (page === currentPage - 2 || page === currentPage + 2) {
-                    return (
-                      <span key={page} className="px-1 text-muted-foreground">
-                        ...
-                      </span>
-                    );
-                  }
-
-                  return null;
-                })}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="gap-1 hidden sm:flex"
-              >
-                Próxima <ChevronRight size={16} />
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Modal de Edição */}
-      <Dialog
-        open={!!editingCard}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingCard(null);
-            setSelectedCardForEdit(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Editar Carta</DialogTitle>
-            <DialogDescription>Altere os detalhes da sua carta.</DialogDescription>
-          </DialogHeader>
-          <AddCardDialog
-            card={selectedCardForEdit}
-            editingCard={editingCard}
-            onSuccess={() => {
-              setEditingCard(null);
-              setSelectedCardForEdit(null);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
 }
 </file>
 
@@ -4668,129 +4505,70 @@ function TradePriceForm({
 }
 </file>
 
-<file path="frontend/src/hooks/useCollection.ts">
-import { useEffect, useState } from "react";
-import { PokemonCard } from "@/types/pokemon-card";
-import { CollectionCard } from "@/types/collection-card";
-import { useCollectionStore } from "@/store/collectionStore";
-import { getPokemonCached } from "@/services/pokemonCache";
+<file path="frontend/src/components/layout/Sidebar.tsx">
+"use client";
 
-export interface CollectionView {
-    collection: CollectionCard;
-    pokemon: PokemonCard;
-}
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+    ChartColumn,
+    FolderOpen,
+    House,
+    Settings,
+    Star,
+    Repeat,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function useCollection() {
-    const { cards, removeCard } = useCollectionStore();
+export function Sidebar() {
+    const pathname = usePathname();
 
-    const [collectionView, setCollectionView] = useState<CollectionView[]>([]);
-    
-    // NOSSOS NOVOS ESTADOS FINANCEIROS
-    const [totalInvestido, setTotalInvestido] = useState(0);
-    const [valorMercado, setValorMercado] = useState(0);
-    const [carregandoValores, setCarregandoValores] = useState(true);
+    if (pathname.startsWith("/public")) return null;
 
-    useEffect(() => {
-        const load = async () => {
-            setCarregandoValores(true);
-            try {
-                // 1. Busca as cartas no cache/API
-                const data = await Promise.all(
-                    cards.map(async (collection) => {
-                        const pokemon = await getPokemonCached(collection.pokemonCardId);
-                        if (!pokemon) return null;
-                        return { collection, pokemon };
-                    })
-                );
+    const links = [
+        { href: "/", icon: House, label: "Dashboard" },
+        { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
+        { href: "/wishlist", icon: Star, label: "Wishlist" },
+        { href: "/trades", icon: Repeat, label: "Trocas" },
+        { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
+        { href: "/settings", icon: Settings, label: "Configurações" },
+    ];
 
-                const validCards = data.filter((item): item is CollectionView => item !== null);
-                setCollectionView(validCards);
+    return (
+        <aside className="hidden md:flex h-screen w-72 shrink-0 flex-col border-r border-border bg-background p-8">
+            <div>
+                <h1 className="text-4xl font-bold text-blue-600 dark:text-blue-500">
+                    CardDex
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                    Sua coleção Pokémon
+                </p>
+            </div>
 
-                // 2. Busca a cotação do dólar para conversão em tempo real
-                let dolarAtual = 5.00; // Fallback de segurança
-                try {
-                    const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
-                    const cotacaoData = await cotacaoRes.json();
-                    dolarAtual = parseFloat(cotacaoData.USDBRL.ask);
-                } catch (e) {
-                    console.error("Falha ao buscar cotação, usando fallback.");
-                }
+            <nav className="mt-12 space-y-2">
+                {links.map((link) => {
+                    const Icon = link.icon;
+                    const isActive = pathname === link.href;
 
-                // 3. Faz a matemática da Regra do Híbrido
-                let somaInvestido = 0;
-                let somaMercado = 0;
-
-                validCards.forEach(({ collection, pokemon }) => {
-                    const pago = collection.acquisitionValue ?? 0;
-                    somaInvestido += pago;
-
-                    // MÁGICA NOVA: Se tem valor da Liga, usa ele e ignora o resto!
-                    if (collection.ligaValue && collection.ligaValue > 0) {
-                        somaMercado += collection.ligaValue;
-                    } else {
-                        // Se não tem valor da liga, tenta a API gringa
-                        let precoGlobalUsd = 0;
-                        const prices = pokemon.tcgplayer?.prices;
-
-                        if (prices) {
-                            for (const key in prices) {
-                                if (prices[key]?.market) {
-                                    precoGlobalUsd = prices[key].market;
-                                    break;
-                                } else if (prices[key]?.mid && precoGlobalUsd === 0) {
-                                    precoGlobalUsd = prices[key].mid;
-                                } else if (prices[key]?.low && precoGlobalUsd === 0) {
-                                    precoGlobalUsd = prices[key].low;
-                                }
-                            }
-                        }
-
-                        const precoConvertido = precoGlobalUsd * dolarAtual;
-                        
-                        // O TRUQUE DE MESTRE: Se a API for zero, usamos o valor pago temporariamente para não afundar o gráfico
-                        somaMercado += precoConvertido > 0 ? precoConvertido : pago;
-                    }
-                });
-
-                setTotalInvestido(somaInvestido);
-                setValorMercado(somaMercado);
-
-            } catch (error) {
-                console.error("Erro no useCollection:", error);
-            } finally {
-                setCarregandoValores(false);
-            }
-        };
-
-        load();
-    }, [cards]);
-
-    const totalCards = collectionView.length;
-    const lucroPrejuizo = valorMercado - totalInvestido;
-
-    const uniquePokemon = new Set<number>();
-    collectionView.forEach((item) => {
-        item.pokemon.nationalPokedexNumbers?.forEach((number) => {
-            uniquePokemon.add(number);
-        });
-    });
-
-    const pokedexCount = uniquePokemon.size;
-    const totalPokemon = 1025;
-    const pokedexProgress = Number(((pokedexCount / totalPokemon) * 100).toFixed(1));
-
-    return {
-        collectionView,
-        totalCards,
-        totalInvestido,
-        valorMercado,
-        lucroPrejuizo,
-        carregandoValores,
-        pokedexCount,
-        totalPokemon,
-        pokedexProgress,
-        removeCard,
-    };
+                    return (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                                "flex items-center gap-3 rounded-lg px-4 py-3 font-medium transition-colors",
+                                isActive
+                                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
+                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            )}
+                        >
+                            <Icon size={20} />
+                            {link.label}
+                        </Link>
+                    );
+                })}
+            </nav>
+        </aside>
+    );
 }
 </file>
 
@@ -4884,6 +4662,385 @@ export async function updateCardInSupabase(card: CollectionCard) {
 }
 </file>
 
+<file path="frontend/src/app/collection/page.tsx">
+"use client";
+
+import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useMemo, useState, useEffect } from "react";
+import { useCollection } from "@/hooks/useCollection";
+import { CollectionCard } from "@/components/collection/CollectionCard";
+import { AddCardDialog } from "@/components/collection/AddCardDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CollectionCard as CollectionCardType } from "@/types/collection-card";
+import { PokemonCard } from "@/types/pokemon-card";
+import { useUiStore } from "@/store/uiStore";
+import { getGeneration } from "@/lib/getGeneration"; 
+import { useCollectionStore } from "@/store/collectionStore"; // <-- Importação adicionada aqui
+
+type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc" | "priceDesc" | "priceAsc";
+type PriceFilterOption = "all" | "has_price" | "no_price";
+
+// Atualizado para 30 cartas por página (5 linhas de 6)
+const ITEMS_PER_PAGE = 30; 
+
+export default function CollectionPage() {
+  const [localSearch, setLocalSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
+  const [genFilter, setGenFilter] = useState("all"); 
+  const [priceFilter, setPriceFilter] = useState<PriceFilterOption>("all");
+  
+  // Estados para Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const [editingCard, setEditingCard] = useState<CollectionCardType | null>(null);
+  const [selectedCardForEdit, setSelectedCardForEdit] = useState<PokemonCard | null>(null);
+
+  const { collectionView, removeCard } = useCollection();
+  
+  // --- BUSCA OS DADOS DO BANCO AO ABRIR A TELA ---
+  const fetchCards = useCollectionStore((state) => state.fetchCards);
+  useEffect(() => {
+    fetchCards();
+  }, [fetchCards]);
+  // -----------------------------------------------
+
+  const openSearchModal = useUiStore((state) => state.openSearchModal);
+
+  // Voltar para a página 1 sempre que o usuário pesquisar ou mudar um filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [localSearch, sortOrder, genFilter, priceFilter]);
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Deseja realmente excluir esta carta?")) return;
+    removeCard(id);
+  };
+
+  const handleEdit = (id: string) => {
+    const card = collectionView.find((item) => item.collection.id === id);
+    if (!card) return;
+    setEditingCard(card.collection);
+    setSelectedCardForEdit(card.pokemon);
+  };
+
+  const filteredAndSortedCollection = useMemo(() => {
+    let result = collectionView;
+
+    // 1. Filtro de Preço na API
+    if (priceFilter !== "all") {
+      result = result.filter(({ pokemon }) => {
+        let hasPrice = false;
+        const prices = pokemon.tcgplayer?.prices;
+        if (prices) {
+          for (const key in prices) {
+            if (prices[key]?.market || prices[key]?.mid || prices[key]?.low) {
+              hasPrice = true;
+              break;
+            }
+          }
+        }
+        
+        if (priceFilter === "has_price") return hasPrice;
+        if (priceFilter === "no_price") return !hasPrice;
+        return true;
+      });
+    }
+
+    // 2. Filtro por Geração
+    if (genFilter !== "all") {
+      const targetGen = Number(genFilter);
+      result = result.filter(({ pokemon }) => {
+        const dexNum = pokemon.nationalPokedexNumbers?.[0];
+        if (!dexNum) return false; 
+        return getGeneration(dexNum) === targetGen;
+      });
+    }
+
+    // 3. Filtro por Texto (Nome, número, set)
+    const term = localSearch.trim().toLowerCase();
+    if (term) {
+      result = result.filter(({ pokemon }) => {
+        const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
+        return (
+          pokemon.name.toLowerCase().includes(term) ||
+          pokemon.number.toLowerCase().includes(term) ||
+          fullNumber.includes(term) ||
+          pokemon.set.name.toLowerCase().includes(term)
+        );
+      });
+    }
+
+    // 4. Ordenação
+    return [...result].sort((a, b) => {
+      // Ordenação por preço
+      if (sortOrder === "priceDesc" || sortOrder === "priceAsc") {
+        const getPrice = (item: typeof a) => {
+          if (item.collection.ligaValue && item.collection.ligaValue > 0) return item.collection.ligaValue;
+          let usd = 0;
+          const prices = item.pokemon.tcgplayer?.prices as any;
+          if (prices) {
+            if (prices.market) usd = prices.market;
+            else if (prices.mid) usd = prices.mid;
+            else if (prices.low) usd = prices.low;
+          }
+          return usd > 0 ? usd * 5.00 : (item.collection.acquisitionValue ?? 0);
+        };
+
+        const priceA = getPrice(a);
+        const priceB = getPrice(b);
+        return sortOrder === "priceDesc" ? priceB - priceA : priceA - priceB;
+      }
+
+      if (sortOrder === "dateAsc") {
+        return new Date(a.collection.createdAt).getTime() - new Date(b.collection.createdAt).getTime();
+      }
+      if (sortOrder === "dateDesc") {
+        return new Date(b.collection.createdAt).getTime() - new Date(a.collection.createdAt).getTime();
+      }
+
+      const dexA = a.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
+      const dexB = b.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
+
+      if (sortOrder === "pokedexAsc") {
+        return dexA - dexB;
+      }
+      return dexB - dexA;
+    });
+  }, [collectionView, localSearch, sortOrder, genFilter, priceFilter]);
+
+  // Cálculos de Paginação
+  const totalPages = Math.ceil(filteredAndSortedCollection.length / ITEMS_PER_PAGE);
+  const paginatedCards = filteredAndSortedCollection.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <Input
+            placeholder="Pesquisar na sua coleção..."
+            className="pl-10"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          {/* Menu de Geração */}
+          <select
+            value={genFilter}
+            onChange={(e) => setGenFilter(e.target.value)}
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="all">Todas as Gerações</option>
+            <option value="1">Gen 1 (Kanto)</option>
+            <option value="2">Gen 2 (Johto)</option>
+            <option value="3">Gen 3 (Hoenn)</option>
+            <option value="4">Gen 4 (Sinnoh)</option>
+            <option value="5">Gen 5 (Unova)</option>
+            <option value="6">Gen 6 (Kalos)</option>
+            <option value="7">Gen 7 (Alola)</option>
+            <option value="8">Gen 8 (Galar)</option>
+            <option value="9">Gen 9 (Paldea)</option>
+          </select>
+
+          {/* Menu de Filtro de Preço */}
+          <select
+            value={priceFilter}
+            onChange={(e) => setPriceFilter(e.target.value as PriceFilterOption)}
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="all">Com e Sem Preço</option>
+            <option value="has_price">Somente Com Preço API</option>
+            <option value="no_price">Somente Sem Preço API</option>
+          </select>
+
+          {/* Menu de Ordenação original e novos */}
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as SortOption)}
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="dateAsc">Mais antigas (Padrão)</option>
+            <option value="dateDesc">Mais recentes</option>
+            <option value="pokedexAsc">Pokédex (Crescente)</option>
+            <option value="pokedexDesc">Pokédex (Decrescente)</option>
+            <option value="priceDesc">Maior Valor (Crescente)</option>
+            <option value="priceAsc">Menor Valor (Decrescente)</option>
+          </select>
+        </div>
+
+        <Button className="gap-2" onClick={() => openSearchModal("collection")}>
+          <Plus size={18} />
+          Adicionar Carta
+        </Button>
+      </div>
+
+      {collectionView.length === 0 ? (
+        <div className="rounded-xl border bg-card p-12 text-center">
+          <h2 className="text-xl font-semibold">Nenhuma carta cadastrada</h2>
+          <p className="mt-2 text-muted-foreground">
+            Sua coleção aparecerá aqui assim que você adicionar sua primeira carta.
+          </p>
+        </div>
+      ) : filteredAndSortedCollection.length === 0 ? (
+        <div className="rounded-xl border bg-card p-12 text-center">
+          <h2 className="text-xl font-semibold">Nenhuma carta encontrada</h2>
+          <p className="mt-2 text-muted-foreground">
+            Sua busca ou seus filtros não retornaram nenhum resultado.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+            {paginatedCards.map(({ collection, pokemon }) => (
+              <CollectionCard
+                key={collection.id}
+                collection={collection}
+                pokemon={pokemon}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+              />
+            ))}
+          </div>
+          
+          {/* Controles de Paginação (Inteligente) */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8 pt-4 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="gap-1 hidden sm:flex"
+              >
+                <ChevronLeft size={16} /> Anterior
+              </Button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        className={`w-9 h-9 p-0 ${
+                          currentPage === page ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" : ""
+                        }`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    );
+                  }
+
+                  if (page === currentPage - 2 || page === currentPage + 2) {
+                    return (
+                      <span key={page} className="px-1 text-muted-foreground">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  return null;
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="gap-1 hidden sm:flex"
+              >
+                Próxima <ChevronRight size={16} />
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modal de Edição */}
+      <Dialog
+        open={!!editingCard}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingCard(null);
+            setSelectedCardForEdit(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Editar Carta</DialogTitle>
+            <DialogDescription>Altere os detalhes da sua carta.</DialogDescription>
+          </DialogHeader>
+          <AddCardDialog
+            card={selectedCardForEdit}
+            editingCard={editingCard}
+            onSuccess={() => {
+              setEditingCard(null);
+              setSelectedCardForEdit(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+</file>
+
+<file path="frontend/package.json">
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "@supabase/supabase-js": "^2.111.0",
+    "cheerio": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.25.0",
+    "next": "16.2.10",
+    "next-themes": "^0.4.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "shadcn": "^4.13.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
 <file path="frontend/src/app/layout.tsx">
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -4893,6 +5050,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { GlobalModals } from "@/components/layout/GlobalModals";
 import { Toaster } from "sonner";
+import { AuthGuard } from "@/components/AuthGuard"; // <-- Importado aqui
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -4910,15 +5068,18 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <div className="flex h-screen overflow-hidden bg-background">
-            <Sidebar />
-            <div className="flex flex-col flex-1 h-full overflow-hidden">
-              <Topbar />
-              <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
-                {children}
-              </main>
+          {/* AuthGuard envolvendo a estrutura principal */}
+          <AuthGuard>
+            <div className="flex h-screen overflow-hidden bg-background">
+              <Sidebar />
+              <div className="flex flex-col flex-1 h-full overflow-hidden">
+                <Topbar />
+                <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
+          </AuthGuard>
           <GlobalModals />
           <Toaster richColors position="top-right" />
         </ThemeProvider>
@@ -4951,6 +5112,7 @@ export default function DashboardPage() {
     totalInvestido,
     valorMercado,
     lucroPrejuizo,
+    carregandoValores, // <-- Adicionamos isso aqui para o aviso funcionar
   } = useCollection();
 
   useEffect(() => {
@@ -4973,10 +5135,20 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 p-6 md:p-8">
-      {/* Saudação */}
-      <div>
-        <h2 className="text-3xl font-extrabold tracking-tight">Boa noite, {userName} 👋</h2>
-        <p className="text-slate-500 mt-1">Bem-vindo ao seu gerenciador de coleção.</p>
+      {/* Saudação com Status de Carregamento */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight">Boa noite, {userName} 👋</h2>
+          <p className="text-slate-500 mt-1">Bem-vindo ao seu gerenciador de coleção.</p>
+        </div>
+        
+        {/* Mostra esse aviso apenas enquanto as cartas estão sendo processadas pela API */}
+        {carregandoValores && (
+          <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-800/50 animate-pulse w-fit">
+            <div className="w-4 h-4 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm font-semibold">Sincronizando do servidor...</span>
+          </div>
+        )}
       </div>
 
       {/* Cards de Métricas */}
@@ -5097,6 +5269,8 @@ export function Topbar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
+  if (pathname.startsWith("/public")) return null;
+
   const page = pages[pathname as keyof typeof pages] ?? { title: "CardDex", subtitle: "" };
 
   const handleLogout = async () => {
@@ -5205,44 +5379,191 @@ export function Topbar() {
 }
 </file>
 
-<file path="frontend/package.json">
-{
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@base-ui/react": "^1.6.0",
-    "@supabase/supabase-js": "^2.111.0",
-    "cheerio": "^1.2.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.25.0",
-    "next": "16.2.10",
-    "next-themes": "^0.4.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "shadcn": "^4.13.1",
-    "sonner": "^2.0.7",
-    "tailwind-merge": "^3.6.0",
-    "tw-animate-css": "^1.4.0",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.10",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+<file path="frontend/src/hooks/useCollection.ts">
+import { useEffect, useState } from "react";
+import { PokemonCard } from "@/types/pokemon-card";
+import { CollectionCard } from "@/types/collection-card";
+import { useCollectionStore } from "@/store/collectionStore";
+import { getPokemonCached } from "@/services/pokemonCache";
+
+export interface CollectionView {
+    collection: CollectionCard;
+    pokemon: PokemonCard;
+}
+
+// Memória Global
+let globalCollectionView: CollectionView[] = [];
+let globalTotalInvestido = 0;
+let globalValorMercado = 0;
+let lastCardsHash = ""; // Agora ele grava a "assinatura" exata dos dados
+
+export function useCollection() {
+    const { cards, removeCard } = useCollectionStore();
+
+    const [collectionView, setCollectionView] = useState<CollectionView[]>(globalCollectionView);
+    const [totalInvestido, setTotalInvestido] = useState(globalTotalInvestido);
+    const [valorMercado, setValorMercado] = useState(globalValorMercado);
+    
+    const [carregandoValores, setCarregandoValores] = useState(globalCollectionView.length === 0);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const load = async () => {
+            // Cria uma "assinatura" dos dados atuais (se o preço mudar, a assinatura muda)
+            const currentHash = JSON.stringify(cards);
+
+            // 1. TENTA RECUPERAR DA SESSÃO
+            if (globalCollectionView.length === 0) {
+                const sessionData = sessionStorage.getItem("carddex_dashboard_cache");
+                if (sessionData) {
+                    const parsed = JSON.parse(sessionData);
+                    // Só usa o cache se absolutamente nenhum dado da carta mudou
+                    if (parsed.cardsHash === currentHash) {
+                        globalCollectionView = parsed.collectionView;
+                        globalTotalInvestido = parsed.totalInvestido;
+                        globalValorMercado = parsed.valorMercado;
+                        lastCardsHash = parsed.cardsHash;
+                        
+                        if (isMounted) {
+                            setCollectionView(globalCollectionView);
+                            setTotalInvestido(globalTotalInvestido);
+                            setValorMercado(globalValorMercado);
+                            setCarregandoValores(false);
+                        }
+                        return; 
+                    }
+                }
+            }
+
+            // Se nada mudou desde a última vez que renderizou, ignora o recálculo
+            if (currentHash === lastCardsHash && globalCollectionView.length > 0) {
+                if (isMounted) setCarregandoValores(false);
+                return;
+            }
+
+            if (isMounted) setCarregandoValores(true);
+
+            try {
+                let dolarAtual = 5.00;
+                try {
+                    const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
+                    const cotacaoData = await cotacaoRes.json();
+                    dolarAtual = parseFloat(cotacaoData.USDBRL.ask);
+                } catch (e) {
+                    console.error("Falha ao buscar cotação, usando fallback.");
+                }
+
+                let acumuladoCards: CollectionView[] = [];
+                let somaInvestido = 0;
+                let somaMercado = 0;
+
+                const BATCH_SIZE = 5;
+                for (let i = 0; i < cards.length; i += BATCH_SIZE) {
+                    const lote = cards.slice(i, i + BATCH_SIZE);
+                    
+                    const tempoInicio = performance.now();
+
+                    const promessas = lote.map(async (collection) => {
+                        const pokemon = await getPokemonCached(collection.pokemonCardId);
+                        if (!pokemon) return null;
+                        return { collection, pokemon };
+                    });
+                    
+                    const resultadosLote = await Promise.all(promessas);
+                    
+                    const tempoDecorrido = performance.now() - tempoInicio;
+
+                    const validosLote = resultadosLote.filter((item): item is CollectionView => item !== null);
+                    acumuladoCards = [...acumuladoCards, ...validosLote];
+
+                    validosLote.forEach(({ collection, pokemon }) => {
+                        const pago = collection.acquisitionValue ?? 0;
+                        somaInvestido += pago;
+
+                        if (collection.ligaValue && collection.ligaValue > 0) {
+                            somaMercado += collection.ligaValue;
+                        } else {
+                            let precoGlobalUsd = 0;
+                            const prices = pokemon.tcgplayer?.prices;
+                            if (prices) {
+                                for (const key in prices) {
+                                    if (prices[key]?.market) { precoGlobalUsd = prices[key].market; break; }
+                                    else if (prices[key]?.mid && precoGlobalUsd === 0) { precoGlobalUsd = prices[key].mid; }
+                                    else if (prices[key]?.low && precoGlobalUsd === 0) { precoGlobalUsd = prices[key].low; }
+                                }
+                            }
+                            const precoConvertido = precoGlobalUsd * dolarAtual;
+                            somaMercado += precoConvertido > 0 ? precoConvertido : pago;
+                        }
+                    });
+
+                    if (isMounted) {
+                        setCollectionView(acumuladoCards);
+                        setTotalInvestido(somaInvestido);
+                        setValorMercado(somaMercado);
+                    }
+
+                    if (i + BATCH_SIZE < cards.length && tempoDecorrido > 100) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+
+                globalCollectionView = acumuladoCards;
+                globalTotalInvestido = somaInvestido;
+                globalValorMercado = somaMercado;
+                lastCardsHash = currentHash; // Grava a assinatura exata
+
+                // Salva na sessão usando a assinatura
+                sessionStorage.setItem("carddex_dashboard_cache", JSON.stringify({
+                    collectionView: globalCollectionView,
+                    totalInvestido: globalTotalInvestido,
+                    valorMercado: globalValorMercado,
+                    cardsHash: lastCardsHash
+                }));
+
+            } catch (error) {
+                console.error("Erro no useCollection:", error);
+            } finally {
+                if (isMounted) setCarregandoValores(false);
+            }
+        };
+
+        if (cards.length > 0) {
+            load();
+        } else {
+            if (isMounted) setCarregandoValores(false);
+        }
+
+        return () => { isMounted = false; };
+    }, [cards]);
+
+    const totalCards = collectionView.length;
+    const lucroPrejuizo = valorMercado - totalInvestido;
+
+    const uniquePokemon = new Set<number>();
+    collectionView.forEach((item) => {
+        item.pokemon.nationalPokedexNumbers?.forEach((number) => {
+            uniquePokemon.add(number);
+        });
+    });
+
+    const pokedexCount = uniquePokemon.size;
+    const totalPokemon = 1025;
+    const pokedexProgress = Number(((pokedexCount / totalPokemon) * 100).toFixed(1));
+
+    return {
+        collectionView,
+        totalCards,
+        totalInvestido,
+        valorMercado,
+        lucroPrejuizo,
+        carregandoValores,
+        pokedexCount,
+        totalPokemon,
+        pokedexProgress,
+        removeCard,
+    };
 }
 </file>
 

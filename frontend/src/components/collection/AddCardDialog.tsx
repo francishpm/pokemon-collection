@@ -131,18 +131,23 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
     }
   };
 
-  const handleSaveWishlist = () => {
+  const handleSaveWishlist = async () => {
     if (!card) return;
 
-    savePokemonInCache(card);
-    addToWishlist({
-      id: crypto.randomUUID(),
-      pokemonCardId: card.id,
-      createdAt: new Date().toISOString(),
-    });
-
-    toast.success(`${card.name} adicionada à sua Wishlist!`);
-    onSuccess();
+    try {
+      await addToWishlist({
+        id: crypto.randomUUID(),
+        pokemonCardId: card.id,
+        pokemonData: card,
+        createdAt: new Date().toISOString(),
+      });
+      savePokemonInCache(card);
+      toast.success(`${card.name} adicionada à sua Wishlist!`);
+      onSuccess();
+    } catch (error) {
+      console.error("Erro ao salvar wishlist:", error);
+      toast.error("Não foi possível salvar a carta na Wishlist.");
+    }
   };
 
   if (!card) return null;

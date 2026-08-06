@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeftRight, ImageOff, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -34,11 +35,7 @@ export default function PublicTradesPage() {
       setLoading(true);
 
       try {
-        const { data, error } = await supabase
-          .from("trades")
-          .select("id, price, condition, language, card_id, card_name, card_image_url, card_set_name, card_number, card_set_printed_total")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false });
+        const { data, error } = await supabase.rpc("get_public_trades", { owner_id: userId });
 
         if (error) throw error;
         if (isMounted) setTrades((data ?? []) as PublicTrade[]);
@@ -97,7 +94,7 @@ export default function PublicTradesPage() {
             {filteredTrades.map((trade) => (
               <div key={trade.id} className="relative rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
                 {trade.card_image_url ? (
-                  <img src={trade.card_image_url} alt={trade.card_name ?? "Carta Pokémon"} className="mx-auto h-40 md:h-52 w-full object-contain" />
+                  <Image src={trade.card_image_url} alt={trade.card_name ?? "Carta Pokémon"} width={245} height={342} className="mx-auto h-40 md:h-52 w-full object-contain" />
                 ) : (
                   <div className="mx-auto flex h-40 md:h-52 w-full items-center justify-center text-slate-400">
                     <ImageOff size={32} aria-label="Imagem não disponível" />

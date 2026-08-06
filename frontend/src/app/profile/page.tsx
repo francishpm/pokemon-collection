@@ -1,215 +1,139 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarDays, Eye, EyeOff, Lock, Mail, Save, User } from "lucide-react";
 
+interface AccountData {
+  name: string;
+  email: string;
+  createdAt: string;
+  emailConfirmed: boolean;
+}
 
 export default function ProfilePage() {
-    const [loading, setLoading] = useState(true);
+  const [account, setAccount] = useState<AccountData | null>(null);
+  const [name, setName] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [savingName, setSavingName] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [createdAt, setCreatedAt] = useState("");
-    const [editingName, setEditingName] = useState(false);
-    const [newName, setNewName] = useState("");
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        toast.error("Não foi possível carregar os dados da conta.");
+        return;
+      }
 
-    const router = useRouter();
+      const displayName = user.user_metadata?.full_name || "Treinador";
+      setAccount({
+        name: displayName,
+        email: user.email ?? "",
+        createdAt: new Date(user.created_at).toLocaleDateString("pt-BR"),
+        emailConfirmed: Boolean(user.email_confirmed_at),
+      });
+      setName(displayName);
+    };
 
-    useEffect(() => {
-        const loadUser = async () => {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+    void loadUser();
+  }, []);
 
-            if (user) {
-                const userName = user.user_metadata?.full_name || "";
-
-                setName(userName);
-                setNewName(userName);
-                setEmail(user.email || "");
-
-                setCreatedAt(
-                    new Date(user.created_at).toLocaleDateString("pt-BR")
-                );
-            }
-
-            setLoading(false);
-        };
-
-        loadUser();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-[70vh]">
-                <p>Carregando...</p>
-            </div>
-        );
+  const handleNameSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      toast.error("Digite um nome para salvar.");
+      return;
     }
 
-    const handleUpdateName = async () => {
+    setSavingName(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { full_name: trimmedName } });
+      if (error) throw error;
+      setAccount((current) => current ? { ...current, name: trimmedName } : current);
+      toast.success("Nome atualizado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível atualizar o nome.");
+    } finally {
+      setSavingName(false);
+    }
+  };
 
-        if (!newName.trim()) {
-            return;
-        }
+  const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error("A nova senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (newPassword !== passwordConfirmation) {
+      toast.error("As senhas não são iguais.");
+      return;
+    }
 
-        const { error } = await supabase.auth.updateUser({
-            data: {
-                full_name: newName.trim(),
-            },
-        });
+    setSavingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setNewPassword("");
+      setPasswordConfirmation("");
+      toast.success("Senha atualizada com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível atualizar a senha. Faça login novamente e tente outra vez.");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
 
-        if (error) {
-            toast.error("Erro ao atualizar o nome.");
-            return;
-        }
+  if (!account) {
+    return <div className="flex h-[70vh] items-center justify-center text-muted-foreground">Carregando conta...</div>;
+  }
 
-        setName(newName.trim());
-        setEditingName(false);
-        router.refresh();
+  return (
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Minha Conta</h1>
+        <p className="mt-1 text-muted-foreground">Gerencie seus dados e a segurança da sua conta.</p>
+      </div>
 
-        toast.success("Nome atualizado com sucesso!");
-    };
-    return (
-        <div className="max-w-3xl mx-auto p-8">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="sm:col-span-2"><CardContent className="flex items-center gap-4 p-5"><div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary"><User size={24} /></div><div><p className="font-semibold">{account.name}</p><p className="text-sm text-muted-foreground">{account.email}</p></div></CardContent></Card>
+        <Card><CardContent className="p-5"><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">E-mail</p><p className="mt-2 text-sm font-semibold text-foreground">{account.emailConfirmed ? "Verificado" : "Aguardando verificação"}</p></CardContent></Card>
+      </div>
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold">
-                    Minha Conta
-                </h1>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><User size={18} />Dados pessoais</CardTitle><CardDescription>Escolha o nome mostrado no CardDex.</CardDescription></CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleNameSubmit}>
+              <label className="space-y-2 text-sm font-medium text-foreground"><span>Nome de exibição</span><Input value={name} onChange={(event) => setName(event.target.value)} className="bg-background text-foreground" /></label>
+              <label className="space-y-2 text-sm font-medium text-foreground"><span>E-mail</span><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} /><Input value={account.email} disabled className="bg-muted pl-9 text-muted-foreground" /></div></label>
+              <Button type="submit" disabled={savingName || name.trim() === account.name} className="gap-2"><Save size={16} />{savingName ? "Salvando..." : "Salvar nome"}</Button>
+            </form>
+          </CardContent>
+        </Card>
 
-                <p className="text-slate-500 mt-1">
-                    Gerencie as informações da sua conta.
-                </p>
-            </div>
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><Lock size={18} />Segurança</CardTitle><CardDescription>Use uma senha forte e exclusiva para sua conta.</CardDescription></CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handlePasswordSubmit}>
+              <label className="space-y-2 text-sm font-medium text-foreground"><span>Nova senha</span><div className="relative"><Input type={showPassword ? "text" : "password"} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={8} placeholder="Mínimo de 8 caracteres" className="bg-background pr-10 text-foreground" /><button type="button" onClick={() => setShowPassword((current) => !current)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></div></label>
+              <label className="space-y-2 text-sm font-medium text-foreground"><span>Confirmar nova senha</span><Input type={showPassword ? "text" : "password"} value={passwordConfirmation} onChange={(event) => setPasswordConfirmation(event.target.value)} minLength={8} className="bg-background text-foreground" /></label>
+              <Button type="submit" disabled={savingPassword || !newPassword || !passwordConfirmation} className="gap-2"><Lock size={16} />{savingPassword ? "Atualizando..." : "Atualizar senha"}</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
 
-            <Card>
-
-                <CardHeader>
-                    <CardTitle>Informações da Conta</CardTitle>
-                </CardHeader>
-
-                <CardContent className="space-y-8">
-
-                    {/* Nome */}
-
-                    <div>
-
-                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-2">
-                            <User size={16} />
-                            Nome
-                        </label>
-
-                        <input
-                            value={editingName ? newName : (name || "Treinador")}
-                            onChange={(e) => setNewName(e.target.value)}
-                            disabled={!editingName}
-                            className={`w-full rounded-lg border px-4 py-3 ${editingName
-                                ? "bg-white"
-                                : "bg-slate-100 cursor-not-allowed"
-                                }`}
-                        />
-
-                        <div className="mt-4 flex gap-3">
-
-                            {!editingName ? (
-
-                                <button
-                                    onClick={() => setEditingName(true)}
-                                    className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 transition"
-                                >
-                                    Editar nome
-                                </button>
-
-                            ) : (
-
-                                <>
-                                    <button
-                                        onClick={handleUpdateName}
-                                        className="rounded-lg bg-emerald-600 px-5 py-2 text-white hover:bg-emerald-700 transition"
-                                    >
-                                        Salvar
-                                    </button>
-
-                                    <button
-                                        onClick={() => {
-                                            setEditingName(false);
-                                            setNewName(name);
-                                        }}
-                                        className="rounded-lg bg-slate-200 px-5 py-2 hover:bg-slate-300 transition"
-                                    >
-                                        Cancelar
-                                    </button>
-                                </>
-
-                            )}
-
-                        </div>
-
-                    </div>
-
-                    {/* Email */}
-
-                    <div>
-
-                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-2">
-                            <Mail size={16} />
-                            Email
-                        </label>
-
-                        <input
-                            value={email}
-                            disabled
-                            className="w-full rounded-lg border bg-slate-100 px-4 py-3 text-slate-700 cursor-not-allowed"
-                        />
-
-                    </div>
-
-                    {/* Senha */}
-
-                    <div>
-
-                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-2">
-                            <Lock size={16} />
-                            Senha
-                        </label>
-
-                        <input
-                            value="••••••••••••"
-                            disabled
-                            className="w-full rounded-lg border bg-slate-100 px-4 py-3 text-slate-700 cursor-not-allowed"
-                        />
-
-                        <button
-                            className="mt-4 rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
-                        >
-                            Alterar senha
-                        </button>
-
-                    </div>
-
-                    {/* Data */}
-
-                    <div className="border-t pt-6">
-
-                        <p className="text-sm text-slate-500">
-                            Conta criada em
-                        </p>
-
-                        <p className="font-medium">
-                            {createdAt}
-                        </p>
-
-                    </div>
-
-                </CardContent>
-
-            </Card>
-
-        </div>
-    );
+      <Card><CardContent className="flex items-center gap-3 p-5 text-sm text-muted-foreground"><CalendarDays size={18} /><span>Conta criada em <strong className="text-foreground">{account.createdAt}</strong>.</span></CardContent></Card>
+    </div>
+  );
 }

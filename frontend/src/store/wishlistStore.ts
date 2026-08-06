@@ -1,33 +1,40 @@
 import { create } from "zustand";
 import { WishlistCard } from "@/types/wishlist-card";
-
-const STORAGE_KEY = "carddex_wishlist";
+import {
+  deleteWishlistItemFromSupabase,
+  fetchWishlistFromSupabase,
+  saveWishlistItemToSupabase,
+} from "@/services/wishlistService";
 
 interface WishlistStore {
   items: WishlistCard[];
-  addItem: (item: WishlistCard) => void;
-  removeItem: (id: string) => void;
+  isLoading: boolean;
+  fetchItems: () => Promise<void>;
+  addItem: (item: WishlistCard) => Promise<void>;
+  removeItem: (id: string) => Promise<void>;
 }
 
 export const useWishlistStore = create<WishlistStore>((set) => ({
-  items: typeof window !== "undefined" ? JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "[]") : [],
-  
-  addItem: (item) => {
-    set((state) => {
-      // Evita adicionar a mesma carta duas vezes na wishlist
-      if (state.items.some(i => i.pokemonCardId === item.pokemonCardId)) return state;
-      
-      const newItems = [...state.items, item];
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
-      return { items: newItems };
-    });
+  items: [],
+  isLoading: false,
+
+  fetchItems: async () => {
+    set({ isLoading: true });
+    try {
+      set({ items: await fetchWishlistFromSupabase() });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
-  removeItem: (id) => {
-    set((state) => {
-      const newItems = state.items.filter(i => i.id !== id);
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
-      return { items: newItems };
-    });
-  }
+  addItem: async (item) => {
+    if (useWishlistStore.getState().items.some((current) => current.pokemonCardId === item.pokemonCardId)) return;
+    const savedItem = await saveWishlistItemToSupabase(item);
+    set((state) => ({ items: [...state.items, savedItem] }));
+  },
+
+  removeItem: async (id) => {
+    await deleteWishlistItemFromSupabase(id);
+    set((state) => ({ items: state.items.filter((item) => item.id !== id) }));
+  },
 }));

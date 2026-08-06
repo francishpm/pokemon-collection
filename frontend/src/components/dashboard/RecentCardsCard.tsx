@@ -27,14 +27,14 @@ export function RecentCardsCard({
       </CardHeader>
 
       {/* Adicionamos 'flex-1 justify-center' para ele centralizar as cartas no espaço extra */}
-      <CardContent className="flex-1 flex flex-col justify-center">
+      <CardContent className="flex-1 flex flex-col justify-center px-4 pb-4 sm:px-6 sm:pb-6">
 
         {recentCards.length === 0 ? (
           <p className="text-sm text-gray-500">
             Nenhuma carta cadastrada.
           </p>
         ) : (
-          <div className="flex gap-6 overflow-x-auto pb-2">
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-6 sm:overflow-x-auto sm:pb-2">
             {recentCards.map((card) => (
               <CollectionMiniCard
                 key={card.collection.id}

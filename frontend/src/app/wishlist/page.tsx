@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { Search, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -61,7 +62,7 @@ export default function WishlistPage() {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
           {filteredWishlist.map(({ wishlist, pokemon }) => (
             <div key={wishlist.id} className="group relative rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition-all">
-              <img src={pokemon.images.small} alt={pokemon.name} className="mx-auto h-64 object-contain transition-transform group-hover:scale-105" />
+              <Image src={pokemon.images.small} alt={pokemon.name} width={245} height={342} className="mx-auto h-64 object-contain transition-transform group-hover:scale-105" />
               
               <div className="mt-3 text-center">
                 <h3 className="line-clamp-1 font-bold text-sm text-foreground">{pokemon.name}</h3>

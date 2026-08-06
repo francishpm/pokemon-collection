@@ -3,6 +3,7 @@ import { PokemonCard } from "@/types/pokemon-card";
 import { WishlistCard } from "@/types/wishlist-card";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { getPokemonCached } from "@/services/pokemonCache";
+import { saveWishlistSnapshotToSupabase } from "@/services/wishlistService";
 
 export interface WishlistView {
   wishlist: WishlistCard;
@@ -10,58 +11,75 @@ export interface WishlistView {
 }
 
 export function useWishlist() {
-  const { items, removeItem, addItem } = useWishlistStore();
+  const { items, isLoading, fetchItems, removeItem, addItem } = useWishlistStore();
   const [wishlistView, setWishlistView] = useState<WishlistView[]>([]);
   const [totalEstimado, setTotalEstimado] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loadingValues, setLoadingValues] = useState(false);
 
   useEffect(() => {
+    void fetchItems().catch((error) => console.error("Unable to load wishlist:", error));
+  }, [fetchItems]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
-      setLoading(true);
-      try {
-        const data = await Promise.all(
-          items.map(async (wishlist) => {
-            const pokemon = await getPokemonCached(wishlist.pokemonCardId);
-            if (!pokemon) return null;
-            return { wishlist, pokemon };
-          })
-        );
-
-        const validCards = data.filter((item): item is WishlistView => item !== null);
-        setWishlistView(validCards);
-
-        // Busca o dólar atual para conversão
-        let dolarAtual = 5.00; 
-        try {
-          const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
-          const cotacaoData = await cotacaoRes.json();
-          dolarAtual = parseFloat(cotacaoData.USDBRL.ask);
-        } catch {
-          console.error("Falha ao buscar cotação.");
+      await Promise.resolve();
+      if (!items.length) {
+        if (!cancelled) {
+          setWishlistView([]);
+          setTotalEstimado(0);
         }
+        return;
+      }
 
-        // Calcula o custo total da Wishlist
-        let soma = 0;
-        validCards.forEach(({ pokemon }) => {
-          let precoGlobalUsd = 0;
-          const prices = pokemon.tcgplayer?.prices;
-          if (prices) {
-            for (const key in prices) {
-              if (prices[key]?.market) { precoGlobalUsd = prices[key].market; break; }
-              else if (prices[key]?.mid && precoGlobalUsd === 0) { precoGlobalUsd = prices[key].mid; }
+      if (!cancelled) setLoadingValues(true);
+      try {
+        const views = (await Promise.all(items.map(async (wishlist) => {
+          const pokemon = wishlist.pokemonData ?? await getPokemonCached(wishlist.pokemonCardId);
+          if (pokemon && !wishlist.pokemonData) {
+            try {
+              await saveWishlistSnapshotToSupabase(wishlist.id, pokemon);
+            } catch (error) {
+              console.warn("Unable to save wishlist snapshot:", error);
             }
           }
-          soma += precoGlobalUsd * dolarAtual;
-        });
+          return pokemon ? { wishlist, pokemon } : null;
+        }))).filter((item): item is WishlistView => item !== null);
 
-        setTotalEstimado(soma);
+        let dollarRate = 5;
+        try {
+          const response = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
+          if (response.ok) {
+            const data = await response.json();
+            dollarRate = Number.parseFloat(data.USDBRL.ask) || dollarRate;
+          }
+        } catch {
+          // Keep the fallback rate when the quotation service is unavailable.
+        }
+
+        const total = views.reduce((sum, { pokemon }) => {
+          const prices = pokemon.tcgplayer?.prices;
+          if (!prices) return sum;
+          for (const price of Object.values(prices)) {
+            if (price.market) return sum + price.market * dollarRate;
+            if (price.mid) return sum + price.mid * dollarRate;
+          }
+          return sum;
+        }, 0);
+
+        if (!cancelled) {
+          setWishlistView(views);
+          setTotalEstimado(total);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoadingValues(false);
       }
     };
 
-    load();
+    void load();
+    return () => { cancelled = true; };
   }, [items]);
 
-  return { wishlistView, totalEstimado, loading, removeItem, addItem };
+  return { wishlistView, totalEstimado, loading: isLoading || loadingValues, removeItem, addItem };
 }

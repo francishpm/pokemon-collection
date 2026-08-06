@@ -34,6 +34,25 @@ function createCardSnapshot(card: PokemonCard) {
   };
 }
 
+function pokemonFromSnapshot(trade: TradeItem): PokemonCard | null {
+  if (!trade.card_name || !trade.card_image_url) return null;
+
+  return {
+    id: trade.card_id,
+    name: trade.card_name,
+    number: trade.card_number ?? "",
+    images: { small: trade.card_image_url, large: trade.card_image_url },
+    supertype: "Pokémon",
+    subtypes: [],
+    set: {
+      id: "snapshot",
+      name: trade.card_set_name ?? "",
+      series: "",
+      printedTotal: trade.card_set_printed_total ?? 0,
+    },
+  };
+}
+
 interface TradesStore {
   trades: TradeItem[];
   tradesView: TradeView[];
@@ -68,7 +87,16 @@ export const useTrades = create<TradesStore>((set) => ({
       const tradesData = (data ?? []) as TradeItem[];
 
       const cardsMap: Record<string, PokemonCard> = {};
-      await Promise.all([...new Set(tradesData.map((trade) => trade.card_id))].map(async (cardId) => {
+      tradesData.forEach((trade) => {
+        const pokemon = pokemonFromSnapshot(trade);
+        if (pokemon) cardsMap[trade.card_id] = pokemon;
+      });
+
+      const legacyCardIds = [...new Set(tradesData
+        .filter((trade) => !cardsMap[trade.card_id])
+        .map((trade) => trade.card_id))];
+
+      await Promise.all(legacyCardIds.map(async (cardId) => {
         const pokemon = await getPokemonCached(cardId);
         if (pokemon) cardsMap[cardId] = pokemon;
       }));

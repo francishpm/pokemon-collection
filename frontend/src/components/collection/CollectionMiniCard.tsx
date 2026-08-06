@@ -8,12 +8,12 @@ export function CollectionMiniCard({
   card,
 }: CollectionMiniCardProps) {
   return (
-    <div className="flex w-28 flex-col items-center gap-2 transition-transform hover:scale-105">
+    <div className="flex min-w-0 flex-col items-center gap-2 transition-transform hover:scale-105 sm:w-28 sm:shrink-0">
 
       <img
         src={card.pokemon.images.small}
         alt={card.pokemon.name}
-        className="h-36 rounded-lg shadow-md"
+        className="h-32 max-w-full rounded-lg object-contain shadow-md sm:h-36"
       />
 
       <p

@@ -46,7 +46,7 @@ export default function DashboardPage() {
   }, [fetchCards]);
 
   return (
-    <div className="space-y-8 p-6 md:p-8">
+    <div className="space-y-6 p-0 sm:space-y-8">
       {/* Saudação com Status de Carregamento */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -65,23 +65,23 @@ export default function DashboardPage() {
 
       {/* Cards de Métricas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="min-w-0 border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">Total de Cartas</CardTitle>
             <Layers className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCards}</div>
+            <div className="text-xl font-bold sm:text-2xl">{totalCards}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="min-w-0 border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">Valor Investido (Custo)</CardTitle>
             <DollarSign className="h-5 w-5 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl font-bold sm:text-2xl">
               R$ {totalInvestido.toLocaleString("pt-BR", {
                 minimumFractionDigits: 2,
               })}
@@ -89,13 +89,13 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="min-w-0 border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">Média de Mercado Atual</CardTitle>
             <Globe className="h-5 w-5 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl font-bold sm:text-2xl">
               {valorMercado.toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -104,14 +104,14 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="min-w-0 border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">Valorização / Lucro</CardTitle>
             <TrendingUp className="h-5 w-5 text-emerald-600" />
           </CardHeader>
           <CardContent>
             <div
-              className={`text-2xl font-bold ${lucroPrejuizo >= 0
+              className={`text-xl font-bold sm:text-2xl ${lucroPrejuizo >= 0
                   ? "text-emerald-600"
                   : "text-red-600"
                 }`}

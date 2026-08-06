@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { useCollection } from "@/hooks/useCollection";
 import { Trophy, Award } from "lucide-react";
 
@@ -112,9 +113,11 @@ export default function MarketPage() {
                   </div>
 
                   {/* Mini imagem da carta */}
-                  <img
+                  <Image
                     src={pokemon.images.small}
                     alt={pokemon.name}
+                    width={245}
+                    height={342}
                     className="h-16 w-12 object-contain rounded-md shadow-xs"
                   />
 
