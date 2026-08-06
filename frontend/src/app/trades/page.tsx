@@ -108,7 +108,7 @@ export default function TradesPage() {
             ) : tradesView.length === 0 ? (
                 <div className="rounded-xl border border-border bg-card p-12 text-center">
                     <h2 className="text-xl font-semibold text-foreground">Nenhuma carta à venda ou troca</h2>
-                    <p className="mt-2 text-muted-foreground">Clique em "Adicionar para Troca" para selecionar cartas.</p>
+                    <p className="mt-2 text-muted-foreground">Clique em &quot;Adicionar para Troca&quot; para selecionar cartas.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">

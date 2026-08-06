@@ -22,20 +22,22 @@ interface CardSearchDialogProps {
 
 export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) {
   const modalTarget = useUiStore((state) => state.modalTarget);
-  const { addTrade } = useTrades();
-
   const [search, setSearch] = useState("");
   const [apiCards, setApiCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
     if (!open) {
       setSearch("");
       setApiCards([]);
       setSelectedCard(null);
       setLoading(false);
     }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [open]);
 
   useEffect(() => {

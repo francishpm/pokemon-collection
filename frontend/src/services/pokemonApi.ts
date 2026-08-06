@@ -18,7 +18,7 @@ export async function searchCards(search: string): Promise<PokemonCard[]> {
     try {
       const card = await getCardById(term);
       if (card) return [card];
-    } catch (e) {
+    } catch {
       // Ignora e continua para a busca normal se falhar
     }
   }
@@ -86,7 +86,7 @@ export async function getCardById(id: string): Promise<PokemonCard | null> {
 
     const data: GetCardResponse = await response.json();
     return data.data;
-  } catch (error) {
+  } catch {
     // Retorna null silenciosamente se houver falha de rede
     return null;
   }

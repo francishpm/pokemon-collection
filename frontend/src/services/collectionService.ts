@@ -1,87 +1,130 @@
 import { CollectionCard } from "@/types/collection-card";
 import { supabase } from "@/lib/supabase";
+import { PokemonCard } from "@/types/pokemon-card";
 
-const STORAGE_KEY = "carddex_collection";
+const LEGACY_STORAGE_KEY = "carddex_collection";
 
-export function getCards(): CollectionCard[] {
-  if (typeof window === "undefined") return [];
-  const data = window.localStorage.getItem(STORAGE_KEY);
-  if (!data) return [];
-  return JSON.parse(data);
+interface CollectionRow {
+  id: string;
+  pokemon_card_id: string;
+  language: CollectionCard["language"];
+  condition: CollectionCard["condition"];
+  acquisition_value: number | null;
+  liga_value: number | null;
+  acquisition_date: string | null;
+  notes: string | null;
+  created_at: string | null;
+  pokemon_data: PokemonCard | null;
 }
 
-export async function fetchCardsFromSupabase(): Promise<CollectionCard[]> {
-  const { data: authData } = await supabase.auth.getUser();
+export function getLegacyLocalCards(): CollectionCard[] {
+  if (typeof window === "undefined") return [];
 
-  console.log("========== FETCH COLLECTION ==========");
-  console.log("Usuário:", authData.user);
-
-  const user = authData?.user;
-
-  if (!user) {
-    console.log("❌ Nenhum usuário encontrado.");
+  try {
+    const rawCards = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    return rawCards ? JSON.parse(rawCards) : [];
+  } catch {
     return [];
   }
+}
 
-  const { data, error } = await supabase
-    .from("collection")
-    .select("*")
-    .eq("user_id", user.id);
-
-  console.log("Erro Supabase:", error);
-  console.log("Quantidade de cartas:", data?.length);
-  console.log("Dados:", data);
-
-  if (error) {
-    console.error("Erro ao buscar cartas do Supabase:", error.message);
-    return [];
-  }
-
-  return (data || []).map((row: any) => ({
+function toCollectionCard(row: CollectionRow): CollectionCard {
+  return {
     id: row.id,
     pokemonCardId: row.pokemon_card_id,
     language: row.language,
     condition: row.condition,
-    acquisitionValue: row.acquisition_value,
-    ligaValue: row.liga_value,
-    acquisitionDate: row.acquisition_date,
-    notes: row.notes,
-    createdAt: row.created_at || new Date().toISOString(),
-  }));
+    acquisitionValue: row.acquisition_value ?? undefined,
+    ligaValue: row.liga_value ?? undefined,
+    acquisitionDate: row.acquisition_date ?? undefined,
+    notes: row.notes ?? undefined,
+    createdAt: row.created_at ?? new Date().toISOString(),
+    pokemonData: row.pokemon_data ?? undefined,
+  };
 }
 
-export async function saveCardToSupabase(card: CollectionCard) {
-  const { data: authData } = await supabase.auth.getUser();
-  const user = authData?.user;
-  if (!user) return;
-
-  await supabase.from("collection").insert({
-    id: card.id,
-    user_id: user.id,
-    pokemon_card_id: card.pokemonCardId,
-    language: card.language || "PT",
-    condition: card.condition || "NM",
-    acquisition_value: card.acquisitionValue || 0,
-    liga_value: card.ligaValue || null, // <-- NOVO AQUI
-    acquisition_date: card.acquisitionDate || new Date().toISOString(),
-    notes: card.notes || "",
-  });
+async function getAuthenticatedUser() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!data.user) throw new Error("Your session has expired. Please sign in again.");
+  return data.user;
 }
 
-export async function deleteCardFromSupabase(id: string) {
-  await supabase.from("collection").delete().eq("id", id);
+export async function fetchCardsFromSupabase(): Promise<CollectionCard[]> {
+  const user = await getAuthenticatedUser();
+  const { data, error } = await supabase
+    .from("collection")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return ((data as CollectionRow[] | null) ?? []).map(toCollectionCard);
 }
 
-export async function updateCardInSupabase(card: CollectionCard) {
-  await supabase
+export async function saveCardToSupabase(card: CollectionCard): Promise<CollectionCard> {
+  const user = await getAuthenticatedUser();
+  const { data, error } = await supabase
+    .from("collection")
+    .insert({
+      id: card.id,
+      user_id: user.id,
+      pokemon_card_id: card.pokemonCardId,
+      language: card.language,
+      condition: card.condition,
+      acquisition_value: card.acquisitionValue ?? null,
+      liga_value: card.ligaValue ?? null,
+      acquisition_date: card.acquisitionDate ?? null,
+      notes: card.notes ?? null,
+      pokemon_data: card.pokemonData ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return toCollectionCard(data as CollectionRow);
+}
+
+export async function deleteCardFromSupabase(id: string): Promise<void> {
+  const user = await getAuthenticatedUser();
+  const { error } = await supabase
+    .from("collection")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw error;
+}
+
+export async function updateCardInSupabase(card: CollectionCard): Promise<CollectionCard> {
+  const user = await getAuthenticatedUser();
+  const { data, error } = await supabase
     .from("collection")
     .update({
       language: card.language,
       condition: card.condition,
-      acquisition_value: card.acquisitionValue,
-      liga_value: card.ligaValue, // <-- NOVO AQUI
-      acquisition_date: card.acquisitionDate,
-      notes: card.notes,
+      acquisition_value: card.acquisitionValue ?? null,
+      liga_value: card.ligaValue ?? null,
+      acquisition_date: card.acquisitionDate ?? null,
+      notes: card.notes ?? null,
+      pokemon_data: card.pokemonData ?? null,
     })
-    .eq("id", card.id);
+    .eq("id", card.id)
+    .eq("user_id", user.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return toCollectionCard(data as CollectionRow);
+}
+
+export async function savePokemonSnapshotToSupabase(id: string, pokemon: PokemonCard): Promise<void> {
+  const user = await getAuthenticatedUser();
+  const { error } = await supabase
+    .from("collection")
+    .update({ pokemon_data: pokemon })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw error;
 }

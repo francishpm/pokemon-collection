@@ -81,8 +81,9 @@ export async function GET(request: Request) {
       }
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Erro na API TCG:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Erro inesperado ao consultar a carta.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

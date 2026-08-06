@@ -28,4 +28,9 @@ export interface CollectionCard {
   createdAt: string;
 
   notes?: string;
+
+  // Snapshot stored with the collection record so other devices do not depend on
+  // the external Pokémon API to render an existing card.
+  pokemonData?: PokemonCard;
 }
+import { PokemonCard } from "@/types/pokemon-card";

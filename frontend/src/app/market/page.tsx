@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useCollection } from "@/hooks/useCollection";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, TrendingUp, Award } from "lucide-react";
+import { Trophy, Award } from "lucide-react";
 
 type TopLimit = "10" | "20" | "50" | "all";
 

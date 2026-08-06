@@ -5,158 +5,163 @@ import { toast } from "sonner";
 import { create } from "zustand";
 
 export interface TradeItem {
-    id: string;
-    user_id: string;
-    card_id: string;
-    price: number | null;
-    condition?: string; // Novo campo
-    language?: string;  // Novo campo
-    created_at: string;
+  id: string;
+  user_id: string;
+  card_id: string;
+  price: number | null;
+  condition?: string;
+  language?: string;
+  card_name?: string | null;
+  card_image_url?: string | null;
+  card_set_name?: string | null;
+  card_number?: string | null;
+  card_set_printed_total?: number | null;
+  created_at: string;
 }
 
 export interface TradeView {
-    trade: TradeItem;
-    pokemon: PokemonCard;
+  trade: TradeItem;
+  pokemon: PokemonCard;
+}
+
+function createCardSnapshot(card: PokemonCard) {
+  return {
+    card_name: card.name,
+    card_image_url: card.images.small,
+    card_set_name: card.set.name,
+    card_number: card.number,
+    card_set_printed_total: card.set.printedTotal,
+  };
 }
 
 interface TradesStore {
-    trades: TradeItem[];
-    tradesView: TradeView[];
-    loading: boolean;
-    fetchTrades: () => Promise<void>;
-    
-    // 👇 Esta é a linha que precisa mudar 👇
-    addTrade: (card: PokemonCard, price?: number | null, condition?: string, language?: string) => Promise<void>;
-    
-    updatePrice: (tradeId: string, newPrice: number | null) => Promise<void>;
-    removeTrade: (tradeId: string) => Promise<void>;
+  trades: TradeItem[];
+  tradesView: TradeView[];
+  loading: boolean;
+  fetchTrades: () => Promise<void>;
+  addTrade: (card: PokemonCard, price?: number | null, condition?: string, language?: string) => Promise<void>;
+  updatePrice: (tradeId: string, newPrice: number | null) => Promise<void>;
+  removeTrade: (tradeId: string) => Promise<void>;
 }
 
-export const useTrades = create<TradesStore>((set, get) => ({
-    trades: [],
-    tradesView: [],
-    loading: true,
+export const useTrades = create<TradesStore>((set) => ({
+  trades: [],
+  tradesView: [],
+  loading: true,
 
-    fetchTrades: async () => {
-        set({ loading: true });
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                set({ loading: false });
-                return;
-            }
+  fetchTrades: async () => {
+    set({ loading: true });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        set({ trades: [], tradesView: [], loading: false });
+        return;
+      }
 
-            const { data: tradesData, error } = await supabase
-                .from("trades")
-                .select("*")
-                .eq("user_id", user.id)
-                .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("trades")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-            if (error) throw error;
+      if (error) throw error;
+      const tradesData = (data ?? []) as TradeItem[];
 
-            if (tradesData && tradesData.length > 0) {
-                const cardIds = tradesData.map((t) => t.card_id);
-                const cardsMap: Record<string, PokemonCard> = {};
+      const cardsMap: Record<string, PokemonCard> = {};
+      await Promise.all([...new Set(tradesData.map((trade) => trade.card_id))].map(async (cardId) => {
+        const pokemon = await getPokemonCached(cardId);
+        if (pokemon) cardsMap[cardId] = pokemon;
+      }));
 
-                await Promise.all(
-                    cardIds.map(async (cardId) => {
-                        try {
-                            const pokemon = await getPokemonCached(cardId);
-                            if (pokemon) {
-                                cardsMap[cardId] = pokemon;
-                            }
-                        } catch (e) {
-                            console.error(`Erro ao buscar carta ${cardId}`, e);
-                        }
-                    })
-                );
+      const combined = tradesData.flatMap((trade) => {
+        const pokemon = cardsMap[trade.card_id];
+        return pokemon ? [{ trade, pokemon }] : [];
+      });
 
-                const combined: TradeView[] = tradesData
-                    .map((trade) => ({
-                        trade,
-                        pokemon: cardsMap[trade.card_id],
-                    }))
-                    .filter((item) => item.pokemon !== undefined);
+      // Existing records created before snapshots are filled automatically when their
+      // owner opens this page. Future public links no longer need the external API.
+      const legacyCards = combined.filter(({ trade }) => !trade.card_name || !trade.card_image_url);
+      if (legacyCards.length) {
+        const updates = await Promise.all(legacyCards.map(async ({ trade, pokemon }) => {
+          const { error } = await supabase
+            .from("trades")
+            .update(createCardSnapshot(pokemon))
+            .eq("id", trade.id)
+            .eq("user_id", user.id);
+          return { trade, pokemon, error };
+        }));
 
-                set({ trades: tradesData, tradesView: combined, loading: false });
-            } else {
-                set({ trades: [], tradesView: [], loading: false });
-            }
-        } catch (err) {
-            console.error(err);
-            toast.error("Erro ao carregar itens de troca.");
-            set({ loading: false });
-        }
-    },
+        updates.forEach(({ trade, pokemon, error }) => {
+          if (error) {
+            console.warn("Não foi possível salvar os dados da carta de troca:", error);
+            return;
+          }
+          Object.assign(trade, createCardSnapshot(pokemon));
+        });
+      }
 
-    addTrade: async (card: PokemonCard, price: number | null = null, condition: string = "NM", language: string = "PT") => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const tempId = crypto.randomUUID();
-            const newTradeItem: TradeItem = {
-                id: tempId,
-                user_id: user.id,
-                card_id: card.id,
-                price,
-                condition,
-                language,
-                created_at: new Date().toISOString(),
-            };
-
-            set((state) => ({
-                trades: [newTradeItem, ...state.trades],
-                tradesView: [{ trade: newTradeItem, pokemon: card }, ...state.tradesView]
-            }));
-
-            // Enviando os novos campos para o banco
-            const { error } = await supabase.from("trades").insert([
-                { user_id: user.id, card_id: card.id, price, condition, language }
-            ]);
-
-            if (error) throw error;
-            toast.success("Carta adicionada para trocas!");
-            get().fetchTrades();
-        } catch (err) {
-            console.error(err);
-            toast.error("Erro ao adicionar carta.");
-            get().fetchTrades();
-        }
-    },
-
-    updatePrice: async (tradeId: string, newPrice: number | null) => {
-        try {
-            const { error } = await supabase
-                .from("trades")
-                .update({ price: newPrice })
-                .eq("id", tradeId);
-
-            if (error) throw error;
-            toast.success("Preço atualizado!");
-            get().fetchTrades();
-        } catch (err) {
-            console.error(err);
-            toast.error("Erro ao atualizar preço.");
-        }
-    },
-
-    removeTrade: async (tradeId: string) => {
-        try {
-            // Otimismo para remover instantaneamente da tela
-            set((state) => ({
-                tradesView: state.tradesView.filter(t => t.trade.id !== tradeId)
-            }));
-
-            const { error } = await supabase.from("trades").delete().eq("id", tradeId);
-            if (error) throw error;
-
-            toast.success("Removido das trocas.");
-            get().fetchTrades();
-        } catch (err) {
-            console.error(err);
-            toast.error("Erro ao remover item.");
-            get().fetchTrades(); // Reverte em caso de erro
-        }
+      set({ trades: tradesData, tradesView: combined, loading: false });
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao carregar itens de troca.");
+      set({ loading: false });
     }
+  },
+
+  addTrade: async (card, price = null, condition = "NM", language = "PT") => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const snapshot = createCardSnapshot(card);
+      const { data, error } = await supabase
+        .from("trades")
+        .insert({ user_id: user.id, card_id: card.id, price, condition, language, ...snapshot })
+        .select()
+        .single();
+
+      if (error) throw error;
+      const newTrade = data as TradeItem;
+      set((state) => ({
+        trades: [newTrade, ...state.trades],
+        tradesView: [{ trade: newTrade, pokemon: card }, ...state.tradesView],
+      }));
+      toast.success("Carta adicionada para trocas!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao adicionar carta.");
+    }
+  },
+
+  updatePrice: async (tradeId, newPrice) => {
+    try {
+      const { error } = await supabase.from("trades").update({ price: newPrice }).eq("id", tradeId);
+      if (error) throw error;
+      set((state) => ({
+        trades: state.trades.map((trade) => trade.id === tradeId ? { ...trade, price: newPrice } : trade),
+        tradesView: state.tradesView.map((item) => item.trade.id === tradeId
+          ? { ...item, trade: { ...item.trade, price: newPrice } }
+          : item),
+      }));
+      toast.success("Preço atualizado!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao atualizar preço.");
+    }
+  },
+
+  removeTrade: async (tradeId) => {
+    try {
+      const { error } = await supabase.from("trades").delete().eq("id", tradeId);
+      if (error) throw error;
+      set((state) => ({
+        trades: state.trades.filter((trade) => trade.id !== tradeId),
+        tradesView: state.tradesView.filter((item) => item.trade.id !== tradeId),
+      }));
+      toast.success("Removido das trocas.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao remover item.");
+    }
+  },
 }));

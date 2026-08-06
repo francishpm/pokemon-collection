@@ -20,6 +20,16 @@ interface AddCardDialogProps {
   onSuccess: () => void;
 }
 
+interface MarketData {
+  cotacaoDolarUsada?: number;
+  prices: {
+    usd: number;
+    brl: number;
+    usdText: string;
+    brlText: string;
+  };
+}
+
 export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogProps) {
   const [condition, setCondition] = useState<CardCondition>("NM");
   const [language, setLanguage] = useState<CardLanguage>("PT");
@@ -28,8 +38,9 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
   const [acquisitionDate, setAcquisitionDate] = useState("");
   const [notes, setNotes] = useState("");
 
-  const [dadosMercado, setDadosMercado] = useState<any>(null);
+  const [dadosMercado, setDadosMercado] = useState<MarketData | null>(null);
   const [carregandoMercado, setCarregandoMercado] = useState(false);
+  const [savingCollection, setSavingCollection] = useState(false);
 
   const { addCard, updateCard } = useCollectionStore();
   const { addItem: addToWishlist } = useWishlistStore();
@@ -41,10 +52,13 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
       setCarregandoMercado(true);
       try {
         const res = await fetch(`/api/tcg?id=${card.id}`);
-        const data = await res.json();
+        const data: { success?: boolean } & Partial<MarketData> = await res.json();
 
-        if (data.success) {
-          setDadosMercado(data);
+        if (data.success && data.prices) {
+          setDadosMercado({
+            cotacaoDolarUsada: data.cotacaoDolarUsada,
+            prices: data.prices,
+          });
         }
       } catch (error) {
         console.error("Erro ao buscar dados do mercado:", error);
@@ -57,6 +71,7 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
   }, [card]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
     if (!editingCard) {
       setCondition("NM");
       setLanguage("PT");
@@ -73,9 +88,12 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
     setLigaValue(editingCard.ligaValue?.toString() ?? ""); // <-- CARREGANDO NA EDIÇÃO
     setAcquisitionDate(editingCard.acquisitionDate ?? "");
     setNotes(editingCard.notes ?? "");
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [editingCard]);
 
-  const handleSaveCollection = () => {
+  const handleSaveCollection = async () => {
     if (!card) return;
 
     const baseCardData = {
@@ -87,24 +105,30 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
       notes: notes || undefined,
     };
 
-    if (editingCard) {
-      updateCard({
-        ...editingCard,
-        ...baseCardData,
-      });
-      toast.success("Carta atualizada com sucesso!");
-    } else {
-      savePokemonInCache(card);
-      addCard({
-        id: crypto.randomUUID(),
-        pokemonCardId: card.id,
-        createdAt: new Date().toISOString(),
-        ...baseCardData,
-      });
-      toast.success("Carta adicionada à Coleção!");
-    }
+    setSavingCollection(true);
+    try {
+      if (editingCard) {
+        await updateCard({ ...editingCard, ...baseCardData });
+        toast.success("Carta atualizada com sucesso!");
+      } else {
+        await addCard({
+          id: crypto.randomUUID(),
+          pokemonCardId: card.id,
+          pokemonData: card,
+          createdAt: new Date().toISOString(),
+          ...baseCardData,
+        });
+        savePokemonInCache(card);
+        toast.success("Carta adicionada à Coleção!");
+      }
 
-    onSuccess();
+      onSuccess();
+    } catch (error) {
+      console.error("Erro ao salvar carta:", error);
+      toast.error("Não foi possível salvar a carta. Tente novamente.");
+    } finally {
+      setSavingCollection(false);
+    }
   };
 
   const handleSaveWishlist = () => {
@@ -237,8 +261,8 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
       </div>
 
       <div className="flex gap-3">
-        <Button onClick={handleSaveCollection} className="flex-1 font-bold bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200" size="lg">
-          {editingCard ? "Salvar Alterações" : "Adicionar à Coleção"}
+        <Button disabled={savingCollection} onClick={handleSaveCollection} className="flex-1 font-bold bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200" size="lg">
+          {savingCollection ? "Salvando..." : editingCard ? "Salvar Alterações" : "Adicionar à Coleção"}
         </Button>
 
         {!editingCard && (

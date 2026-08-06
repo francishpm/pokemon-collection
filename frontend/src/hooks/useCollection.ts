@@ -3,183 +3,131 @@ import { PokemonCard } from "@/types/pokemon-card";
 import { CollectionCard } from "@/types/collection-card";
 import { useCollectionStore } from "@/store/collectionStore";
 import { getPokemonCached } from "@/services/pokemonCache";
+import { savePokemonSnapshotToSupabase } from "@/services/collectionService";
 
 export interface CollectionView {
-    collection: CollectionCard;
-    pokemon: PokemonCard;
+  collection: CollectionCard;
+  pokemon: PokemonCard;
 }
 
-// Memória Global
-let globalCollectionView: CollectionView[] = [];
-let globalTotalInvestido = 0;
-let globalValorMercado = 0;
-let lastCardsHash = ""; // Agora ele grava a "assinatura" exata dos dados
+function getMarketPriceUsd(pokemon: PokemonCard): number {
+  const prices = pokemon.tcgplayer?.prices;
+  if (!prices) return 0;
+
+  let fallback = 0;
+  for (const price of Object.values(prices)) {
+    if (!price || typeof price !== "object") continue;
+    const value = price as { market?: number; mid?: number; low?: number };
+    if (value.market) return value.market;
+    fallback ||= value.mid ?? value.low ?? 0;
+  }
+  return fallback;
+}
 
 export function useCollection() {
-    const { cards, removeCard } = useCollectionStore();
+  const { cards, removeCard } = useCollectionStore();
+  const [collectionView, setCollectionView] = useState<CollectionView[]>([]);
+  const [totalInvestido, setTotalInvestido] = useState(0);
+  const [valorMercado, setValorMercado] = useState(0);
+  const [carregandoValores, setCarregandoValores] = useState(false);
 
-    const [collectionView, setCollectionView] = useState<CollectionView[]>(globalCollectionView);
-    const [totalInvestido, setTotalInvestido] = useState(globalTotalInvestido);
-    const [valorMercado, setValorMercado] = useState(globalValorMercado);
-    
-    const [carregandoValores, setCarregandoValores] = useState(globalCollectionView.length === 0);
+  useEffect(() => {
+    let cancelled = false;
 
-    useEffect(() => {
-        let isMounted = true;
+    const load = async () => {
+      // Keeps every state transition asynchronous and prevents stale global cache data.
+      await Promise.resolve();
 
-        const load = async () => {
-            // Cria uma "assinatura" dos dados atuais (se o preço mudar, a assinatura muda)
-            const currentHash = JSON.stringify(cards);
+      if (cards.length === 0) {
+        if (!cancelled) {
+          setCollectionView([]);
+          setTotalInvestido(0);
+          setValorMercado(0);
+          setCarregandoValores(false);
+        }
+        return;
+      }
 
-            // 1. TENTA RECUPERAR DA SESSÃO
-            if (globalCollectionView.length === 0) {
-                const sessionData = sessionStorage.getItem("carddex_dashboard_cache");
-                if (sessionData) {
-                    const parsed = JSON.parse(sessionData);
-                    // Só usa o cache se absolutamente nenhum dado da carta mudou
-                    if (parsed.cardsHash === currentHash) {
-                        globalCollectionView = parsed.collectionView;
-                        globalTotalInvestido = parsed.totalInvestido;
-                        globalValorMercado = parsed.valorMercado;
-                        lastCardsHash = parsed.cardsHash;
-                        
-                        if (isMounted) {
-                            setCollectionView(globalCollectionView);
-                            setTotalInvestido(globalTotalInvestido);
-                            setValorMercado(globalValorMercado);
-                            setCarregandoValores(false);
-                        }
-                        return; 
-                    }
-                }
-            }
+      if (!cancelled) setCarregandoValores(true);
 
-            // Se nada mudou desde a última vez que renderizou, ignora o recálculo
-            if (currentHash === lastCardsHash && globalCollectionView.length > 0) {
-                if (isMounted) setCarregandoValores(false);
-                return;
-            }
-
-            if (isMounted) setCarregandoValores(true);
-
-            try {
-                let dolarAtual = 5.00;
-                try {
-                    const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
-                    const cotacaoData = await cotacaoRes.json();
-                    dolarAtual = parseFloat(cotacaoData.USDBRL.ask);
-                } catch (e) {
-                    console.error("Falha ao buscar cotação, usando fallback.");
-                }
-
-                let acumuladoCards: CollectionView[] = [];
-                let somaInvestido = 0;
-                let somaMercado = 0;
-
-                const BATCH_SIZE = 5;
-                for (let i = 0; i < cards.length; i += BATCH_SIZE) {
-                    const lote = cards.slice(i, i + BATCH_SIZE);
-                    
-                    const tempoInicio = performance.now();
-
-                    const promessas = lote.map(async (collection) => {
-                        const pokemon = await getPokemonCached(collection.pokemonCardId);
-                        if (!pokemon) return null;
-                        return { collection, pokemon };
-                    });
-                    
-                    const resultadosLote = await Promise.all(promessas);
-                    
-                    const tempoDecorrido = performance.now() - tempoInicio;
-
-                    const validosLote = resultadosLote.filter((item): item is CollectionView => item !== null);
-                    acumuladoCards = [...acumuladoCards, ...validosLote];
-
-                    validosLote.forEach(({ collection, pokemon }) => {
-                        const pago = collection.acquisitionValue ?? 0;
-                        somaInvestido += pago;
-
-                        if (collection.ligaValue && collection.ligaValue > 0) {
-                            somaMercado += collection.ligaValue;
-                        } else {
-                            let precoGlobalUsd = 0;
-                            const prices = pokemon.tcgplayer?.prices;
-                            if (prices) {
-                                for (const key in prices) {
-                                    if (prices[key]?.market) { precoGlobalUsd = prices[key].market; break; }
-                                    else if (prices[key]?.mid && precoGlobalUsd === 0) { precoGlobalUsd = prices[key].mid; }
-                                    else if (prices[key]?.low && precoGlobalUsd === 0) { precoGlobalUsd = prices[key].low; }
-                                }
-                            }
-                            const precoConvertido = precoGlobalUsd * dolarAtual;
-                            somaMercado += precoConvertido > 0 ? precoConvertido : pago;
-                        }
-                    });
-
-                    if (isMounted) {
-                        setCollectionView(acumuladoCards);
-                        setTotalInvestido(somaInvestido);
-                        setValorMercado(somaMercado);
-                    }
-
-                    if (i + BATCH_SIZE < cards.length && tempoDecorrido > 100) {
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
-                }
-
-                globalCollectionView = acumuladoCards;
-                globalTotalInvestido = somaInvestido;
-                globalValorMercado = somaMercado;
-                lastCardsHash = currentHash; // Grava a assinatura exata
-
-                // Salva na sessão usando a assinatura
-                sessionStorage.setItem("carddex_dashboard_cache", JSON.stringify({
-                    collectionView: globalCollectionView,
-                    totalInvestido: globalTotalInvestido,
-                    valorMercado: globalValorMercado,
-                    cardsHash: lastCardsHash
-                }));
-
-            } catch (error) {
-                console.error("Erro no useCollection:", error);
-            } finally {
-                if (isMounted) setCarregandoValores(false);
-            }
-        };
-
-        if (cards.length > 0) {
-            load();
-        } else {
-            if (isMounted) setCarregandoValores(false);
+      try {
+        let dollarRate = 5;
+        try {
+          const response = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
+          if (response.ok) {
+            const data = await response.json();
+            dollarRate = Number.parseFloat(data.USDBRL.ask) || dollarRate;
+          }
+        } catch {
+          // The market value falls back to a known rate when the quotation service is unavailable.
         }
 
-        return () => { isMounted = false; };
-    }, [cards]);
+        const views = (await Promise.all(
+          cards.map(async (collection) => {
+            const pokemon = collection.pokemonData ?? await getPokemonCached(collection.pokemonCardId);
+            if (pokemon && !collection.pokemonData) {
+              try {
+                await savePokemonSnapshotToSupabase(collection.id, pokemon);
+              } catch (error) {
+                console.warn("Unable to save Pokémon card snapshot:", error);
+              }
+            }
+            return pokemon ? { collection, pokemon } : null;
+          })
+        )).filter((item): item is CollectionView => item !== null);
 
-    const totalCards = collectionView.length;
-    const lucroPrejuizo = valorMercado - totalInvestido;
+        const totals = views.reduce(
+          (current, { collection, pokemon }) => {
+            current.invested += collection.acquisitionValue ?? 0;
+            current.market += collection.ligaValue && collection.ligaValue > 0
+              ? collection.ligaValue
+              : getMarketPriceUsd(pokemon) * dollarRate || collection.acquisitionValue || 0;
+            return current;
+          },
+          { invested: 0, market: 0 }
+        );
 
-    const uniquePokemon = new Set<number>();
-    collectionView.forEach((item) => {
-        item.pokemon.nationalPokedexNumbers?.forEach((number) => {
-            uniquePokemon.add(number);
-        });
-    });
-
-    const pokedexCount = uniquePokemon.size;
-    const totalPokemon = 1025;
-    const pokedexProgress = Number(((pokedexCount / totalPokemon) * 100).toFixed(1));
-
-    return {
-        collectionView,
-        totalCards,
-        totalInvestido,
-        valorMercado,
-        lucroPrejuizo,
-        carregandoValores,
-        pokedexCount,
-        totalPokemon,
-        pokedexProgress,
-        removeCard,
+        if (!cancelled) {
+          setCollectionView(views);
+          setTotalInvestido(totals.invested);
+          setValorMercado(totals.market);
+        }
+      } catch (error) {
+        console.error("Unable to prepare collection data:", error);
+        if (!cancelled) {
+          setCollectionView([]);
+          setTotalInvestido(0);
+          setValorMercado(0);
+        }
+      } finally {
+        if (!cancelled) setCarregandoValores(false);
+      }
     };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [cards]);
+
+  const uniquePokemon = new Set<number>();
+  collectionView.forEach((item) => {
+    item.pokemon.nationalPokedexNumbers?.forEach((number) => uniquePokemon.add(number));
+  });
+
+  const totalPokemon = 1025;
+  const pokedexCount = uniquePokemon.size;
+
+  return {
+    collectionView,
+    totalCards: collectionView.length,
+    totalInvestido,
+    valorMercado,
+    lucroPrejuizo: valorMercado - totalInvestido,
+    carregandoValores,
+    pokedexCount,
+    totalPokemon,
+    pokedexProgress: Number(((pokedexCount / totalPokemon) * 100).toFixed(1)),
+    removeCard,
+  };
 }

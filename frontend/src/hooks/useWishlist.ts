@@ -36,7 +36,7 @@ export function useWishlist() {
           const cotacaoRes = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
           const cotacaoData = await cotacaoRes.json();
           dolarAtual = parseFloat(cotacaoData.USDBRL.ask);
-        } catch (e) {
+        } catch {
           console.error("Falha ao buscar cotação.");
         }
 

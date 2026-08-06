@@ -55,7 +55,7 @@ export default function WishlistPage() {
       ) : wishlistView.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <h2 className="text-xl font-semibold text-foreground">Sua Wishlist está vazia</h2>
-          <p className="mt-2 text-muted-foreground">Use o botão "Adicionar carta" no topo para buscar seus desejos.</p>
+          <p className="mt-2 text-muted-foreground">Use o botão &quot;Adicionar carta&quot; no topo para buscar seus desejos.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">

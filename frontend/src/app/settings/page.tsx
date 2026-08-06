@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useCollectionStore } from "@/store/collectionStore"; 
 import { useWishlistStore } from "@/store/wishlistStore"; 
+import { getLegacyLocalCards } from "@/services/collectionService";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Download, UploadCloud, CheckCircle2 } from "lucide-react";
@@ -13,7 +13,9 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState(false);
   
   // Pegando as cartas que estão no armazenamento local
-  const localCards = useCollectionStore((state) => state.cards);
+  // Legacy records are only used for the one-time migration screen. The collection itself
+  // is now loaded from Supabase, so it cannot overwrite cloud data by accident.
+  const localCards = getLegacyLocalCards();
   const localWishlistItems = useWishlistStore((state) => state.items);
 
   // FUNÇÃO 1: O seu backup original em JSON
@@ -60,6 +62,7 @@ export default function SettingsPage() {
           language: card.language || "PT",
           condition: card.condition || "NM",
           acquisition_value: card.acquisitionValue || 0,
+          liga_value: card.ligaValue || null,
           acquisition_date: card.acquisitionDate || new Date().toISOString(),
           notes: card.notes || "",
         }));
@@ -81,9 +84,10 @@ export default function SettingsPage() {
 
       setSuccess(true);
       toast.success("Dados migrados com sucesso para a nuvem! ☁️");
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error("Erro ao migrar: " + error.message);
+      const message = error instanceof Error ? error.message : "Erro inesperado durante a migração.";
+      toast.error("Erro ao migrar: " + message);
     } finally {
       setLoading(false);
     }

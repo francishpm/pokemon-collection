@@ -1,3 +1,9 @@
+export interface TcgPlayerPrice {
+  low?: number;
+  mid?: number;
+  market?: number;
+}
+
 export interface PokemonCard {
   id: string;
   name: string;
@@ -19,6 +25,6 @@ export interface PokemonCard {
   };
   // ADICIONAMOS ISSO AQUI PARA O NOSSO CÁLCULO FINANCEIRO
   tcgplayer?: {
-    prices?: any;
+    prices?: Record<string, TcgPlayerPrice>;
   };
 }

@@ -35,7 +35,11 @@ export default function DashboardPage() {
       }
 
       // 2. Carrega as cartas da nuvem
-      await fetchCards();
+      try {
+        await fetchCards();
+      } catch (error) {
+        console.error("Erro ao carregar coleção:", error);
+      }
     };
 
     initData();

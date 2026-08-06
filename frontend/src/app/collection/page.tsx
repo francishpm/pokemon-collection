@@ -13,6 +13,7 @@ import { PokemonCard } from "@/types/pokemon-card";
 import { useUiStore } from "@/store/uiStore";
 import { getGeneration } from "@/lib/getGeneration"; 
 import { useCollectionStore } from "@/store/collectionStore"; // <-- Importação adicionada aqui
+import { toast } from "sonner";
 
 type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc" | "priceDesc" | "priceAsc";
 type PriceFilterOption = "all" | "has_price" | "no_price";
@@ -37,20 +38,23 @@ export default function CollectionPage() {
   // --- BUSCA OS DADOS DO BANCO AO ABRIR A TELA ---
   const fetchCards = useCollectionStore((state) => state.fetchCards);
   useEffect(() => {
-    fetchCards();
+    void fetchCards().catch(() => {
+      toast.error("Não foi possível carregar sua coleção.");
+    });
   }, [fetchCards]);
   // -----------------------------------------------
 
   const openSearchModal = useUiStore((state) => state.openSearchModal);
 
-  // Voltar para a página 1 sempre que o usuário pesquisar ou mudar um filtro
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [localSearch, sortOrder, genFilter, priceFilter]);
-
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Deseja realmente excluir esta carta?")) return;
-    removeCard(id);
+    try {
+      await removeCard(id);
+      toast.success("Carta removida com sucesso!");
+    } catch (error) {
+      console.error("Erro ao remover carta:", error);
+      toast.error("Não foi possível remover a carta. Tente novamente.");
+    }
   };
 
   const handleEdit = (id: string) => {
@@ -114,11 +118,15 @@ export default function CollectionPage() {
         const getPrice = (item: typeof a) => {
           if (item.collection.ligaValue && item.collection.ligaValue > 0) return item.collection.ligaValue;
           let usd = 0;
-          const prices = item.pokemon.tcgplayer?.prices as any;
+          const prices = item.pokemon.tcgplayer?.prices;
           if (prices) {
-            if (prices.market) usd = prices.market;
-            else if (prices.mid) usd = prices.mid;
-            else if (prices.low) usd = prices.low;
+            for (const price of Object.values(prices)) {
+              if (price.market) {
+                usd = price.market;
+                break;
+              }
+              if (!usd) usd = price.mid ?? price.low ?? 0;
+            }
           }
           return usd > 0 ? usd * 5.00 : (item.collection.acquisitionValue ?? 0);
         };
@@ -161,7 +169,10 @@ export default function CollectionPage() {
             placeholder="Pesquisar na sua coleção..."
             className="pl-10"
             value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
+            onChange={(e) => {
+              setLocalSearch(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
 
@@ -169,7 +180,10 @@ export default function CollectionPage() {
           {/* Menu de Geração */}
           <select
             value={genFilter}
-            onChange={(e) => setGenFilter(e.target.value)}
+            onChange={(e) => {
+              setGenFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="all">Todas as Gerações</option>
@@ -187,7 +201,10 @@ export default function CollectionPage() {
           {/* Menu de Filtro de Preço */}
           <select
             value={priceFilter}
-            onChange={(e) => setPriceFilter(e.target.value as PriceFilterOption)}
+            onChange={(e) => {
+              setPriceFilter(e.target.value as PriceFilterOption);
+              setCurrentPage(1);
+            }}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="all">Com e Sem Preço</option>
@@ -198,7 +215,10 @@ export default function CollectionPage() {
           {/* Menu de Ordenação original e novos */}
           <select
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as SortOption)}
+            onChange={(e) => {
+              setSortOrder(e.target.value as SortOption);
+              setCurrentPage(1);
+            }}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="dateAsc">Mais antigas (Padrão)</option>
