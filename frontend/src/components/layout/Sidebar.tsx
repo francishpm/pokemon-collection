@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     ChartColumn,
+    ChartNoAxesCombined,
     FolderOpen,
     House,
     Settings,
@@ -23,6 +24,7 @@ export function Sidebar() {
         { href: "/wishlist", icon: Star, label: "Wishlist" },
         { href: "/trades", icon: Repeat, label: "Trocas" },
         { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
+        { href: "/price-history", icon: ChartNoAxesCombined, label: "Histórico de preços" },
         { href: "/settings", icon: Settings, label: "Configurações" },
     ];
 

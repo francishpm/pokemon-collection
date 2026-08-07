@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Plus, User, Menu, X, House, FolderOpen, Star, Repeat, ChartColumn, Settings, LogOut, Moon, Sun } from "lucide-react";
+import { Bell, Plus, User, Menu, X, House, FolderOpen, Star, Repeat, ChartColumn, ChartNoAxesCombined, Settings, LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { useUiStore } from "@/store/uiStore";
@@ -17,6 +17,7 @@ const pages = {
   "/wishlist": { title: "Wishlist", subtitle: "Cartas que você deseja adquirir." },
   "/trades": { title: "Trocas e Vendas", subtitle: "Gerencie suas duplicatas disponíveis para negócio." },
   "/market": { title: "Ranking de Valiosas", subtitle: "As cartas mais valiosas da sua coleção." },
+  "/price-history": { title: "Histórico de preços", subtitle: "Acompanhe cada alteração no valor de mercado das suas cartas." },
   "/settings": { title: "Configurações", subtitle: "Personalize o CardDex." },
   "/profile": { title: "Minha Conta", subtitle: "Gerencie as informações da sua conta." },
 };
@@ -27,6 +28,7 @@ const links = [
   { href: "/wishlist", icon: Star, label: "Wishlist" },
   { href: "/trades", icon: Repeat, label: "Trocas" },
   { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
+  { href: "/price-history", icon: ChartNoAxesCombined, label: "Histórico de preços" },
   { href: "/settings", icon: Settings, label: "Configurações" },
 ];
 

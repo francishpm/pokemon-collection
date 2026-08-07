@@ -17,7 +17,7 @@ export function CollectionCardInfo({
         return `${dia}/${mes}/${ano}`;
     };
 
-    const dataFormatada = formatarData(collection.acquisitionDate);
+    const updatedAtFormatada = formatarData(collection.updatedAt);
 
     return (
         <div className="mt-1 flex flex-col items-center gap-1 text-center">
@@ -51,10 +51,9 @@ export function CollectionCardInfo({
                     </span>
                 )}
 
-                {/* DATA DE ATUALIZAÇÃO */}
-                {dataFormatada && (
+                {updatedAtFormatada && (
                     <span className="text-[10px] text-muted-foreground mt-1 font-medium">
-                        Atualizado em: {dataFormatada}
+                        Última atualização: {updatedAtFormatada}
                     </span>
                 )}
             </div>

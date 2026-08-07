@@ -14,6 +14,7 @@ interface CollectionRow {
   acquisition_date: string | null;
   notes: string | null;
   created_at: string | null;
+  updated_at: string | null;
   pokemon_data: PokemonCard | null;
 }
 
@@ -39,6 +40,7 @@ function toCollectionCard(row: CollectionRow): CollectionCard {
     acquisitionDate: row.acquisition_date ?? undefined,
     notes: row.notes ?? undefined,
     createdAt: row.created_at ?? new Date().toISOString(),
+    updatedAt: row.updated_at ?? row.created_at ?? undefined,
     pokemonData: row.pokemon_data ?? undefined,
   };
 }
