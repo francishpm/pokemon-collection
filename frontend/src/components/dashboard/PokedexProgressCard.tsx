@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { CollectionView } from "@/hooks/useCollection";
 import { getGeneration } from "@/lib/getGeneration";
 
@@ -62,13 +61,13 @@ export function PokedexProgressCard({ collectionView }: PokedexProgressCardProps
     }, [collectionView, genFilter]);
 
     return (
-        <Card className="h-full flex flex-col shadow-sm border-slate-200">
+        <Card className="h-full flex flex-col border-border shadow-sm">
             <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-lg font-semibold">Minha Pokédex</CardTitle>
                 <select
                     value={genFilter}
                     onChange={(e) => setGenFilter(e.target.value)}
-                    className="h-8 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="h-8 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="all">Todas as Gerações</option>
                     <option value="1">Gen 1 (Kanto)</option>
@@ -84,28 +83,41 @@ export function PokedexProgressCard({ collectionView }: PokedexProgressCardProps
             </CardHeader>
 
             <CardContent className="flex flex-1 flex-col justify-center">
-                <div className="text-center py-4">
-                    <p className="text-5xl font-black text-blue-600 tracking-tight">
+                <div className="py-4 text-center">
+                    <p className="text-5xl font-black tracking-tight text-blue-500 tabular-nums">
                         {stats.percentage}%
                     </p>
-                    <p className="mt-1 text-sm font-medium text-slate-500">
-                        Completa
+                    <p className="mt-1 text-sm font-medium text-muted-foreground">
+                        da Pokédex completa
                     </p>
                 </div>
 
-                <Progress
-                    value={stats.percentage}
-                    className="h-3 w-full bg-slate-100"
-                />
+                <div
+                    role="progressbar"
+                    aria-label="Progresso da Pokédex"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={stats.percentage}
+                    className="h-3 w-full overflow-hidden rounded-full bg-secondary ring-1 ring-border"
+                >
+                    <div
+                        className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-[width] duration-500 ease-out"
+                        style={{ width: `${Math.min(100, Math.max(0, stats.percentage))}%` }}
+                    />
+                </div>
 
-                <div className="mt-6 flex justify-between border-t border-slate-100 pt-4 text-sm">
+                <p className="mt-2 text-center text-xs text-muted-foreground tabular-nums">
+                    {stats.registered} de {stats.total} Pokémon registrados
+                </p>
+
+                <div className="mt-4 flex justify-between border-t border-border pt-4 text-sm">
                     <div className="flex flex-col">
-                        <span className="text-slate-500">Registrados</span>
-                        <span className="font-bold text-slate-700">{stats.registered}</span>
+                        <span className="text-muted-foreground">Registrados</span>
+                        <span className="font-bold text-foreground tabular-nums">{stats.registered}</span>
                     </div>
                     <div className="flex flex-col text-right">
-                        <span className="text-slate-500">Faltam</span>
-                        <span className="font-bold text-slate-700">{stats.total - stats.registered}</span>
+                        <span className="text-muted-foreground">Faltam</span>
+                        <span className="font-bold text-foreground tabular-nums">{Math.max(0, stats.total - stats.registered)}</span>
                     </div>
                 </div>
             </CardContent>

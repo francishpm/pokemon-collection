@@ -22,7 +22,7 @@ interface PublicTrade {
 
 export default function PublicTradesPage() {
   const params = useParams();
-  const userId = params.id as string;
+  const shareToken = params.id as string;
   const [trades, setTrades] = useState<PublicTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -31,11 +31,11 @@ export default function PublicTradesPage() {
     let isMounted = true;
 
     const fetchPublicTrades = async () => {
-      if (!userId) return;
+      if (!shareToken) return;
       setLoading(true);
 
       try {
-        const { data, error } = await supabase.rpc("get_public_trades", { owner_id: userId });
+        const { data, error } = await supabase.rpc("get_public_trades", { share_token: shareToken });
 
         if (error) throw error;
         if (isMounted) setTrades((data ?? []) as PublicTrade[]);
@@ -51,7 +51,7 @@ export default function PublicTradesPage() {
     return () => {
       isMounted = false;
     };
-  }, [userId]);
+  }, [shareToken]);
 
   const filteredTrades = trades.filter((trade) =>
     (trade.card_name ?? trade.card_id).toLowerCase().includes(search.trim().toLowerCase())

@@ -14,8 +14,19 @@ import { useUiStore } from "@/store/uiStore";
 import { getGeneration } from "@/lib/getGeneration"; 
 import { useCollectionStore } from "@/store/collectionStore"; // <-- Importação adicionada aqui
 import { toast } from "sonner";
+import { CollectionShareButton } from "@/components/collection/CollectionShareButton";
 
 type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc" | "priceDesc" | "priceAsc";
+type CardTypeFilter = "all" | "pokemon" | "trainer";
+
+function isTrainerCard(card: PokemonCard) {
+  const labels = [card.supertype, ...card.subtypes]
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  return /trainer|treinador|supporter|item|stadium|tool/.test(labels);
+}
 
 // Atualizado para 30 cartas por página (5 linhas de 6)
 const ITEMS_PER_PAGE = 30; 
@@ -36,6 +47,7 @@ export default function CollectionPage() {
   const [localSearch, setLocalSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
   const [genFilter, setGenFilter] = useState("all"); 
+  const [typeFilter, setTypeFilter] = useState<CardTypeFilter>("all");
   
   // Estados para Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,6 +79,11 @@ export default function CollectionPage() {
     return counts;
   }, [collectionView]);
 
+  const typeCounts = useMemo(() => {
+    const trainers = collectionView.filter(({ pokemon }) => isTrainerCard(pokemon)).length;
+    return { trainers, pokemon: collectionView.length - trainers };
+  }, [collectionView]);
+
   const handleDelete = async (id: string) => {
     if (!confirm("Deseja realmente excluir esta carta?")) return;
     try {
@@ -87,6 +104,12 @@ export default function CollectionPage() {
 
   const filteredAndSortedCollection = useMemo(() => {
     let result = collectionView;
+
+    if (typeFilter === "trainer") {
+      result = result.filter(({ pokemon }) => isTrainerCard(pokemon));
+    } else if (typeFilter === "pokemon") {
+      result = result.filter(({ pokemon }) => !isTrainerCard(pokemon));
+    }
 
     // 2. Filtro por Geração
     if (genFilter !== "all") {
@@ -152,7 +175,7 @@ export default function CollectionPage() {
       }
       return dexB - dexA;
     });
-  }, [collectionView, localSearch, sortOrder, genFilter]);
+  }, [collectionView, localSearch, sortOrder, genFilter, typeFilter]);
 
   // Cálculos de Paginação
   const totalPages = Math.ceil(filteredAndSortedCollection.length / ITEMS_PER_PAGE);
@@ -181,6 +204,7 @@ export default function CollectionPage() {
           {/* Menu de Geração */}
           <select
             value={genFilter}
+            disabled={typeFilter === "trainer"}
             onChange={(e) => {
               setGenFilter(e.target.value);
               setCurrentPage(1);
@@ -196,6 +220,22 @@ export default function CollectionPage() {
           </select>
 
           {/* Menu de Ordenação original e novos */}
+          <select
+            value={typeFilter}
+            onChange={(e) => {
+              const nextType = e.target.value as CardTypeFilter;
+              setTypeFilter(nextType);
+              if (nextType === "trainer") setGenFilter("all");
+              setCurrentPage(1);
+            }}
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label="Filtrar por tipo de carta"
+          >
+            <option value="all">Todos os tipos ({collectionView.length})</option>
+            <option value="pokemon">Pokémon ({typeCounts.pokemon})</option>
+            <option value="trainer">Treinadores ({typeCounts.trainers})</option>
+          </select>
+
           <select
             value={sortOrder}
             onChange={(e) => {
@@ -213,10 +253,13 @@ export default function CollectionPage() {
           </select>
         </div>
 
-        <Button className="gap-2" onClick={() => openSearchModal("collection")}>
-          <Plus size={18} />
-          Adicionar Carta
-        </Button>
+        <div className="flex gap-2">
+          <CollectionShareButton />
+          <Button className="gap-2" onClick={() => openSearchModal("collection")}>
+            <Plus size={18} />
+            Adicionar Carta
+          </Button>
+        </div>
       </div>
 
       {collectionView.length === 0 ? (
