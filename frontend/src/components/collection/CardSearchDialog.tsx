@@ -20,11 +20,28 @@ interface CardSearchDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+function normalizeCardNumber(value: string) {
+  const match = value.match(/^([a-z]*)(\d+)([a-z]*)\/([a-z]*)(\d+)$/i);
+  if (!match) return value;
+  return `${match[1].toLowerCase()}${Number(match[2])}${match[3].toLowerCase()}/${Number(match[5])}`;
+}
+
+function parseNameAndNumber(value: string) {
+  const match = value.trim().match(/^(.+?)\s+\(?([a-z]*\d+[a-z]*)(?:\/([a-z]*)(\d+))?\)?$/i);
+  if (!match) return null;
+  return {
+    name: match[1].trim().toLowerCase(),
+    number: match[2].toLowerCase(),
+    printedTotal: match[4],
+  };
+}
+
 export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) {
   const modalTarget = useUiStore((state) => state.modalTarget);
   const [search, setSearch] = useState("");
   const [apiCards, setApiCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
 
   useEffect(() => {
@@ -34,6 +51,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
       setApiCards([]);
       setSelectedCard(null);
       setLoading(false);
+      setSearchError(null);
     }
     }, 0);
 
@@ -43,20 +61,23 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
   useEffect(() => {
     const loadCards = async () => {
       const term = search.trim();
-      const isNumber = /^\d+$/.test(term);
-      const isFullNumber = /^\d+\/\d+$/.test(term);
+      const isNumber = /^[a-z]*\d+[a-z]*$/i.test(term);
+      const isFullNumber = /^[a-z]*\d+[a-z]*\/[a-z]*\d+$/i.test(term);
 
       if (term.length < 3 && !isNumber && !isFullNumber) {
         setApiCards([]);
+        setSearchError(null);
         return;
       }
 
       try {
         setLoading(true);
+        setSearchError(null);
         const result = await searchCards(term);
         setApiCards(result);
       } catch (error) {
-        console.error(error);
+        setApiCards([]);
+        setSearchError(error instanceof Error ? error.message : "Não foi possível pesquisar agora.");
       } finally {
         setLoading(false);
       }
@@ -68,14 +89,23 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
 
   const cards = useMemo(() => {
     const term = search.trim().toLowerCase();
+    const normalizedTerm = normalizeCardNumber(term);
+    const namedCard = parseNameAndNumber(term);
     if (!term) return [];
 
     return apiCards.filter((card) => {
-      const fullNumber = `${card.number}/${card.set.printedTotal}`.toLowerCase();
+      const fullNumber = `${card.number}/${card.set.printedTotalLabel ?? card.set.printedTotal}`.toLowerCase();
+      if (namedCard) {
+        const numberMatches = namedCard.printedTotal
+          ? normalizeCardNumber(fullNumber) === normalizeCardNumber(`${namedCard.number}/${namedCard.printedTotal}`)
+          : card.number.toLowerCase() === namedCard.number;
+        return card.name.toLowerCase().includes(namedCard.name) && numberMatches;
+      }
       return (
         card.name.toLowerCase().includes(term) ||
         card.number.toLowerCase().includes(term) ||
         fullNumber.includes(term) ||
+        normalizeCardNumber(fullNumber) === normalizedTerm ||
         card.set.name.toLowerCase().includes(term)
       );
     });
@@ -125,6 +155,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
                   <CardSearchResults
                     cards={cards}
                     loading={loading}
+                    error={searchError}
                     onAdd={(card) => handleCardClick(card)}
                   />
                 ) : (
@@ -201,11 +232,11 @@ function TradePriceForm({
   return (
     <div className="space-y-6 text-foreground">
       <div className="flex gap-4 rounded-xl border border-border bg-card p-4 items-center">
-        <img src={card.images.small} alt={card.name} className="h-28 object-contain" />
+        <img src={card.images.small} alt={card.name} loading="eager" decoding="async" fetchPriority="high" className="h-28 object-contain" />
         <div>
           <h3 className="font-bold text-lg">{card.name}</h3>
           <p className="text-xs text-muted-foreground">
-            {card.set.name} • #{card.number}/{card.set.printedTotal}
+            {card.set.name} • #{card.number}/{card.set.printedTotalLabel ?? card.set.printedTotal}
           </p>
         </div>
       </div>

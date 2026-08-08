@@ -26,7 +26,7 @@ export function CollectionCardInfo({
             </h3>
 
             <p className="text-xs text-muted-foreground">
-                #{pokemon.number}/{pokemon.set.printedTotal} • {pokemon.set.name}
+                #{pokemon.number}/{pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal} • {pokemon.set.name}
             </p>
 
             <div className="flex justify-center gap-2">

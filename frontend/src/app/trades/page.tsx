@@ -45,7 +45,7 @@ export default function TradesPage() {
         if (!term) return tradesView;
 
         return tradesView.filter(({ pokemon }) => {
-            const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
+            const fullNumber = `${pokemon.number}/${pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal}`.toLowerCase();
             return (
                 pokemon.name.toLowerCase().includes(term) ||
                 pokemon.number.toLowerCase().includes(term) ||

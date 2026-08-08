@@ -68,7 +68,7 @@ export default function PriceHistoryPage() {
       pokemon.name.toLocaleLowerCase("pt-BR").includes(term)
       || pokemon.number.toLocaleLowerCase("pt-BR").includes(term)
       || pokemon.set.name.toLocaleLowerCase("pt-BR").includes(term)
-      || `${pokemon.number}/${pokemon.set.printedTotal}`.includes(term)
+      || `${pokemon.number}/${pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal}`.includes(term)
     );
   }, [cardsWithHistory, search]);
 

@@ -1,6 +1,4 @@
-import React from "react";
 import { Input } from "@/components/ui/input";
-import { formatCurrency } from "@/lib/formatCurrency";
 
 interface PriceInputProps {
   value: string;
@@ -8,37 +6,28 @@ interface PriceInputProps {
 }
 
 export function PriceInput({ value, onChange }: PriceInputProps) {
-  // Formata o valor apenas para exibição
-  const displayValue = React.useMemo(() => {
-    if (!value) return "";
-    const numeric = Number(value);
-    if (isNaN(numeric)) return "";
-    return formatCurrency(numeric);
-  }, [value]);
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const cleaned = event.target.value.replace(/[^\d,.]/g, "").replace(",", ".");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove tudo que não for número (ex: R$, vírgulas, pontos e letras)
-    const rawValue = e.target.value.replace(/\D/g, "");
-    
-    if (!rawValue) {
+    if (!cleaned) {
       onChange("");
       return;
     }
 
-    // Divide por 100 para criar os centavos matematicamente
-    const numericValue = Number(rawValue) / 100;
-    
-    // Devolve para o estado pai apenas o valor numérico limpo (como string)
-    onChange(numericValue.toString());
+    const [integerPart, ...decimalParts] = cleaned.split(".");
+    const integer = integerPart.replace(/^0+(?=\d)/, "") || "0";
+    const decimals = decimalParts.join("").slice(0, 2);
+
+    onChange(cleaned.includes(".") ? `${integer}.${decimals}` : integer);
   };
 
   return (
     <Input
       type="text"
-      inputMode="numeric"
-      value={displayValue}
+      inputMode="decimal"
+      value={value.replace(".", ",")}
       onChange={handleChange}
-      placeholder="R$ 0,00"
+      placeholder="Ex: 32"
       className="font-medium"
     />
   );

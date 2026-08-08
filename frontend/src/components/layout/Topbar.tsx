@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
+import { useCollectionStore } from "@/store/collectionStore";
 
 const pages = {
   "/": { title: "Dashboard", subtitle: "Visão geral da sua coleção." },
@@ -38,6 +39,7 @@ export function Topbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const collectionCount = useCollectionStore((state) => state.cards.length);
 
   if (pathname.startsWith("/public")) return null;
 
@@ -65,7 +67,14 @@ export function Topbar() {
           </button>
 
           <div>
-            <h1 className="text-xl md:text-3xl font-bold tracking-tight">{page.title}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl md:text-3xl font-bold tracking-tight">{page.title}</h1>
+              {pathname === "/collection" && (
+                <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                  {collectionCount} {collectionCount === 1 ? "carta" : "cartas"}
+                </span>
+              )}
+            </div>
             <p className="hidden sm:block mt-1 text-xs md:text-sm text-muted-foreground">{page.subtitle}</p>
           </div>
         </div>

@@ -6,6 +6,7 @@ export interface TcgPlayerPrice {
 
 export interface PokemonCard {
   id: string;
+  language?: "PT" | "EN" | "JP";
   name: string;
   number: string;
   images: {
@@ -21,6 +22,7 @@ export interface PokemonCard {
     name: string;
     series: string;
     printedTotal: number;
+    printedTotalLabel?: string;
     ligaEdition?: string;
   };
   // ADICIONAMOS ISSO AQUI PARA O NOSSO CÁLCULO FINANCEIRO

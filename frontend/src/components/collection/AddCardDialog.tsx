@@ -52,7 +52,13 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
     const buscarPrecoMercado = async () => {
       setCarregandoMercado(true);
       try {
-        const res = await fetch(`/api/tcg?id=${card.id}`);
+        const params = new URLSearchParams({
+          id: card.id,
+          name: card.name,
+          number: card.number,
+          total: String(card.set.printedTotalLabel ?? card.set.printedTotal),
+        });
+        const res = await fetch(`/api/tcg?${params}`);
         const data: { success?: boolean } & Partial<MarketData> = await res.json();
 
         if (data.success && data.prices) {
@@ -75,7 +81,7 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
     const timer = setTimeout(() => {
     if (!editingCard) {
       setCondition("NM");
-      setLanguage("PT");
+      setLanguage(card?.language ?? "PT");
       setAcquisitionValue("");
       setLigaValue(""); // <-- LIMPANDO
       setAcquisitionDate(new Date().toISOString().split("T")[0]);
@@ -92,7 +98,7 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [editingCard]);
+  }, [card, editingCard]);
 
   const handleSaveCollection = async () => {
     if (!card) return;
@@ -160,19 +166,19 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
   ];
 
   const temPreco = dadosMercado && dadosMercado.prices.usd > 0;
-  const ligaUrl = getLigaPokemonUrl(card.name, card.number, card.set.printedTotal, card.set.ligaEdition);
+  const ligaUrl = getLigaPokemonUrl(card.name, card.number, card.set.printedTotal, card.set.ligaEdition, card.set.printedTotalLabel, card.set.name);
 
   return (
     <div className="space-y-6 text-foreground">
       {/* Card de Apresentação da Carta adaptado para Dark Mode */}
       <div className="flex gap-4 rounded-xl border border-border bg-card p-4 shadow-sm items-stretch">
-        <img src={card.images.small} alt={card.name} className="h-36 rounded-md object-contain drop-shadow-md" />
+        <img src={card.images.small} alt={card.name} loading="eager" decoding="async" fetchPriority="high" className="h-36 rounded-md object-contain drop-shadow-md" />
 
         <div className="flex-1 flex flex-col justify-between py-1">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">{card.name}</h2>
             <p className="text-sm font-medium text-muted-foreground mt-1">
-              {card.set.name} • #{card.number}/{card.set.printedTotal}
+              {card.set.name} • #{card.number}/{card.set.printedTotalLabel ?? card.set.printedTotal}
             </p>
           </div>
 

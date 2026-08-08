@@ -16,16 +16,26 @@ import { useCollectionStore } from "@/store/collectionStore"; // <-- Importaçã
 import { toast } from "sonner";
 
 type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc" | "priceDesc" | "priceAsc";
-type PriceFilterOption = "all" | "has_price" | "no_price";
 
 // Atualizado para 30 cartas por página (5 linhas de 6)
 const ITEMS_PER_PAGE = 30; 
+
+const GENERATIONS = [
+  { id: 1, region: "Kanto" },
+  { id: 2, region: "Johto" },
+  { id: 3, region: "Hoenn" },
+  { id: 4, region: "Sinnoh" },
+  { id: 5, region: "Unova" },
+  { id: 6, region: "Kalos" },
+  { id: 7, region: "Alola" },
+  { id: 8, region: "Galar" },
+  { id: 9, region: "Paldea" },
+] as const;
 
 export default function CollectionPage() {
   const [localSearch, setLocalSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
   const [genFilter, setGenFilter] = useState("all"); 
-  const [priceFilter, setPriceFilter] = useState<PriceFilterOption>("all");
   
   // Estados para Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,6 +55,17 @@ export default function CollectionPage() {
   // -----------------------------------------------
 
   const openSearchModal = useUiStore((state) => state.openSearchModal);
+
+  const generationCounts = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const { pokemon } of collectionView) {
+      const dexNumber = pokemon.nationalPokedexNumbers?.[0];
+      if (!dexNumber) continue;
+      const generation = getGeneration(dexNumber);
+      counts.set(generation, (counts.get(generation) ?? 0) + 1);
+    }
+    return counts;
+  }, [collectionView]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Deseja realmente excluir esta carta?")) return;
@@ -67,26 +88,6 @@ export default function CollectionPage() {
   const filteredAndSortedCollection = useMemo(() => {
     let result = collectionView;
 
-    // 1. Filtro de Preço na API
-    if (priceFilter !== "all") {
-      result = result.filter(({ pokemon }) => {
-        let hasPrice = false;
-        const prices = pokemon.tcgplayer?.prices;
-        if (prices) {
-          for (const key in prices) {
-            if (prices[key]?.market || prices[key]?.mid || prices[key]?.low) {
-              hasPrice = true;
-              break;
-            }
-          }
-        }
-        
-        if (priceFilter === "has_price") return hasPrice;
-        if (priceFilter === "no_price") return !hasPrice;
-        return true;
-      });
-    }
-
     // 2. Filtro por Geração
     if (genFilter !== "all") {
       const targetGen = Number(genFilter);
@@ -101,7 +102,7 @@ export default function CollectionPage() {
     const term = localSearch.trim().toLowerCase();
     if (term) {
       result = result.filter(({ pokemon }) => {
-        const fullNumber = `${pokemon.number}/${pokemon.set.printedTotal}`.toLowerCase();
+        const fullNumber = `${pokemon.number}/${pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal}`.toLowerCase();
         return (
           pokemon.name.toLowerCase().includes(term) ||
           pokemon.number.toLowerCase().includes(term) ||
@@ -151,7 +152,7 @@ export default function CollectionPage() {
       }
       return dexB - dexA;
     });
-  }, [collectionView, localSearch, sortOrder, genFilter, priceFilter]);
+  }, [collectionView, localSearch, sortOrder, genFilter]);
 
   // Cálculos de Paginação
   const totalPages = Math.ceil(filteredAndSortedCollection.length / ITEMS_PER_PAGE);
@@ -186,30 +187,12 @@ export default function CollectionPage() {
             }}
             className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
-            <option value="all">Todas as Gerações</option>
-            <option value="1">Gen 1 (Kanto)</option>
-            <option value="2">Gen 2 (Johto)</option>
-            <option value="3">Gen 3 (Hoenn)</option>
-            <option value="4">Gen 4 (Sinnoh)</option>
-            <option value="5">Gen 5 (Unova)</option>
-            <option value="6">Gen 6 (Kalos)</option>
-            <option value="7">Gen 7 (Alola)</option>
-            <option value="8">Gen 8 (Galar)</option>
-            <option value="9">Gen 9 (Paldea)</option>
-          </select>
-
-          {/* Menu de Filtro de Preço */}
-          <select
-            value={priceFilter}
-            onChange={(e) => {
-              setPriceFilter(e.target.value as PriceFilterOption);
-              setCurrentPage(1);
-            }}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="all">Com e Sem Preço</option>
-            <option value="has_price">Somente Com Preço API</option>
-            <option value="no_price">Somente Sem Preço API</option>
+            <option value="all">Todas as Gerações ({collectionView.length})</option>
+            {GENERATIONS.map(({ id, region }) => (
+              <option key={id} value={id}>
+                Gen {id} ({region}) — {generationCounts.get(id) ?? 0}
+              </option>
+            ))}
           </select>
 
           {/* Menu de Ordenação original e novos */}

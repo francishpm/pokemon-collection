@@ -16,6 +16,8 @@ export function CardSearchItem({
             <img
                 src={card.images.small}
                 alt={card.name}
+                loading="lazy"
+                decoding="async"
                 className="h-20 rounded"
             />
 
@@ -29,7 +31,7 @@ export function CardSearchItem({
                 </p>
 
                 <p className="text-xs text-muted-foreground">
-                    #{card.number}/{card.set.printedTotal}
+                    #{card.number}/{card.set.printedTotalLabel ?? card.set.printedTotal}
                 </p>
             </div>
 
