@@ -2,8 +2,6 @@ import { CollectionCard } from "@/types/collection-card";
 import { supabase } from "@/lib/supabase";
 import { PokemonCard } from "@/types/pokemon-card";
 
-const LEGACY_STORAGE_KEY = "carddex_collection";
-
 interface CollectionRow {
   id: string;
   pokemon_card_id: string;
@@ -11,22 +9,16 @@ interface CollectionRow {
   condition: CollectionCard["condition"];
   acquisition_value: number | null;
   liga_value: number | null;
+  liga_lowest_price: number | null;
+  liga_price_checked_at: string | null;
+  liga_price_url: string | null;
+  liga_price_status: CollectionCard["ligaPriceStatus"] | null;
+  liga_price_source_trust: CollectionCard["ligaPriceSourceTrust"] | null;
   acquisition_date: string | null;
   notes: string | null;
   created_at: string | null;
   updated_at: string | null;
   pokemon_data: PokemonCard | null;
-}
-
-export function getLegacyLocalCards(): CollectionCard[] {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const rawCards = window.localStorage.getItem(LEGACY_STORAGE_KEY);
-    return rawCards ? JSON.parse(rawCards) : [];
-  } catch {
-    return [];
-  }
 }
 
 function toCollectionCard(row: CollectionRow): CollectionCard {
@@ -37,6 +29,11 @@ function toCollectionCard(row: CollectionRow): CollectionCard {
     condition: row.condition,
     acquisitionValue: row.acquisition_value ?? undefined,
     ligaValue: row.liga_value ?? undefined,
+    ligaLowestPrice: row.liga_lowest_price ?? undefined,
+    ligaPriceCheckedAt: row.liga_price_checked_at ?? undefined,
+    ligaPriceUrl: row.liga_price_url ?? undefined,
+    ligaPriceStatus: row.liga_price_status ?? undefined,
+    ligaPriceSourceTrust: row.liga_price_source_trust ?? undefined,
     acquisitionDate: row.acquisition_date ?? undefined,
     notes: row.notes ?? undefined,
     createdAt: row.created_at ?? new Date().toISOString(),
@@ -76,6 +73,11 @@ export async function saveCardToSupabase(card: CollectionCard): Promise<Collecti
       condition: card.condition,
       acquisition_value: card.acquisitionValue ?? null,
       liga_value: card.ligaValue ?? null,
+      liga_lowest_price: card.ligaLowestPrice ?? null,
+      liga_price_checked_at: card.ligaPriceCheckedAt ?? null,
+      liga_price_url: card.ligaPriceUrl ?? null,
+      liga_price_status: card.ligaPriceStatus ?? null,
+      liga_price_source_trust: card.ligaPriceSourceTrust ?? null,
       acquisition_date: card.acquisitionDate ?? null,
       notes: card.notes ?? null,
       pokemon_data: card.pokemonData ?? null,
@@ -107,6 +109,11 @@ export async function updateCardInSupabase(card: CollectionCard): Promise<Collec
       condition: card.condition,
       acquisition_value: card.acquisitionValue ?? null,
       liga_value: card.ligaValue ?? null,
+      liga_lowest_price: card.ligaLowestPrice ?? null,
+      liga_price_checked_at: card.ligaPriceCheckedAt ?? null,
+      liga_price_url: card.ligaPriceUrl ?? null,
+      liga_price_status: card.ligaPriceStatus ?? null,
+      liga_price_source_trust: card.ligaPriceSourceTrust ?? null,
       acquisition_date: card.acquisitionDate ?? null,
       notes: card.notes ?? null,
       pokemon_data: card.pokemonData ?? null,
@@ -125,6 +132,34 @@ export async function savePokemonSnapshotToSupabase(id: string, pokemon: Pokemon
   const { error } = await supabase
     .from("collection")
     .update({ pokemon_data: pokemon })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw error;
+}
+
+export interface LigaPriceReferenceUpdate {
+  price?: number;
+  checkedAt: string;
+  url: string;
+  status: NonNullable<CollectionCard["ligaPriceStatus"]>;
+  sourceTrust?: CollectionCard["ligaPriceSourceTrust"];
+}
+
+export async function updateLigaPriceReferenceInSupabase(
+  id: string,
+  reference: LigaPriceReferenceUpdate,
+): Promise<void> {
+  const user = await getAuthenticatedUser();
+  const { error } = await supabase
+    .from("collection")
+    .update({
+      liga_lowest_price: reference.price ?? null,
+      liga_price_checked_at: reference.checkedAt,
+      liga_price_url: reference.url,
+      liga_price_status: reference.status,
+      ...(reference.sourceTrust ? { liga_price_source_trust: reference.sourceTrust } : {}),
+    })
     .eq("id", id)
     .eq("user_id", user.id);
 

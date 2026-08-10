@@ -1,25 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useCollectionStore } from "@/store/collectionStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Layers, DollarSign, Globe, TrendingUp } from "lucide-react";
+import { Globe, Layers, TrendingDown, TrendingUp } from "lucide-react";
 import { useCollection } from "@/hooks/useCollection";
 import { PokedexProgressCard } from "@/components/dashboard/PokedexProgressCard";
 import { RecentCardsCard } from "@/components/dashboard/RecentCardsCard";
+import { fetchPriceHistory } from "@/services/priceHistoryService";
+import { PriceHistory } from "@/types/price.history";
+
+type VariationPeriod = 7 | 30 | 90;
 
 export default function DashboardPage() {
   const [userName, setUserName] = useState("Treinador");
+  const [history, setHistory] = useState<PriceHistory[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyLoadedAt, setHistoryLoadedAt] = useState<number | null>(null);
+  const [variationPeriod, setVariationPeriod] = useState<VariationPeriod>(30);
 
   const fetchCards = useCollectionStore((state) => state.fetchCards);
 
   const {
     collectionView,
     totalCards,
-    totalInvestido,
     valorMercado,
-    lucroPrejuizo,
     carregandoValores, // <-- Adicionamos isso aqui para o aviso funcionar
   } = useCollection();
 
@@ -37,13 +43,68 @@ export default function DashboardPage() {
       // 2. Carrega as cartas da nuvem
       try {
         await fetchCards();
+        setHistory(await fetchPriceHistory());
+        setHistoryLoadedAt(Date.now());
       } catch (error) {
         console.error("Erro ao carregar coleção:", error);
+      } finally {
+        setHistoryLoading(false);
       }
     };
 
     initData();
   }, [fetchCards]);
+
+  const marketVariation = useMemo(() => {
+    if (historyLoadedAt === null) return { amount: 0, percentage: 0, comparedCards: 0 };
+    const cutoff = historyLoadedAt - variationPeriod * 24 * 60 * 60 * 1000;
+    const cardCreatedAt = new Map(
+      collectionView.map(({ collection }) => [collection.id, new Date(collection.createdAt).getTime()]),
+    );
+    const grouped = new Map<string, PriceHistory[]>();
+
+    for (const entry of history) {
+      const entries = grouped.get(entry.collectionCardId) ?? [];
+      entries.push(entry);
+      grouped.set(entry.collectionCardId, entries);
+    }
+
+    let previousTotal = 0;
+    let currentTotal = 0;
+    let comparedCards = 0;
+
+    for (const [cardId, allEntries] of grouped) {
+      const createdAt = cardCreatedAt.get(cardId);
+      if (createdAt === undefined || createdAt > cutoff) continue;
+
+      const entries = allEntries
+        .filter((entry) => entry.source === "manual")
+        .slice()
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      const current = entries.at(-1);
+      const beforePeriod = entries.filter((entry) => new Date(entry.createdAt).getTime() <= cutoff).at(-1);
+      const firstInPeriod = entries.find((entry) => new Date(entry.createdAt).getTime() > cutoff);
+      const baseline = beforePeriod ?? firstInPeriod;
+
+      if (!baseline || !current || baseline.id === current.id) continue;
+
+      previousTotal += baseline.price;
+      currentTotal += current.price;
+      comparedCards += 1;
+    }
+
+    const amount = currentTotal - previousTotal;
+    return {
+      amount,
+      percentage: previousTotal > 0 ? (amount / previousTotal) * 100 : 0,
+      comparedCards,
+    };
+  }, [collectionView, history, historyLoadedAt, variationPeriod]);
+
+  const cardsWithoutManualValue = useMemo(
+    () => collectionView.filter(({ collection }) => !collection.ligaValue || collection.ligaValue <= 0),
+    [collectionView],
+  );
 
   return (
     <div className="space-y-6 p-0 sm:space-y-8">
@@ -64,7 +125,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Cards de Métricas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="min-w-0 border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-500">Total de Cartas</CardTitle>
@@ -77,21 +138,7 @@ export default function DashboardPage() {
 
         <Card className="min-w-0 border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Valor Investido (Custo)</CardTitle>
-            <DollarSign className="h-5 w-5 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold sm:text-2xl">
-              R$ {totalInvestido.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0 border-slate-200 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Média de Mercado Atual</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-500">Valor estimado da coleção</CardTitle>
             <Globe className="h-5 w-5 text-blue-400" />
           </CardHeader>
           <CardContent>
@@ -101,27 +148,54 @@ export default function DashboardPage() {
                 currency: "BRL",
               })}
             </div>
+            <p className="mt-1 text-xs text-muted-foreground">Soma dos valores de mercado preenchidos manualmente</p>
+            {cardsWithoutManualValue.length === 1 && (
+              <p className="mt-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                Sem valor: {cardsWithoutManualValue[0].pokemon.name} #{cardsWithoutManualValue[0].pokemon.number} · {cardsWithoutManualValue[0].pokemon.set.name}
+              </p>
+            )}
+            {cardsWithoutManualValue.length > 1 && (
+              <p className="mt-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                {cardsWithoutManualValue.length} cartas ainda estão sem valor manual
+              </p>
+            )}
           </CardContent>
         </Card>
 
         <Card className="min-w-0 border-slate-200 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">Valorização / Lucro</CardTitle>
-            <TrendingUp className="h-5 w-5 text-emerald-600" />
+            <CardTitle className="text-sm font-medium text-slate-500">Variação de mercado</CardTitle>
+            <select
+              value={variationPeriod}
+              onChange={(event) => setVariationPeriod(Number(event.target.value) as VariationPeriod)}
+              className="h-7 rounded-md border bg-background px-2 text-xs"
+              aria-label="Período da variação de mercado"
+            >
+              <option value={7}>7 dias</option>
+              <option value={30}>30 dias</option>
+              <option value={90}>90 dias</option>
+            </select>
           </CardHeader>
           <CardContent>
-            <div
-              className={`text-xl font-bold sm:text-2xl ${lucroPrejuizo >= 0
-                  ? "text-emerald-600"
-                  : "text-red-600"
-                }`}
-            >
-              {lucroPrejuizo.toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-                signDisplay: "always",
-              })}
-            </div>
+            {historyLoading ? (
+              <p className="text-sm text-muted-foreground">Calculando histórico...</p>
+            ) : marketVariation.comparedCards > 0 ? (
+              <>
+                <div className={`flex items-center gap-1 text-xl font-bold sm:text-2xl ${marketVariation.amount >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                  {marketVariation.amount >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                  {marketVariation.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL", signDisplay: "always" })}
+                </div>
+                <p className={`mt-1 text-xs font-semibold ${marketVariation.percentage >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                  {marketVariation.percentage.toLocaleString("pt-BR", { maximumFractionDigits: 1, signDisplay: "always" })}% no período
+                </p>
+                <p className="text-xs text-muted-foreground">Baseado em {marketVariation.comparedCards} cartas comparáveis</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xl font-bold text-muted-foreground">Sem comparação</p>
+                <p className="mt-1 text-xs text-muted-foreground">São necessárias duas atualizações por carta no período</p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

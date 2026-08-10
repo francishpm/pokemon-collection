@@ -2,23 +2,11 @@ import { supabase } from "@/lib/supabase";
 import { WishlistCard } from "@/types/wishlist-card";
 import { PokemonCard } from "@/types/pokemon-card";
 
-const LEGACY_STORAGE_KEY = "carddex_wishlist";
-
 interface WishlistRow {
   id: string;
   pokemon_card_id: string;
   created_at: string | null;
   pokemon_data: PokemonCard | null;
-}
-
-export function getLegacyLocalWishlist(): WishlistCard[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const rawItems = window.localStorage.getItem(LEGACY_STORAGE_KEY);
-    return rawItems ? JSON.parse(rawItems) : [];
-  } catch {
-    return [];
-  }
 }
 
 function toWishlistCard(row: WishlistRow): WishlistCard {

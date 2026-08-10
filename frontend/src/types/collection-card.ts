@@ -25,6 +25,14 @@ export interface CollectionCard {
   acquisitionDate?: string;
   ligaValue?: number;
 
+  // Read-only market reference collected from matching Liga Pokémon listings.
+  // This never replaces the value manually maintained in ligaValue.
+  ligaLowestPrice?: number;
+  ligaPriceCheckedAt?: string;
+  ligaPriceUrl?: string;
+  ligaPriceStatus?: "found" | "not_found" | "needs_confirmation" | "error";
+  ligaPriceSourceTrust?: "trusted" | "unverified";
+
   createdAt: string;
   updatedAt?: string;
 

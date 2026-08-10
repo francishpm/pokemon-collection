@@ -1,8 +1,8 @@
-# CardDex - Modelo de Dados
+# ColecionaDex - Modelo de Dados
 
 ## Objetivo
 
-O CardDex será dividido em dois grandes grupos de dados:
+O ColecionaDex será dividido em dois grandes grupos de dados:
 
 - Catálogo de Cartas
 - Dados do Usuário
@@ -86,7 +86,7 @@ Armazena a evolução do preço de uma carta ao longo do tempo.
 
 ## PokemonCard
 
-Representa uma carta existente no catálogo do CardDex.
+Representa uma carta existente no catálogo do ColecionaDex.
 
 Origem:
 Pokémon TCG API

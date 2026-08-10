@@ -28,7 +28,7 @@ export function PriceInput({ value, onChange }: PriceInputProps) {
       value={value.replace(".", ",")}
       onChange={handleChange}
       placeholder="Ex: 32"
-      className="font-medium"
+      className="h-8 font-medium"
     />
   );
 }

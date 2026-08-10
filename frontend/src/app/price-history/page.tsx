@@ -41,13 +41,17 @@ export default function PriceHistoryPage() {
   }, [fetchCards]);
 
   const entriesByCard = useMemo(() => {
-    const grouped = new Map<string, PriceHistory[]>();
+    const allEntries = new Map<string, PriceHistory[]>();
     for (const entry of history) {
-      const entries = grouped.get(entry.collectionCardId) ?? [];
+      const entries = allEntries.get(entry.collectionCardId) ?? [];
       entries.push(entry);
-      grouped.set(entry.collectionCardId, entries);
+      allEntries.set(entry.collectionCardId, entries);
     }
-    return grouped;
+    return new Map(
+      [...allEntries.entries()]
+        .map(([cardId, entries]) => [cardId, entries.filter((entry) => entry.source === "manual")] as const)
+        .filter(([, entries]) => entries.length > 0),
+    );
   }, [history]);
 
   const cardsWithHistory = useMemo(() => collectionView
@@ -79,7 +83,7 @@ export default function PriceHistoryPage() {
           <div className="rounded-lg bg-blue-500/10 p-2 text-blue-600 dark:text-blue-400"><ChartNoAxesCombined size={22} /></div>
           <div>
             <h2 className="font-bold">Evolução dos seus preços</h2>
-            <p className="text-sm text-muted-foreground">Um registro é criado somente quando o Valor na Liga (Mercado) muda.</p>
+            <p className="text-sm text-muted-foreground">Cada alteração no Valor de Mercado (Manual) vira um ponto da evolução da carta.</p>
           </div>
         </div>
       </div>
@@ -149,6 +153,16 @@ export default function PriceHistoryPage() {
                 />
               </div>
 
+              {chronologicalEntries.length > 1 && (
+                <div className="mt-6 rounded-lg border bg-muted/20 p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="font-bold">Evolução do preço</h3>
+                    <span className="text-xs text-muted-foreground">{chronologicalEntries.length} consultas</span>
+                  </div>
+                  <PriceLineChart entries={chronologicalEntries} />
+                </div>
+              )}
+
               <div className="mt-6 border-t pt-4">
                 <h3 className="font-bold">Alterações registradas</h3>
                 <ol className="mt-4 space-y-3 border-l border-border pl-5">
@@ -156,7 +170,9 @@ export default function PriceHistoryPage() {
                     <li key={entry.id} className="relative">
                       <span className="absolute -left-[25px] top-1.5 size-2.5 rounded-full bg-blue-500" />
                       <p className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(entry.price)}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(entry.createdAt)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(entry.createdAt)} · Valor manual
+                      </p>
                     </li>
                   ))}
                 </ol>
@@ -165,6 +181,44 @@ export default function PriceHistoryPage() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function PriceLineChart({ entries }: { entries: PriceHistory[] }) {
+  const width = 720;
+  const height = 180;
+  const padding = 16;
+  const prices = entries.map((entry) => entry.price);
+  const minimum = Math.min(...prices);
+  const maximum = Math.max(...prices);
+  const spread = maximum - minimum || 1;
+  const points = entries.map((entry, index) => ({
+    x: padding + (index / Math.max(entries.length - 1, 1)) * (width - padding * 2),
+    y: height - padding - ((entry.price - minimum) / spread) * (height - padding * 2),
+    entry,
+  }));
+
+  return (
+    <div className="overflow-x-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-44 min-w-[480px] w-full" role="img" aria-label="Gráfico da evolução do preço">
+        <polyline
+          points={points.map(({ x, y }) => `${x},${y}`).join(" ")}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          className="text-blue-500"
+        />
+        {points.map(({ x, y, entry }) => (
+          <circle key={entry.id} cx={x} cy={y} r="4" fill="currentColor" className="text-blue-500">
+            <title>{`${formatDate(entry.createdAt)}: ${formatCurrency(entry.price)}`}</title>
+          </circle>
+        ))}
+      </svg>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{formatCurrency(minimum)}</span>
+        <span>{formatCurrency(maximum)}</span>
+      </div>
     </div>
   );
 }

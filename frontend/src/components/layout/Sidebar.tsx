@@ -6,6 +6,8 @@ import {
     ChartColumn,
     ChartNoAxesCombined,
     FolderOpen,
+    BookOpen,
+    Layers3,
     House,
     Settings,
     Star,
@@ -21,6 +23,8 @@ export function Sidebar() {
     const links = [
         { href: "/", icon: House, label: "Dashboard" },
         { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
+        { href: "/pokedex", icon: BookOpen, label: "Pokédex" },
+        { href: "/master-sets", icon: Layers3, label: "Master Sets" },
         { href: "/wishlist", icon: Star, label: "Wishlist" },
         { href: "/trades", icon: Repeat, label: "Trocas" },
         { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
@@ -32,7 +36,7 @@ export function Sidebar() {
         <aside className="hidden md:flex h-screen w-72 shrink-0 flex-col border-r border-border bg-background p-8">
             <div>
                 <h1 className="text-4xl font-bold text-blue-600 dark:text-blue-500">
-                    CardDex
+                    ColecionaDex
                 </h1>
                 <p className="text-sm text-muted-foreground">
                     Sua coleção Pokémon
@@ -42,7 +46,7 @@ export function Sidebar() {
             <nav className="mt-12 space-y-2">
                 {links.map((link) => {
                     const Icon = link.icon;
-                    const isActive = pathname === link.href;
+                    const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
                     return (
                         <Link

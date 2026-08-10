@@ -17,7 +17,7 @@ const conditions: { id: CardCondition; label: string; desc: string; color: strin
 
 export function ConditionSelector({ value, onChange }: ConditionSelectorProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {conditions.map((cond) => {
         const isSelected = value === cond.id;
         
@@ -28,7 +28,7 @@ export function ConditionSelector({ value, onChange }: ConditionSelectorProps) {
             onClick={() => onChange(cond.id)}
             title={cond.desc}
             className={cn(
-              "flex-1 rounded-md border px-3 py-2 text-sm font-semibold transition-all",
+              "h-8 flex-1 rounded-md border px-2 py-1 text-xs font-semibold transition-all",
               isSelected
                 ? `${cond.color} ring-2 ring-ring ring-offset-2`
                 : "bg-background text-muted-foreground hover:bg-muted border-input"

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PokemonCard, TcgPlayerPrice } from "@/types/pokemon-card";
+import { PokemonCard } from "@/types/pokemon-card";
 import * as cheerio from "cheerio";
 
 const TCG_API_URL = "https://api.pokemontcg.io/v2/cards";
@@ -54,20 +54,15 @@ interface TcgDexCard {
     name: string;
     cardCount: { official: number };
   };
-  pricing?: {
-    tcgplayer?: Record<string, { lowPrice?: number; midPrice?: number; marketPrice?: number }>;
-  };
 }
 
 function mapTcgDexCard(card: TcgDexCard): PokemonCard | null {
   if (!card.image || !card.set) return null;
 
-  const prices = Object.fromEntries(
-    Object.entries(card.pricing?.tcgplayer ?? {}).map(([variant, price]) => [
-      variant,
-      { low: price.lowPrice, mid: price.midPrice, market: price.marketPrice } satisfies TcgPlayerPrice,
-    ])
-  );
+  const galleryPrefix = card.localId.match(/^(GG|TG|RC)(?=\d)/i)?.[1]?.toUpperCase();
+  const printedTotalLabel = galleryPrefix
+    ? `${galleryPrefix}${card.set.cardCount.official}`
+    : undefined;
 
   return {
     id: card.id,
@@ -83,9 +78,15 @@ function mapTcgDexCard(card: TcgDexCard): PokemonCard | null {
       name: card.set.name,
       series: card.set.name,
       printedTotal: card.set.cardCount.official,
+      printedTotalLabel,
     },
-    tcgplayer: Object.keys(prices).length ? { prices } : undefined,
   };
+}
+
+function stripGlobalPricing(card: Record<string, unknown>) {
+  const sanitizedCard = { ...card };
+  delete sanitizedCard.tcgplayer;
+  return sanitizedCard;
 }
 
 async function searchTcgDex(term: string): Promise<PokemonCard[]> {
@@ -141,7 +142,7 @@ async function searchLiga(term: string): Promise<PokemonCard[]> {
     urls.map((url) => fetch(url, {
       cache: "no-store",
       signal: AbortSignal.timeout(10_000),
-      headers: { "User-Agent": "Mozilla/5.0 CardDex/1.0" },
+      headers: { "User-Agent": "Mozilla/5.0 ColecionaDex/1.0" },
     }))
   );
   const responses = responseResults
@@ -290,7 +291,7 @@ async function searchJapaneseLigaCode(term: string): Promise<PokemonCard[]> {
         const response = await fetch(`https://www.ligapokemon.com.br/?${params}`, {
           cache: "no-store",
           signal: AbortSignal.timeout(10_000),
-          headers: { "User-Agent": "Mozilla/5.0 CardDex/1.0" },
+          headers: { "User-Agent": "Mozilla/5.0 ColecionaDex/1.0" },
         });
         if (!response.ok) return null;
         const $ = cheerio.load(await response.text());
@@ -352,7 +353,19 @@ export async function GET(request: Request) {
   const uniqueCards = new Map<string, PokemonCard>();
   for (const card of [...tcgDexCards, ...ligaCards, ...japaneseCodeCards]) {
     const identity = cardIdentity(card);
-    if (!uniqueCards.has(identity)) uniqueCards.set(identity, card);
+    const existing = uniqueCards.get(identity);
+    if (!existing) {
+      uniqueCards.set(identity, card);
+    } else if (!existing.set.ligaEdition && card.set.ligaEdition) {
+      uniqueCards.set(identity, {
+        ...existing,
+        set: {
+          ...existing.set,
+          printedTotalLabel: card.set.printedTotalLabel ?? existing.set.printedTotalLabel,
+          ligaEdition: card.set.ligaEdition,
+        },
+      });
+    }
   }
   const combinedCards = [...uniqueCards.values()];
   if (combinedCards.length > 0) {
@@ -372,7 +385,7 @@ export async function GET(request: Request) {
       });
       if (directResponse.ok) {
         const payload = await directResponse.json();
-        if (payload.data) return NextResponse.json({ data: [payload.data] });
+        if (payload.data) return NextResponse.json({ data: [stripGlobalPricing(payload.data)] });
       }
     } catch {
       // Se não for um ID válido, a busca textual abaixo ainda será tentada.
@@ -392,7 +405,9 @@ export async function GET(request: Request) {
       });
       if (response.ok) {
         const payload = await response.json();
-        return NextResponse.json({ data: payload.data ?? [] });
+        return NextResponse.json({
+          data: Array.isArray(payload.data) ? payload.data.map(stripGlobalPricing) : [],
+        });
       }
       rateLimited = response.status === 429;
       const keyWasRejected = response.status === 401 || response.status === 403;

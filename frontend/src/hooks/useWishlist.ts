@@ -13,8 +13,7 @@ export interface WishlistView {
 export function useWishlist() {
   const { items, isLoading, fetchItems, removeItem, addItem } = useWishlistStore();
   const [wishlistView, setWishlistView] = useState<WishlistView[]>([]);
-  const [totalEstimado, setTotalEstimado] = useState(0);
-  const [loadingValues, setLoadingValues] = useState(false);
+  const [loadingCards, setLoadingCards] = useState(false);
 
   useEffect(() => {
     void fetchItems().catch((error) => console.error("Unable to load wishlist:", error));
@@ -28,12 +27,11 @@ export function useWishlist() {
       if (!items.length) {
         if (!cancelled) {
           setWishlistView([]);
-          setTotalEstimado(0);
         }
         return;
       }
 
-      if (!cancelled) setLoadingValues(true);
+      if (!cancelled) setLoadingCards(true);
       try {
         const views = (await Promise.all(items.map(async (wishlist) => {
           const pokemon = wishlist.pokemonData ?? await getPokemonCached(wishlist.pokemonCardId);
@@ -47,33 +45,11 @@ export function useWishlist() {
           return pokemon ? { wishlist, pokemon } : null;
         }))).filter((item): item is WishlistView => item !== null);
 
-        let dollarRate = 5;
-        try {
-          const response = await fetch("https://economia.awesomeapi.com.br/last/USD-BRL");
-          if (response.ok) {
-            const data = await response.json();
-            dollarRate = Number.parseFloat(data.USDBRL.ask) || dollarRate;
-          }
-        } catch {
-          // Keep the fallback rate when the quotation service is unavailable.
-        }
-
-        const total = views.reduce((sum, { pokemon }) => {
-          const prices = pokemon.tcgplayer?.prices;
-          if (!prices) return sum;
-          for (const price of Object.values(prices)) {
-            if (price.market) return sum + price.market * dollarRate;
-            if (price.mid) return sum + price.mid * dollarRate;
-          }
-          return sum;
-        }, 0);
-
         if (!cancelled) {
           setWishlistView(views);
-          setTotalEstimado(total);
         }
       } finally {
-        if (!cancelled) setLoadingValues(false);
+        if (!cancelled) setLoadingCards(false);
       }
     };
 
@@ -81,5 +57,5 @@ export function useWishlist() {
     return () => { cancelled = true; };
   }, [items]);
 
-  return { wishlistView, totalEstimado, loading: isLoading || loadingValues, removeItem, addItem };
+  return { wishlistView, loading: isLoading || loadingCards, removeItem, addItem };
 }

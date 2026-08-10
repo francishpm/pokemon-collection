@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useWishlist } from "@/hooks/useWishlist";
 
 export default function WishlistPage() {
-  const { wishlistView, totalEstimado, loading, removeItem } = useWishlist();
+  const { wishlistView, loading, removeItem } = useWishlist();
   const [localSearch, setLocalSearch] = useState("");
 
   // Filtra as cartas da Wishlist em tempo real
@@ -28,13 +28,13 @@ export default function WishlistPage() {
 
   return (
     <div className="space-y-8">
-      {/* Resumo Financeiro da Wishlist adaptado para Dark Mode */}
+      {/* Resumo da Wishlist */}
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h2 className="text-lg font-medium text-muted-foreground">Custo Total Estimado</h2>
+        <h2 className="text-lg font-medium text-muted-foreground">Cartas desejadas</h2>
         <p className="mt-1 text-4xl font-black text-indigo-600 dark:text-indigo-400">
-          {totalEstimado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+          {wishlistView.length}
         </p>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="mt-2 text-sm text-muted-foreground">
           {wishlistView.length} {wishlistView.length === 1 ? "carta desejada" : "cartas desejadas"}
         </p>
       </div>

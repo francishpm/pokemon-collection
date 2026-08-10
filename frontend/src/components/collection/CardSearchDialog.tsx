@@ -121,7 +121,10 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={selectedCard ? "max-w-xl" : "max-w-2xl"}>
+      <DialogContent className={selectedCard
+        ? "max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-[410px]"
+        : "max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-sm"
+      }>
         {!selectedCard ? (
           <>
             <DialogHeader>

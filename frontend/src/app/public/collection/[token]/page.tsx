@@ -75,7 +75,7 @@ export default function PublicCollectionPage() {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600/10 text-blue-500">
             <FolderOpen size={30} />
           </div>
-          <h1 className="text-3xl font-black tracking-tight md:text-4xl">Coleção CardDex</h1>
+          <h1 className="text-3xl font-black tracking-tight md:text-4xl">Coleção ColecionaDex</h1>
           <p className="text-muted-foreground">{items.length} cartas compartilhadas</p>
         </header>
 

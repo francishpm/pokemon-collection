@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Plus, User, Menu, X, House, FolderOpen, Star, Repeat, ChartColumn, ChartNoAxesCombined, Settings, LogOut, Moon, Sun } from "lucide-react";
+import { Bell, Plus, User, Menu, X, House, FolderOpen, BookOpen, Layers3, Star, Repeat, ChartColumn, ChartNoAxesCombined, Settings, LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { useUiStore } from "@/store/uiStore";
@@ -15,17 +15,21 @@ import { useCollectionStore } from "@/store/collectionStore";
 const pages = {
   "/": { title: "Dashboard", subtitle: "Visão geral da sua coleção." },
   "/collection": { title: "Minha coleção", subtitle: "Gerencie todas as suas cartas." },
+  "/pokedex": { title: "Minha Pokédex", subtitle: "Acompanhe as espécies que você já encontrou na sua coleção." },
+  "/master-sets": { title: "Master Sets", subtitle: "Acompanhe coleções completas e todas as suas variantes." },
   "/wishlist": { title: "Wishlist", subtitle: "Cartas que você deseja adquirir." },
   "/trades": { title: "Trocas e Vendas", subtitle: "Gerencie suas duplicatas disponíveis para negócio." },
   "/market": { title: "Ranking de Valiosas", subtitle: "As cartas mais valiosas da sua coleção." },
   "/price-history": { title: "Histórico de preços", subtitle: "Acompanhe cada alteração no valor de mercado das suas cartas." },
-  "/settings": { title: "Configurações", subtitle: "Personalize o CardDex." },
+  "/settings": { title: "Configurações", subtitle: "Personalize o ColecionaDex." },
   "/profile": { title: "Minha Conta", subtitle: "Gerencie as informações da sua conta." },
 };
 
 const links = [
   { href: "/", icon: House, label: "Dashboard" },
   { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
+  { href: "/pokedex", icon: BookOpen, label: "Pokédex" },
+  { href: "/master-sets", icon: Layers3, label: "Master Sets" },
   { href: "/wishlist", icon: Star, label: "Wishlist" },
   { href: "/trades", icon: Repeat, label: "Trocas" },
   { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
@@ -43,7 +47,9 @@ export function Topbar() {
 
   if (pathname.startsWith("/public")) return null;
 
-  const page = pages[pathname as keyof typeof pages] ?? { title: "CardDex", subtitle: "" };
+  const page = pathname.startsWith("/master-sets/")
+    ? pages["/master-sets"]
+    : pages[pathname as keyof typeof pages] ?? { title: "ColecionaDex", subtitle: "" };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -131,7 +137,7 @@ export function Topbar() {
           <nav className="space-y-2">
             {links.map((link) => {
               const Icon = link.icon;
-              const isActive = pathname === link.href;
+              const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
 
               return (
                 <Link

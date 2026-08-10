@@ -11,13 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { CollectionCard as CollectionCardType } from "@/types/collection-card";
 import { PokemonCard } from "@/types/pokemon-card";
 import { useUiStore } from "@/store/uiStore";
-import { getGeneration } from "@/lib/getGeneration"; 
 import { useCollectionStore } from "@/store/collectionStore"; // <-- Importação adicionada aqui
 import { toast } from "sonner";
 import { CollectionShareButton } from "@/components/collection/CollectionShareButton";
+import { LigaPriceBatchUpdate } from "@/components/collection/LigaPriceBatchUpdate";
 
-type SortOption = "dateAsc" | "dateDesc" | "pokedexAsc" | "pokedexDesc" | "priceDesc" | "priceAsc";
+type SortOption = "dateAsc" | "dateDesc" | "priceDesc" | "priceAsc";
 type CardTypeFilter = "all" | "pokemon" | "trainer";
+type LigaStatusFilter = "all" | "found" | "not_found" | "error" | "needs_confirmation" | "pending";
 
 function isTrainerCard(card: PokemonCard) {
   const labels = [card.supertype, ...card.subtypes]
@@ -31,23 +32,11 @@ function isTrainerCard(card: PokemonCard) {
 // Atualizado para 30 cartas por página (5 linhas de 6)
 const ITEMS_PER_PAGE = 30; 
 
-const GENERATIONS = [
-  { id: 1, region: "Kanto" },
-  { id: 2, region: "Johto" },
-  { id: 3, region: "Hoenn" },
-  { id: 4, region: "Sinnoh" },
-  { id: 5, region: "Unova" },
-  { id: 6, region: "Kalos" },
-  { id: 7, region: "Alola" },
-  { id: 8, region: "Galar" },
-  { id: 9, region: "Paldea" },
-] as const;
-
 export default function CollectionPage() {
   const [localSearch, setLocalSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
-  const [genFilter, setGenFilter] = useState("all"); 
   const [typeFilter, setTypeFilter] = useState<CardTypeFilter>("all");
+  const [ligaStatusFilter, setLigaStatusFilter] = useState<LigaStatusFilter>("all");
   
   // Estados para Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,6 +48,8 @@ export default function CollectionPage() {
   
   // --- BUSCA OS DADOS DO BANCO AO ABRIR A TELA ---
   const fetchCards = useCollectionStore((state) => state.fetchCards);
+  const pokedexRepresentatives = useCollectionStore((state) => state.pokedexRepresentatives);
+  const setPokedexRepresentative = useCollectionStore((state) => state.setPokedexRepresentative);
   useEffect(() => {
     void fetchCards().catch(() => {
       toast.error("Não foi possível carregar sua coleção.");
@@ -68,21 +59,18 @@ export default function CollectionPage() {
 
   const openSearchModal = useUiStore((state) => state.openSearchModal);
 
-  const generationCounts = useMemo(() => {
-    const counts = new Map<number, number>();
-    for (const { pokemon } of collectionView) {
-      const dexNumber = pokemon.nationalPokedexNumbers?.[0];
-      if (!dexNumber) continue;
-      const generation = getGeneration(dexNumber);
-      counts.set(generation, (counts.get(generation) ?? 0) + 1);
-    }
-    return counts;
-  }, [collectionView]);
-
   const typeCounts = useMemo(() => {
     const trainers = collectionView.filter(({ pokemon }) => isTrainerCard(pokemon)).length;
     return { trainers, pokemon: collectionView.length - trainers };
   }, [collectionView]);
+
+  const ligaStatusCounts = useMemo(() => ({
+    found: collectionView.filter(({ collection }) => collection.ligaPriceStatus === "found").length,
+    not_found: collectionView.filter(({ collection }) => collection.ligaPriceStatus === "not_found").length,
+    error: collectionView.filter(({ collection }) => collection.ligaPriceStatus === "error").length,
+    needs_confirmation: collectionView.filter(({ collection }) => collection.ligaPriceStatus === "needs_confirmation").length,
+    pending: collectionView.filter(({ collection }) => !collection.ligaPriceStatus).length,
+  }), [collectionView]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Deseja realmente excluir esta carta?")) return;
@@ -102,6 +90,19 @@ export default function CollectionPage() {
     setSelectedCardForEdit(card.pokemon);
   };
 
+  const handleSetPokedexRepresentative = async (id: string) => {
+    const card = collectionView.find((item) => item.collection.id === id);
+    const pokedexNumber = card?.pokemon.nationalPokedexNumbers?.[0];
+    if (!pokedexNumber) return;
+
+    try {
+      await setPokedexRepresentative(pokedexNumber, id);
+      toast.success(`${card.pokemon.name} escolhido para representar o nº ${String(pokedexNumber).padStart(3, "0")} na Pokédex.`);
+    } catch {
+      toast.error("Não foi possível salvar a carta escolhida para a Pokédex.");
+    }
+  };
+
   const filteredAndSortedCollection = useMemo(() => {
     let result = collectionView;
 
@@ -111,14 +112,10 @@ export default function CollectionPage() {
       result = result.filter(({ pokemon }) => !isTrainerCard(pokemon));
     }
 
-    // 2. Filtro por Geração
-    if (genFilter !== "all") {
-      const targetGen = Number(genFilter);
-      result = result.filter(({ pokemon }) => {
-        const dexNum = pokemon.nationalPokedexNumbers?.[0];
-        if (!dexNum) return false; 
-        return getGeneration(dexNum) === targetGen;
-      });
+    if (ligaStatusFilter === "pending") {
+      result = result.filter(({ collection }) => !collection.ligaPriceStatus);
+    } else if (ligaStatusFilter !== "all") {
+      result = result.filter(({ collection }) => collection.ligaPriceStatus === ligaStatusFilter);
     }
 
     // 3. Filtro por Texto (Nome, número, set)
@@ -136,23 +133,11 @@ export default function CollectionPage() {
     }
 
     // 4. Ordenação
-    return [...result].sort((a, b) => {
+    const sortedResult = [...result].sort((a, b) => {
       // Ordenação por preço
       if (sortOrder === "priceDesc" || sortOrder === "priceAsc") {
         const getPrice = (item: typeof a) => {
-          if (item.collection.ligaValue && item.collection.ligaValue > 0) return item.collection.ligaValue;
-          let usd = 0;
-          const prices = item.pokemon.tcgplayer?.prices;
-          if (prices) {
-            for (const price of Object.values(prices)) {
-              if (price.market) {
-                usd = price.market;
-                break;
-              }
-              if (!usd) usd = price.mid ?? price.low ?? 0;
-            }
-          }
-          return usd > 0 ? usd * 5.00 : (item.collection.acquisitionValue ?? 0);
+          return item.collection.ligaValue ?? 0;
         };
 
         const priceA = getPrice(a);
@@ -167,15 +152,10 @@ export default function CollectionPage() {
         return new Date(b.collection.createdAt).getTime() - new Date(a.collection.createdAt).getTime();
       }
 
-      const dexA = a.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
-      const dexB = b.pokemon.nationalPokedexNumbers?.[0] ?? 9999;
-
-      if (sortOrder === "pokedexAsc") {
-        return dexA - dexB;
-      }
-      return dexB - dexA;
+      return 0;
     });
-  }, [collectionView, localSearch, sortOrder, genFilter, typeFilter]);
+    return sortedResult;
+  }, [collectionView, localSearch, sortOrder, typeFilter, ligaStatusFilter]);
 
   // Cálculos de Paginação
   const totalPages = Math.ceil(filteredAndSortedCollection.length / ITEMS_PER_PAGE);
@@ -186,8 +166,8 @@ export default function CollectionPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-2 lg:grid lg:grid-cols-[minmax(260px,320px)_1fr] lg:items-center">
+        <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             placeholder="Pesquisar na sua coleção..."
@@ -200,35 +180,16 @@ export default function CollectionPage() {
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
-          {/* Menu de Geração */}
-          <select
-            value={genFilter}
-            disabled={typeFilter === "trainer"}
-            onChange={(e) => {
-              setGenFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="all">Todas as Gerações ({collectionView.length})</option>
-            {GENERATIONS.map(({ id, region }) => (
-              <option key={id} value={id}>
-                Gen {id} ({region}) — {generationCounts.get(id) ?? 0}
-              </option>
-            ))}
-          </select>
-
+        <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-[minmax(150px,184px)_minmax(190px,224px)_minmax(200px,232px)]">
           {/* Menu de Ordenação original e novos */}
           <select
             value={typeFilter}
             onChange={(e) => {
               const nextType = e.target.value as CardTypeFilter;
               setTypeFilter(nextType);
-              if (nextType === "trainer") setGenFilter("all");
               setCurrentPage(1);
             }}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             aria-label="Filtrar por tipo de carta"
           >
             <option value="all">Todos os tipos ({collectionView.length})</option>
@@ -246,14 +207,31 @@ export default function CollectionPage() {
           >
             <option value="dateAsc">Mais antigas (Padrão)</option>
             <option value="dateDesc">Mais recentes</option>
-            <option value="pokedexAsc">Pokédex (Crescente)</option>
-            <option value="pokedexDesc">Pokédex (Decrescente)</option>
             <option value="priceDesc">Maior Valor (Crescente)</option>
             <option value="priceAsc">Menor Valor (Decrescente)</option>
           </select>
+
+          <select
+            value={ligaStatusFilter}
+            onChange={(e) => {
+              setLigaStatusFilter(e.target.value as LigaStatusFilter);
+              setCurrentPage(1);
+            }}
+            className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label="Filtrar por referência da Liga"
+          >
+            <option value="all">Todas as referências ({collectionView.length})</option>
+            <option value="found">Com preço ({ligaStatusCounts.found})</option>
+            <option value="not_found">Sem anúncio compatível ({ligaStatusCounts.not_found})</option>
+            <option value="error">Erro na consulta ({ligaStatusCounts.error})</option>
+            <option value="needs_confirmation">Precisa conferir ({ligaStatusCounts.needs_confirmation})</option>
+            <option value="pending">Ainda não consultada ({ligaStatusCounts.pending})</option>
+          </select>
+
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2 lg:col-start-2">
+          <LigaPriceBatchUpdate collectionView={collectionView} />
           <CollectionShareButton />
           <Button className="gap-2" onClick={() => openSearchModal("collection")}>
             <Plus size={18} />
@@ -286,6 +264,8 @@ export default function CollectionPage() {
                 pokemon={pokemon}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
+                isPokedexRepresentative={pokedexRepresentatives[pokemon.nationalPokedexNumbers?.[0] ?? 0] === collection.id}
+                onSetPokedexRepresentative={handleSetPokedexRepresentative}
               />
             ))}
           </div>
@@ -361,7 +341,7 @@ export default function CollectionPage() {
           }
         }}
       >
-        <DialogContent className="max-w-xl">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-[410px]">
           <DialogHeader>
             <DialogTitle>Editar Carta</DialogTitle>
             <DialogDescription>Altere os detalhes da sua carta.</DialogDescription>

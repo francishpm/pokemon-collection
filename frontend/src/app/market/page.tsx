@@ -14,33 +14,14 @@ export default function MarketPage() {
   // Ordena todas as cartas da coleção da mais cara para a mais barata com base no preço de mercado
   const rankedCards = useMemo(() => {
     const listWithPrices = collectionView.map((item) => {
-      let precoGlobalUsd = 0;
-      const prices = item.pokemon.tcgplayer?.prices;
-
-      if (prices) {
-        for (const key in prices) {
-          if (prices[key]?.market) {
-            precoGlobalUsd = prices[key].market;
-            break;
-          } else if (prices[key]?.mid && precoGlobalUsd === 0) {
-            precoGlobalUsd = prices[key].mid;
-          } else if (prices[key]?.low && precoGlobalUsd === 0) {
-            precoGlobalUsd = prices[key].low;
-          }
-        }
-      }
-
-      // Como o useCollection converte usando a cotação atual, podemos estimar o valor em BRL da carta individual
-      // Multiplicamos pelo dólar atual ou pegamos proporcional. Para simplificar e garantir precisão, 
-      // recalculamos o valor da carta em BRL individualmente aqui:
-      const dolarFallback = 5.00; // Poderia puxar dinâmico, mas o cálculo de mercado individual funciona perfeitamente
-      const cardValueBrl = precoGlobalUsd > 0 ? precoGlobalUsd * dolarFallback : (item.collection.acquisitionValue ?? 0);
+      const cardValueBrl = item.collection.ligaValue ?? 0;
 
       return {
         ...item,
         calculatedValueBrl: cardValueBrl,
+        valueSource: "Valor manual",
       };
-    });
+    }).filter(({ calculatedValueBrl }) => calculatedValueBrl > 0);
 
     // Ordena do maior para o menor valor
     listWithPrices.sort((a, b) => b.calculatedValueBrl - a.calculatedValueBrl);
@@ -86,15 +67,15 @@ export default function MarketPage() {
 
       {/* Conteúdo da Listagem */}
       {carregandoValores ? (
-        <div className="text-center py-20 text-muted-foreground">Calculando valores do mercado...</div>
+        <div className="text-center py-20 text-muted-foreground">Carregando valores manuais...</div>
       ) : rankedCards.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center">
-          <h2 className="text-xl font-semibold text-foreground">Sua coleção está vazia</h2>
-          <p className="mt-2 text-muted-foreground">Adicione cartas à sua coleção para ver o ranking de valiosas aqui.</p>
+          <h2 className="text-xl font-semibold text-foreground">Nenhuma carta avaliada</h2>
+          <p className="mt-2 text-muted-foreground">Preencha o Valor de Mercado (Manual) das cartas para montar o ranking.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3">
-          {rankedCards.map(({ collection, pokemon, calculatedValueBrl }, index) => {
+          {rankedCards.map(({ collection, pokemon, calculatedValueBrl, valueSource }, index) => {
             const isTop3 = index < 3;
             return (
               <div
@@ -139,7 +120,7 @@ export default function MarketPage() {
                     {calculatedValueBrl.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </span>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    {collection.acquisitionValue ? "Valor de Mercado Estimado" : "Baseado no Custo Informado"}
+                    {valueSource}
                   </p>
                 </div>
               </div>

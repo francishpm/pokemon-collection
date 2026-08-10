@@ -69,7 +69,7 @@ export default function LoginPage() {
             <Sparkles className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
           <CardTitle className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-foreground">
-            CardDex
+            ColecionaDex
           </CardTitle>
           <CardDescription className="text-base font-medium text-slate-500 dark:text-muted-foreground px-2">
             {isRegistering ? "Crie sua conta para começar sua jornada." : "Acesse sua coleção e acompanhe o valor das suas cartas."}

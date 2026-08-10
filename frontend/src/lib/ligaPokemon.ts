@@ -1,3 +1,7 @@
+// Oversize (OV, id 29) is a jumbo display card, not the regular collectible card.
+// Price collectors must always discard listings containing this extra.
+export const LIGA_IGNORED_EXTRA_IDS = new Set([29]);
+
 export function getLigaPokemonUrl(
     name: string,
     number: string,

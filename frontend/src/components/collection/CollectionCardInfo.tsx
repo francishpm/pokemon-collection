@@ -56,6 +56,21 @@ export function CollectionCardInfo({
                         Última atualização: {updatedAtFormatada}
                     </span>
                 )}
+
+                {collection.ligaPriceStatus === "found" && collection.ligaLowestPrice != null && (
+                    <span
+                        className="mt-1 text-[10px] font-semibold text-sky-700 dark:text-sky-400"
+                        title={`Menor anúncio compatível na Liga Pokémon (${collection.language} · ${collection.condition} · loja verificada ou física)`}
+                    >
+                        Ref. Liga{collection.ligaPriceSourceTrust === "unverified" ? " (loja não verificada)" : ""}: {collection.ligaLowestPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </span>
+                )}
+
+                {collection.ligaPriceStatus === "not_found" && (
+                    <span className="mt-1 text-[10px] font-medium text-muted-foreground">
+                        Ref. Liga: sem anúncio compatível
+                    </span>
+                )}
             </div>
         </div>
     );

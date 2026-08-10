@@ -111,7 +111,7 @@ export default function ProfilePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><User size={18} />Dados pessoais</CardTitle><CardDescription>Escolha o nome mostrado no CardDex.</CardDescription></CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><User size={18} />Dados pessoais</CardTitle><CardDescription>Escolha o nome mostrado no ColecionaDex.</CardDescription></CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleNameSubmit}>
               <label className="space-y-2 text-sm font-medium text-foreground"><span>Nome de exibição</span><Input value={name} onChange={(event) => setName(event.target.value)} className="bg-background text-foreground" /></label>

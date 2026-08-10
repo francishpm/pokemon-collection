@@ -11,7 +11,7 @@ import { AuthGuard } from "@/components/AuthGuard"; // <-- Importado aqui
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CardDex - Gerenciador de Coleção Pokémon",
+  title: "ColecionaDex - Gerenciador de Coleção Pokémon",
   description: "Gerencie sua coleção de cartas Pokémon TCG",
 };
 

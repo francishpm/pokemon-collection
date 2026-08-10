@@ -1,7 +1,7 @@
 import { PokemonCard } from "@/types/pokemon-card";
 import { getCardById } from "./pokemonApi";
 
-const STORAGE_KEY = "carddex_pokemon_cache";
+const STORAGE_KEY = "colecionadex_pokemon_cache";
 
 type PokemonCache = Record<string, PokemonCard>;
 
