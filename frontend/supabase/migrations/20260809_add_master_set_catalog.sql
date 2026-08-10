@@ -9,7 +9,7 @@ create table if not exists public.master_set_catalog (
   sort_order integer not null,
   created_at timestamptz not null default now(),
   primary key (set_id, card_id, variant),
-  check (set_id in ('me01', 'me02', 'me02.5', 'me03', 'me04', 'me05')),
+  check (set_id in ('me01', 'me02', 'me02.5', 'me03', 'me04', 'me05', 'me-promos', 'mep')),
   check (variant in ('normal', 'reverse', 'holo', 'energy', 'pokeball', 'first_edition'))
 );
 

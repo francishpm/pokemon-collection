@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const TCGDEX = "https://api.tcgdex.net/v2/pt";
-const SET_IDS = ["me01", "me02", "me02.5", "me03", "me04", "me05"];
+const SET_IDS = ["me01", "me02", "me02.5", "me03", "me04", "me05", "mep"];
 const output = resolve(dirname(fileURLToPath(import.meta.url)), "../supabase/migrations/20260809_seed_mega_evolution_master_sets.sql");
 
 const normalize = (value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -48,7 +48,7 @@ for (const setId of SET_IDS) {
   details.forEach((card, cardIndex) => variantsForCard(card, setId).forEach((variant, variantIndex) => {
     rows.push([
       setId, card.id, variant, card.localId, card.name,
-      card.image ? `${card.image}/high.webp` : "", card.rarity ?? "",
+      card.image ? `${card.image}/high.webp` : `https://assets.tcgdex.net/en/me/${setId}/${card.localId.padStart(3, "0")}/high.webp`, card.rarity ?? "",
       cardIndex * 10 + variantIndex,
     ]);
   }));

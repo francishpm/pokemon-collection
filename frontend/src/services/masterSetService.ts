@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { MasterSetCatalog, MasterSetProgress, MasterSetVariant } from "@/types/master-set";
 
 const SET_META: Record<string, { name: string; logo: string; totalCards: number }> = {
+  mep: { name: "Promos Mega Evolution", logo: "https://assets.tcgdex.net/en/me/me01/logo.webp", totalCards: 110 },
   me01: { name: "Megaevolução", logo: "https://assets.tcgdex.net/pt/me/me01/logo.webp", totalCards: 188 },
   me02: { name: "Chamas Fantasmagóricas", logo: "https://assets.tcgdex.net/pt/me/me02/logo.webp", totalCards: 130 },
   "me02.5": { name: "Heróis Ascendentes", logo: "https://assets.tcgdex.net/pt/me/me02.5/logo.webp", totalCards: 295 },

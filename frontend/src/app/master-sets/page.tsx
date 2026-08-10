@@ -19,6 +19,8 @@ const SETS = [
   { id: "me01", name: "Mega Evolution", cards: 188 },
 ];
 
+const PROMO_SET = { id: "mep", name: "Promos Mega Evolution", logo: "https://assets.tcgdex.net/en/me/me01/logo.webp" };
+
 function setLogoUrl(setId: string) {
   const extension = setId === "me05" ? "png" : "webp";
   return `https://assets.tcgdex.net/en/me/${setId}/logo.${extension}`;
@@ -64,6 +66,14 @@ export default function MasterSetsPage() {
               </div>
             </Link>
           ))}
+        </div>
+        <div className="mt-5 border-t pt-5">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-blue-500">Coleção especial</p>
+          <Link href={`/master-sets/${PROMO_SET.id}`} className="group flex max-w-sm items-center gap-4 rounded-xl border bg-background p-4 transition hover:-translate-y-1 hover:border-blue-500/60 hover:shadow-lg">
+            <img src={PROMO_SET.logo} alt="" className="h-16 w-24 object-contain" />
+            <div className="min-w-0 flex-1"><h3 className="truncate text-sm font-bold group-hover:text-blue-500">{PROMO_SET.name}</h3><p className="mt-1 text-xs text-muted-foreground">Catálogo completo de promos</p></div>
+            <ChevronRight size={16} className="shrink-0 text-muted-foreground group-hover:text-blue-500" />
+          </Link>
         </div>
       </section> : <div className="rounded-xl border border-dashed p-12 text-center text-sm text-muted-foreground">Selecione Mega Evolution para ver as seis coleções.</div>}
     </div>

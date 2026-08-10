@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { MasterSetCatalog, MasterSetSlot, MasterSetVariant } from "@/types/master-set";
 
 const TCGDEX = "https://api.tcgdex.net/v2/pt";
-const ALLOWED_SETS = new Set(["me01", "me02", "me02.5", "me03", "me04", "me05"]);
+const ALLOWED_SETS = new Set(["me01", "me02", "me02.5", "me03", "me04", "me05", "me-promos", "mep"]);
 
 interface CardBrief { id: string; localId: string; name: string; image?: string }
 interface SetDetail {
