@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Search, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Check, Heart, Loader2, RefreshCw, Search, Sparkles, Star } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -9,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { useCollection, type CollectionView } from "@/hooks/useCollection";
 import { getGeneration } from "@/lib/getGeneration";
 import { useCollectionStore } from "@/store/collectionStore";
+import { useWishlistStore } from "@/store/wishlistStore";
+import { PokemonCard } from "@/types/pokemon-card";
+import { savePokemonInCache } from "@/services/pokemonCache";
 
 type StatusFilter = "all" | "owned" | "missing";
 
@@ -29,19 +33,46 @@ function formatDexNumber(number: number) {
   return `#${String(number).padStart(3, "0")}`;
 }
 
+interface SpecialArtworksResponse {
+  speciesName?: string;
+  cards?: PokemonCard[];
+  error?: string;
+}
+
 export default function PokedexPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [generation, setGeneration] = useState("1");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
+  const [missingNumber, setMissingNumber] = useState<number | null>(null);
+  const [missingSpeciesName, setMissingSpeciesName] = useState("");
+  const [specialArtworks, setSpecialArtworks] = useState<PokemonCard[]>([]);
+  const [loadingSpecialArtworks, setLoadingSpecialArtworks] = useState(false);
+  const [addingArtworkId, setAddingArtworkId] = useState<string | null>(null);
+  const [speciesNames, setSpeciesNames] = useState<Record<number, string>>({});
+  const [desiredNumber, setDesiredNumber] = useState<number | null>(null);
   const { collectionView } = useCollection();
   const fetchCards = useCollectionStore((state) => state.fetchCards);
   const representatives = useCollectionStore((state) => state.pokedexRepresentatives);
   const setRepresentative = useCollectionStore((state) => state.setPokedexRepresentative);
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const fetchWishlistItems = useWishlistStore((state) => state.fetchItems);
+  const addWishlistItem = useWishlistStore((state) => state.addItem);
 
   useEffect(() => {
     void fetchCards().catch(() => toast.error("Não foi possível carregar sua Pokédex."));
-  }, [fetchCards]);
+    void fetchWishlistItems().catch(() => console.warn("Não foi possível carregar a Wishlist."));
+    void fetch("/api/pokemon/species-list")
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Catálogo de espécies indisponível");
+        return response.json() as Promise<{ species?: Array<{ number: number; name: string }> }>;
+      })
+      .then(({ species = [] }) => {
+        setSpeciesNames(Object.fromEntries(species.map(({ number, name }) => [number, name])));
+      })
+      .catch(() => console.warn("Não foi possível carregar os nomes da Pokédex."));
+  }, [fetchCards, fetchWishlistItems]);
 
   const cardsByPokedexNumber = useMemo(() => {
     const grouped = new Map<number, CollectionView[]>();
@@ -52,6 +83,16 @@ export default function PokedexPage() {
     }
     return grouped;
   }, [collectionView]);
+
+  const wishlistByPokedexNumber = useMemo(() => {
+    const mapped = new Map<number, NonNullable<(typeof wishlistItems)[number]["pokemonData"]>>();
+    for (const item of wishlistItems) {
+      const pokemon = item.pokemonData;
+      const number = pokemon?.nationalPokedexNumbers?.[0];
+      if (pokemon && number && !mapped.has(number)) mapped.set(number, pokemon);
+    }
+    return mapped;
+  }, [wishlistItems]);
 
   const ownedCount = cardsByPokedexNumber.size;
   const selectedGeneration = generation === "all" ? null : Number(generation);
@@ -72,11 +113,14 @@ export default function PokedexPage() {
       if (status === "missing" && cards) return false;
       if (!term) return true;
 
-      return String(number).includes(term) || cards?.some(({ pokemon }) => pokemon.name.toLocaleLowerCase("pt-BR").includes(term));
+      return String(number).includes(term)
+        || speciesNames[number]?.toLocaleLowerCase("pt-BR").includes(term)
+        || cards?.some(({ pokemon }) => pokemon.name.toLocaleLowerCase("pt-BR").includes(term));
     });
-  }, [cardsByPokedexNumber, search, selectedGeneration, status]);
+  }, [cardsByPokedexNumber, search, selectedGeneration, speciesNames, status]);
 
   const selectedCards = selectedNumber ? cardsByPokedexNumber.get(selectedNumber) ?? [] : [];
+  const desiredArtwork = desiredNumber ? wishlistByPokedexNumber.get(desiredNumber) : undefined;
 
   const chooseRepresentative = async (number: number, cardId: string, pokemonName: string) => {
     try {
@@ -84,6 +128,42 @@ export default function PokedexPage() {
       toast.success(`${pokemonName} agora representa o ${formatDexNumber(number)} na Pokédex.`);
     } catch {
       toast.error("Não foi possível salvar essa escolha.");
+    }
+  };
+
+  const openSpecialArtworks = async (number: number) => {
+    setMissingNumber(number);
+    setMissingSpeciesName(speciesNames[number] ?? "");
+    setSpecialArtworks([]);
+    setLoadingSpecialArtworks(true);
+    try {
+      const response = await fetch(`/api/pokemon/special-artworks?number=${number}`);
+      const data = await response.json() as SpecialArtworksResponse;
+      if (!response.ok) throw new Error(data.error ?? "Não foi possível buscar as artes especiais.");
+      setMissingSpeciesName(data.speciesName ?? "Pokémon");
+      setSpecialArtworks(data.cards ?? []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível buscar as artes especiais.");
+    } finally {
+      setLoadingSpecialArtworks(false);
+    }
+  };
+
+  const addArtworkToWishlist = async (pokemon: PokemonCard) => {
+    setAddingArtworkId(pokemon.id);
+    try {
+      await addWishlistItem({
+        id: crypto.randomUUID(),
+        pokemonCardId: pokemon.id,
+        pokemonData: pokemon,
+        createdAt: new Date().toISOString(),
+      });
+      savePokemonInCache(pokemon);
+      toast.success(`${pokemon.name} · ${pokemon.set.name} adicionada à Wishlist!`);
+    } catch {
+      toast.error("Não foi possível adicionar esta arte à Wishlist.");
+    } finally {
+      setAddingArtworkId(null);
     }
   };
 
@@ -173,16 +253,23 @@ export default function PokedexPage() {
             const representativeId = representatives[number];
             const representative = cards.find(({ collection }) => collection.id === representativeId) ?? cards[0];
             const isOwned = Boolean(representative);
+            const wishedArtwork = !isOwned ? wishlistByPokedexNumber.get(number) : undefined;
+            const isDesired = Boolean(wishedArtwork);
+            const speciesName = speciesNames[number] ?? `Pokémon ${formatDexNumber(number)}`;
 
             return (
               <button
                 key={number}
                 type="button"
-                disabled={!isOwned}
-                onClick={() => setSelectedNumber(number)}
+                onClick={() => isOwned ? setSelectedNumber(number) : isDesired ? setDesiredNumber(number) : void openSpecialArtworks(number)}
                 className={`group relative min-h-52 overflow-hidden rounded-xl border p-3 text-left transition ${
-                  isOwned ? "bg-card hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-lg" : "cursor-default border-dashed bg-muted/20"
+                  isOwned
+                    ? "bg-card hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-lg"
+                    : isDesired
+                      ? "border-dashed border-blue-500/60 bg-blue-500/[0.06] hover:-translate-y-1 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/10"
+                    : "border-dashed bg-muted/20 hover:-translate-y-1 hover:border-violet-500/60 hover:bg-violet-500/5 hover:shadow-lg"
                 }`}
+                aria-label={isOwned ? `Ver cartas de ${speciesName}` : isDesired ? `Ver arte desejada de ${speciesName}` : `Buscar artes especiais de ${speciesName}`}
               >
                 <span className="absolute left-3 top-3 z-10 rounded-md bg-black/65 px-2 py-1 text-xs font-bold text-white">
                   {formatDexNumber(number)}
@@ -201,10 +288,35 @@ export default function PokedexPage() {
                     </div>
                     <p className="mt-1 text-xs text-emerald-500">Obtido</p>
                   </>
+                ) : wishedArtwork ? (
+                  <>
+                    <div className="relative mx-auto h-40 w-full overflow-hidden rounded-lg">
+                      <img
+                        src={wishedArtwork.images.small}
+                        alt={`Arte desejada de ${speciesName}`}
+                        loading="lazy"
+                        className="h-full w-full object-contain saturate-[.7] brightness-[.78] transition group-hover:scale-105 group-hover:saturate-100"
+                      />
+                      <div className="absolute inset-0 bg-blue-500/10" />
+                      <span className="absolute -right-9 top-5 rotate-45 bg-blue-600 px-10 py-1 text-[10px] font-black tracking-wider text-white shadow-md">
+                        DESEJADA
+                      </span>
+                      <span className="absolute bottom-1 right-1 rounded-full bg-blue-600 p-1.5 text-white shadow">
+                        <Star size={13} fill="currentColor" />
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <strong className="truncate text-sm">{speciesName}</strong>
+                      <span className="shrink-0 rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-bold text-blue-500">OBJETIVO</span>
+                    </div>
+                    <p className="mt-1 truncate text-xs text-blue-500/80">{wishedArtwork.set.name}</p>
+                  </>
                 ) : (
-                  <div className="flex h-full min-h-44 flex-col items-center justify-center text-muted-foreground/60">
-                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed text-2xl font-bold">?</div>
-                    <span className="text-xs">Ainda não encontrado</span>
+                  <div className="flex h-full min-h-44 flex-col items-center justify-center text-muted-foreground/60 transition-colors group-hover:text-violet-500">
+                    <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed text-2xl font-bold transition-transform group-hover:scale-105">?</div>
+                    <strong className="text-sm text-foreground/80 transition-colors group-hover:text-violet-500">{speciesName}</strong>
+                    <span className="mt-1 text-xs">Ainda não encontrado</span>
+                    <span className="mt-1 text-[11px] font-semibold opacity-60 transition-opacity group-hover:opacity-100">Buscar artes especiais</span>
                   </div>
                 )}
               </button>
@@ -241,6 +353,114 @@ export default function PokedexPage() {
               );
             })}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={desiredNumber !== null} onOpenChange={(open) => !open && setDesiredNumber(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{desiredArtwork?.name ?? "Arte desejada"} · {desiredNumber ? formatDexNumber(desiredNumber) : ""}</DialogTitle>
+            <DialogDescription>Esta é a arte que você planejou para ocupar este espaço da Pokédex.</DialogDescription>
+          </DialogHeader>
+          {desiredArtwork && (
+            <div className="rounded-xl border border-dashed border-blue-500/60 bg-blue-500/[0.06] p-4">
+              <div className="relative mx-auto w-fit overflow-hidden rounded-lg">
+                <img src={desiredArtwork.images.small} alt={desiredArtwork.name} className="h-64 object-contain saturate-[.8]" />
+                <span className="absolute -right-9 top-5 rotate-45 bg-blue-600 px-10 py-1 text-[10px] font-black tracking-wider text-white">DESEJADA</span>
+              </div>
+              <p className="mt-3 text-center font-semibold">{desiredArtwork.set.name}</p>
+              <p className="text-center text-xs text-muted-foreground">#{desiredArtwork.number} · {desiredArtwork.rarity ?? "Arte especial"}</p>
+            </div>
+          )}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <Button variant="outline" className="gap-2" onClick={() => router.push("/wishlist")}>
+              <Heart size={16} /> Ver na Wishlist
+            </Button>
+            <Button
+              className="gap-2"
+              onClick={() => {
+                const number = desiredNumber;
+                setDesiredNumber(null);
+                if (number) void openSpecialArtworks(number);
+              }}
+            >
+              <RefreshCw size={16} /> Trocar arte
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={missingNumber !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMissingNumber(null);
+            setSpecialArtworks([]);
+          }
+        }}
+      >
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>
+              {missingSpeciesName || "Artes especiais"} · {missingNumber ? formatDexNumber(missingNumber) : ""}
+            </DialogTitle>
+            <DialogDescription>
+              Escolha uma Full Art, Illustration Rare ou outra arte especial para adicionar diretamente à sua Wishlist.
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingSpecialArtworks ? (
+            <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-muted-foreground">
+              <Loader2 className="animate-spin text-violet-500" size={28} />
+              <p>Procurando todas as artes especiais...</p>
+            </div>
+          ) : specialArtworks.length === 0 ? (
+            <div className="rounded-xl border border-dashed p-10 text-center">
+              <Sparkles className="mx-auto text-muted-foreground" size={28} />
+              <h3 className="mt-3 font-semibold">Nenhuma arte especial encontrada</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                O catálogo ainda não possui uma Full Art ou arte alternativa identificada para esta espécie.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {specialArtworks.map((pokemon) => {
+                const alreadyInWishlist = wishlistItems.some((item) => item.pokemonCardId === pokemon.id);
+                const isAdding = addingArtworkId === pokemon.id;
+
+                return (
+                  <article key={pokemon.id} className="flex flex-col rounded-xl border bg-card p-3">
+                    <div className="relative">
+                      <img
+                        src={pokemon.images.small}
+                        alt={`${pokemon.name} — ${pokemon.set.name}`}
+                        loading="lazy"
+                        className="mx-auto h-56 w-full object-contain"
+                      />
+                      {pokemon.rarity && (
+                        <span className="absolute bottom-1 left-1 rounded-full bg-violet-600 px-2 py-1 text-[10px] font-bold text-white shadow">
+                          {pokemon.rarity}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="mt-3 truncate text-sm font-bold">{pokemon.name}</h3>
+                    <p className="truncate text-xs text-muted-foreground">{pokemon.set.name}</p>
+                    <p className="text-xs text-muted-foreground">#{pokemon.number}/{pokemon.set.printedTotal || "?"}</p>
+                    <Button
+                      size="sm"
+                      variant={alreadyInWishlist ? "secondary" : "default"}
+                      className="mt-3 w-full gap-2"
+                      disabled={alreadyInWishlist || isAdding}
+                      onClick={() => void addArtworkToWishlist(pokemon)}
+                    >
+                      {isAdding ? <Loader2 size={15} className="animate-spin" /> : alreadyInWishlist ? <Check size={15} /> : <Heart size={15} />}
+                      {alreadyInWishlist ? "Na Wishlist" : isAdding ? "Adicionando" : "Adicionar à Wishlist"}
+                    </Button>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
