@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeftRight, ArrowUpDown, ImageOff, Search } from "lucide-react";
+import { ArrowLeftRight, ArrowUpDown, Check, Copy, ImageOff, Search, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface PublicTrade {
@@ -27,6 +27,8 @@ export default function PublicTradesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"default" | "price-asc" | "price-desc" | "name">("default");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [copiedSelection, setCopiedSelection] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,6 +69,23 @@ export default function PublicTradesPage() {
     }
     return 0;
   });
+
+  const selectedTrades = selectedIds.map((id) => trades.find((trade) => trade.id === id)).filter(Boolean) as PublicTrade[];
+
+  const toggleSelection = (tradeId: string) => {
+    setSelectedIds((current) => current.includes(tradeId) ? current.filter((id) => id !== tradeId) : [...current, tradeId]);
+    setCopiedSelection(false);
+  };
+
+  const copySelection = async () => {
+    const message = [
+      "Olá! Tenho interesse nestas cartas da sua vitrine:",
+      ...selectedTrades.map((trade) => `• ${trade.card_name ?? trade.card_id}${trade.card_set_name ? ` — ${trade.card_set_name}` : ""}${trade.card_number ? ` #${trade.card_number}` : ""}${trade.price != null ? ` — ${trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : " — apenas troca"}`),
+    ].join("\n");
+    await navigator.clipboard.writeText(message);
+    setCopiedSelection(true);
+    window.setTimeout(() => setCopiedSelection(false), 2200);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-12 w-full absolute top-0 left-0 z-[100] overflow-y-auto">
@@ -115,7 +134,10 @@ export default function PublicTradesPage() {
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5 mt-8">
             {filteredTrades.map((trade) => (
-              <div key={trade.id} className="relative rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+              <div key={trade.id} className={`relative rounded-xl border bg-white dark:bg-slate-900 p-3 shadow-sm flex flex-col justify-between transition-shadow ${selectedIds.includes(trade.id) ? "border-blue-500 ring-2 ring-blue-500/20" : "border-slate-200 dark:border-slate-800 hover:shadow-md"}`}>
+                <button type="button" onClick={() => toggleSelection(trade.id)} aria-pressed={selectedIds.includes(trade.id)} className={`absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-colors ${selectedIds.includes(trade.id) ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 bg-white/90 text-slate-500 hover:border-blue-500 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900/90"}`} title={selectedIds.includes(trade.id) ? "Remover da seleção" : "Selecionar carta"}>
+                  {selectedIds.includes(trade.id) ? <Check size={16} /> : <ShoppingCart size={15} />}
+                </button>
                 {trade.card_image_url ? (
                   <Image src={trade.card_image_url} alt={trade.card_name ?? "Carta Pokémon"} width={245} height={342} className="mx-auto h-40 md:h-52 w-full object-contain" />
                 ) : (
@@ -147,6 +169,12 @@ export default function PublicTradesPage() {
         {!loading && trades.length > 0 && filteredTrades.length === 0 && (
           <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900">
             Nenhuma carta encontrada para essa busca.
+          </div>
+        )}
+        {selectedTrades.length > 0 && (
+          <div className="fixed bottom-5 left-1/2 z-20 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-blue-500/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur dark:bg-slate-900/95">
+            <div className="min-w-0"><p className="text-sm font-bold text-slate-900 dark:text-white">{selectedTrades.length} {selectedTrades.length === 1 ? "carta selecionada" : "cartas selecionadas"}</p><p className="truncate text-xs text-slate-500">Copie a lista para enviar ao dono da vitrine.</p></div>
+            <button type="button" onClick={() => void copySelection()} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"><Copy size={16} />{copiedSelection ? "Copiado!" : "Copiar seleção"}</button>
           </div>
         )}
       </div>
