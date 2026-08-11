@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,9 @@ import { useTrades } from "@/hooks/useTrades";
 import { ConditionSelector } from "./ConditionSelector";
 import { CardCondition, CardLanguage } from "@/types/collection-card";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { getLigaPokemonUrl } from "@/lib/ligaPokemon";
+import { consultLigaPrices, LigaPriceResponse, toLigaPriceRequest } from "@/services/ligaPriceService";
 
 interface CardSearchDialogProps {
   open: boolean;
@@ -218,12 +221,39 @@ function TradePriceForm({
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<CardCondition>("NM");
   const [language, setLanguage] = useState<CardLanguage>("PT");
+  const [ligaReference, setLigaReference] = useState<LigaPriceResponse | null>(null);
+  const [ligaReferenceCriteria, setLigaReferenceCriteria] = useState("");
+  const [consultingLiga, setConsultingLiga] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { addTrade } = useTrades();
+
+  const handleConsultLiga = async () => {
+    setConsultingLiga(true);
+    try {
+      const [result] = await consultLigaPrices([toLigaPriceRequest(card, language, condition)]);
+      setLigaReference(result);
+      setLigaReferenceCriteria(`${language}:${condition}`);
+      if (result.status === "found" && result.price != null) {
+        toast.success(`Referência encontrada: ${result.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`);
+      } else {
+        toast.info("Nenhum anúncio compatível foi encontrado na Liga.");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível consultar a Liga.");
+    } finally {
+      setConsultingLiga(false);
+    }
+  };
 
   const handleSave = async () => {
     const num = price ? parseFloat(price.replace(",", ".")) : null;
-    await addTrade(card, isNaN(num!) ? null : num, condition, language);
-    onSuccess();
+    setSaving(true);
+    try {
+      await addTrade(card, isNaN(num!) ? null : num, condition, language);
+      onSuccess();
+    } finally {
+      setSaving(false);
+    }
   };
 
   const languages: { id: CardLanguage; label: string }[] = [
@@ -231,6 +261,9 @@ function TradePriceForm({
     { id: "EN", label: "Inglês" },
     { id: "JP", label: "Japonês" },
   ];
+
+  const ligaUrl = getLigaPokemonUrl(card.name, card.number, card.set.printedTotal, card.set.ligaEdition, card.set.printedTotalLabel, card.set.name);
+  const referenceIsCurrent = ligaReferenceCriteria === `${language}:${condition}`;
 
   return (
     <div className="space-y-6 text-foreground">
@@ -285,10 +318,41 @@ function TradePriceForm({
             onChange={(e) => setPrice(e.target.value)}
           />
         </div>
+
+        <div className="rounded-md border border-sky-500/20 bg-sky-500/5 px-2.5 py-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-sky-700 dark:text-sky-400">Referência Liga Pokémon</p>
+              {!referenceIsCurrent && ligaReference ? (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">Idioma ou condição alterados. Consulte novamente.</p>
+              ) : ligaReference?.status === "found" && ligaReference.price != null ? (
+                <p className="mt-0.5 text-base font-black text-sky-700 dark:text-sky-300">
+                  {ligaReference.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  <span className="ml-2 text-[10px] font-semibold uppercase text-muted-foreground">
+                    {ligaReference.sourceTrust === "unverified" ? "loja não verificada" : "loja confiável"}
+                  </span>
+                </p>
+              ) : ligaReference?.status === "not_found" ? (
+                <p className="mt-1 text-xs text-muted-foreground">Sem anúncio compatível.</p>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">Ainda não consultada.</p>
+              )}
+            </div>
+            <Button type="button" variant="outline" size="sm" disabled={consultingLiga} onClick={() => void handleConsultLiga()} className="h-8 shrink-0 gap-1.5 px-2 text-xs">
+              <RefreshCw size={14} className={consultingLiga ? "animate-spin" : ""} />
+              {consultingLiga ? "Consultando" : "Consultar agora"}
+            </Button>
+          </div>
+        </div>
+
+        <a href={ligaUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-md border border-blue-500/20 bg-blue-500/5 px-2.5 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-500/10 dark:text-blue-400">
+          Pesquisar esta carta na Liga Pokémon
+          <ExternalLink size={16} />
+        </a>
       </div>
 
-      <Button onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-        Confirmar e Adicionar às Trocas
+      <Button disabled={saving} onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+        {saving ? "Adicionando..." : "Confirmar e Adicionar às Trocas"}
       </Button>
     </div>
   );

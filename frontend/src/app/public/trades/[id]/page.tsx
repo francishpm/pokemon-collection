@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeftRight, ImageOff, Search } from "lucide-react";
+import { ArrowLeftRight, ArrowUpDown, ImageOff, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface PublicTrade {
@@ -26,6 +26,7 @@ export default function PublicTradesPage() {
   const [trades, setTrades] = useState<PublicTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"default" | "price-asc" | "price-desc" | "name">("default");
 
   useEffect(() => {
     let isMounted = true;
@@ -55,7 +56,17 @@ export default function PublicTradesPage() {
 
   const filteredTrades = trades.filter((trade) =>
     (trade.card_name ?? trade.card_id).toLowerCase().includes(search.trim().toLowerCase())
-  );
+  ).sort((a, b) => {
+    if (sort === "name") return (a.card_name ?? a.card_id).localeCompare(b.card_name ?? b.card_id, "pt-BR");
+    if (sort === "price-asc" || sort === "price-desc") {
+      // Cards offered only for exchange stay after priced cards.
+      if (a.price == null && b.price != null) return 1;
+      if (a.price != null && b.price == null) return -1;
+      if (a.price == null && b.price == null) return 0;
+      return sort === "price-asc" ? a.price! - b.price! : b.price! - a.price!;
+    }
+    return 0;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-12 w-full absolute top-0 left-0 z-[100] overflow-y-auto">
@@ -70,14 +81,26 @@ export default function PublicTradesPage() {
           </p>
         </div>
 
-        <div className="max-w-md mx-auto relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <Input
-            placeholder="Buscar carta na vitrine..."
-            className="pl-10 h-12 rounded-full border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
+        <div className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Input
+              placeholder="Buscar carta na vitrine..."
+              className="h-12 rounded-full border-slate-200 bg-white pl-10 dark:border-slate-800 dark:bg-slate-900"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
+          <label className="relative flex h-12 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            <ArrowUpDown size={16} className="text-blue-500" />
+            <span className="sr-only">Organizar por</span>
+            <select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="h-full min-w-40 appearance-none bg-transparent pr-1 outline-none">
+              <option value="default">Mais recentes</option>
+              <option value="price-asc">Menor valor</option>
+              <option value="price-desc">Maior valor</option>
+              <option value="name">Nome (A–Z)</option>
+            </select>
+          </label>
         </div>
 
         {loading ? (
@@ -119,6 +142,11 @@ export default function PublicTradesPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        {!loading && trades.length > 0 && filteredTrades.length === 0 && (
+          <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+            Nenhuma carta encontrada para essa busca.
           </div>
         )}
       </div>
