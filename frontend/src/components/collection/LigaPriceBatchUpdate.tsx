@@ -35,19 +35,22 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
 
   const selectableIds = selectedCards.map(({ collection }) => collection.id);
   const effectiveSelectedIds = selectedIds.filter((id) => selectableIds.includes(id));
-  const selectedResults = effectiveSelectedIds.map((id) => {
-    if (results[id]?.status === "found" && results[id].price != null) return results[id];
+  const selectedResults: Array<LigaPriceResponse & { id: string; price: number }> = effectiveSelectedIds.flatMap((id) => {
+    const currentResult = results[id];
+    if (currentResult?.status === "found" && currentResult.price != null) {
+      return [{ ...currentResult, id, price: currentResult.price }];
+    }
     const saved = collectionView.find(({ collection }) => collection.id === id)?.collection;
-    if (saved?.ligaPriceStatus !== "found" || saved.ligaLowestPrice == null) return undefined;
-    return {
+    if (saved?.ligaPriceStatus !== "found" || saved.ligaLowestPrice == null) return [];
+    return [{
       id,
       price: saved.ligaLowestPrice,
       checkedAt: saved.ligaPriceCheckedAt ?? new Date().toISOString(),
       url: saved.ligaPriceUrl ?? "",
       status: "found" as const,
       sourceTrust: saved.ligaPriceSourceTrust,
-    };
-  }).filter((result): result is LigaPriceResponse => Boolean(result));
+    }];
+  });
 
   const toggleAll = () => {
     if (effectiveSelectedIds.length === selectableIds.length) {
@@ -112,7 +115,7 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
     if (!selectedResults.length) return;
     setApplying(true);
     try {
-      await Promise.all(selectedResults.map((result) => updateCollectionLigaValue(result.id, result.price!)));
+      await Promise.all(selectedResults.map((result) => updateCollectionLigaValue(result.id, result.price)));
       await fetchCards();
       toast.success(`${selectedResults.length} valor(es) de mercado atualizado(s) e registrado(s) no histórico.`);
       setResults({});
