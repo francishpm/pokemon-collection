@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Search, Trash2, Pencil, Plus, ArrowLeftRight } from "lucide-react";
+import { Search, Trash2, Pencil, Plus, ArrowLeftRight, Check, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTrades } from "@/hooks/useTrades";
@@ -11,14 +12,24 @@ import { TradeShareButton } from "@/components/trades/TradeShareButton";
 
 export default function TradesPage() {
     const { tradesView, loading, removeTrade, updatePrice, fetchTrades } = useTrades();
+    const searchParams = useSearchParams();
     const openSearchModal = useUiStore((state) => state.openSearchModal);
     const [localSearch, setLocalSearch] = useState("");
     const [editingId, setEditingId] = useState<string | null>(null);
     const [tempPrice, setTempPrice] = useState<string>("");
+    const interestIds = useMemo(() => (searchParams.get("interest") ?? "").split(",").filter(Boolean), [searchParams]);
+    const [interestSelected, setInterestSelected] = useState<string[]>(() => interestIds);
     
     useEffect(() => {
         fetchTrades();
     }, [fetchTrades]);
+
+    const interestTrades = tradesView.filter(({ trade }) => interestSelected.includes(trade.id));
+    const confirmInterestRemoval = async () => {
+        await Promise.all(interestSelected.map((id) => removeTrade(id)));
+        setInterestSelected([]);
+        window.history.replaceState({}, "", "/trades");
+    };
 
     const filteredTrades = useMemo(() => {
         const term = localSearch.trim().toLowerCase();
@@ -43,6 +54,16 @@ export default function TradesPage() {
 
     return (
         <div className="space-y-8">
+            {interestIds.length > 0 && interestTrades.length > 0 && (
+                <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-4">
+                        <div><h2 className="flex items-center gap-2 text-lg font-bold text-foreground"><Check className="text-blue-500" size={20} />Pedido de interesse recebido</h2><p className="mt-1 text-sm text-muted-foreground">Revise as cartas selecionadas. Desmarque as que devem continuar na vitrine.</p></div>
+                        <Button variant="ghost" size="icon" onClick={() => { setInterestSelected([]); window.history.replaceState({}, "", "/trades"); }}><X size={18} /></Button>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">{interestTrades.map(({ trade, pokemon }) => <button key={trade.id} type="button" onClick={() => setInterestSelected((current) => current.includes(trade.id) ? current.filter((id) => id !== trade.id) : [...current, trade.id])} className={`rounded-lg border px-3 py-2 text-left text-xs transition ${interestSelected.includes(trade.id) ? "border-blue-500 bg-blue-500/10" : "border-border opacity-50"}`}><span className="font-bold">{pokemon.name}</span><span className="ml-2 text-muted-foreground">{trade.price != null ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Troca"}</span></button>)}</div>
+                    <div className="mt-4 flex items-center justify-between gap-3"><p className="text-sm font-semibold">{interestSelected.length} selecionada(s) para remoção</p><Button disabled={!interestSelected.length} onClick={() => void confirmInterestRemoval()} className="bg-blue-600 text-white hover:bg-blue-700">Confirmar e remover</Button></div>
+                </div>
+            )}
             {/* Cabeçalho */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
@@ -53,6 +74,9 @@ export default function TradesPage() {
                     <p className="text-muted-foreground mt-1">
                         Gerencie as cartas excedentes que você deseja negociar.
                     </p>
+                    <span className="mt-2 inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-500">
+                        {tradesView.length} {tradesView.length === 1 ? "carta" : "cartas"} disponíveis
+                    </span>
                 </div>
 
                 <div className="flex gap-2">

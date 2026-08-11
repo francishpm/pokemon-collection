@@ -18,6 +18,8 @@ export async function POST(request: Request) {
       results[index] = await collectLigaPrice(cards[index]);
     }
   }
-  await Promise.all(Array.from({ length: Math.min(4, cards.length) }, () => worker()));
+  // Liga throttles bursts aggressively, so batch requests are intentionally
+  // processed one card at a time, like the reliable single-card flow.
+  await worker();
   return NextResponse.json({ results });
 }

@@ -98,13 +98,23 @@ function buildDirectUrl(query: LigaPriceQuery, edition?: string) {
 }
 
 async function fetchLigaHtml(url: string) {
-  const response = await fetch(url, {
-    cache: "no-store",
-    headers: REQUEST_HEADERS,
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok) throw new Error(`Liga respondeu HTTP ${response.status}`);
-  return response.text();
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+        headers: REQUEST_HEADERS,
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (response.ok) return response.text();
+      lastError = new Error(`Liga respondeu HTTP ${response.status}`);
+      if (![403, 408, 429, 500, 502, 503, 504].includes(response.status)) break;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Falha ao consultar a Liga");
+    }
+    if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 600 * (attempt + 1)));
+  }
+  throw lastError ?? new Error("Liga indisponível");
 }
 
 function isCardPage(html: string) {

@@ -24,11 +24,16 @@ export interface LigaPriceResponse {
 
 function getLigaPrintedTotal(pokemon: PokemonCard) {
   const savedTotal = String(pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal);
+  // Radiant Collection cards are stored as RC7/RC113 by some catalogues,
+  // while Liga indexes them as RC7/113.
+  const radiantTotal = savedTotal.match(/^RC(\d+)$/i);
+  if (/^RC\d+/i.test(pokemon.number) && radiantTotal) return radiantTotal[1].replace(/^0+(?=\d)/, "");
+  if (/^RC\d+/i.test(pokemon.number) && /^\d+$/.test(savedTotal)) return savedTotal.replace(/^0+(?=\d)/, "");
   if (!/^\d+$/.test(savedTotal)) return savedTotal;
 
   // Gallery subsets repeat their prefix on both sides: GG23/GG70,
   // TG01/TG30 and RC01/RC32. Some catalog APIs omit it from the total.
-  const galleryPrefix = pokemon.number.match(/^(GG|TG|RC)(?=\d)/i)?.[1]?.toUpperCase();
+  const galleryPrefix = pokemon.number.match(/^(GG|TG)(?=\d)/i)?.[1]?.toUpperCase();
   return galleryPrefix ? `${galleryPrefix}${savedTotal}` : savedTotal;
 }
 

@@ -22,9 +22,12 @@ export function getLigaPokemonUrl(
     // A coleção Perfect Order (Equilíbrio Perfeito na Liga) é cadastrada com
     // denominador 88, embora o catálogo global apresente 088.
     const usesUnpaddedTotal = /perfect order|equil[ií]brio perfeito/i.test(setName ?? "");
-    const total = usesUnpaddedTotal
-        ? String(printedTotal).replace(/^0+(?=\d)/, "")
-        : paddedTotal;
+    const radiantTotal = paddedTotal.match(/^RC(\d+)$/i);
+    const total = /^RC\d+/i.test(number) && radiantTotal
+        ? radiantTotal[1].replace(/^0+(?=\d)/, "")
+        : usesUnpaddedTotal
+            ? String(printedTotal).replace(/^0+(?=\d)/, "")
+            : paddedTotal;
 
     const params = new URLSearchParams({
         view: "cards/card",

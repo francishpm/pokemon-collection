@@ -165,3 +165,13 @@ export async function updateLigaPriceReferenceInSupabase(
 
   if (error) throw error;
 }
+
+export async function updateCollectionLigaValue(id: string, value: number): Promise<void> {
+  const user = await getAuthenticatedUser();
+  const { error } = await supabase
+    .from("collection")
+    .update({ liga_value: value, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id);
+  if (error) throw error;
+}

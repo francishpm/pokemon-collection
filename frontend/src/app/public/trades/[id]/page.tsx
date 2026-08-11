@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { ArrowLeftRight, ArrowUpDown, Check, Copy, ImageOff, Search, ShoppingCart } from "lucide-react";
+import { ArrowLeftRight, ArrowUpDown, Check, Copy, ImageOff, Link as LinkIcon, Search, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface PublicTrade {
@@ -29,6 +29,7 @@ export default function PublicTradesPage() {
   const [sort, setSort] = useState<"default" | "price-asc" | "price-desc" | "name">("default");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [copiedSelection, setCopiedSelection] = useState(false);
+  const [copiedRequestLink, setCopiedRequestLink] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -71,6 +72,8 @@ export default function PublicTradesPage() {
   });
 
   const selectedTrades = selectedIds.map((id) => trades.find((trade) => trade.id === id)).filter(Boolean) as PublicTrade[];
+  const selectedTotal = selectedTrades.reduce((total, trade) => total + (trade.price ?? 0), 0);
+  const selectedWithoutPrice = selectedTrades.filter((trade) => trade.price == null).length;
 
   const toggleSelection = (tradeId: string) => {
     setSelectedIds((current) => current.includes(tradeId) ? current.filter((id) => id !== tradeId) : [...current, tradeId]);
@@ -81,10 +84,18 @@ export default function PublicTradesPage() {
     const message = [
       "Olá! Tenho interesse nestas cartas da sua vitrine:",
       ...selectedTrades.map((trade) => `• ${trade.card_name ?? trade.card_id}${trade.card_set_name ? ` — ${trade.card_set_name}` : ""}${trade.card_number ? ` #${trade.card_number}` : ""}${trade.price != null ? ` — ${trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : " — apenas troca"}`),
+      `\nTotal das cartas com preço: ${selectedTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}${selectedWithoutPrice ? ` (${selectedWithoutPrice} ${selectedWithoutPrice === 1 ? "carta" : "cartas"} apenas para troca, sem valor incluído)` : ""}`,
     ].join("\n");
     await navigator.clipboard.writeText(message);
     setCopiedSelection(true);
     window.setTimeout(() => setCopiedSelection(false), 2200);
+  };
+
+  const copyRequestLink = async () => {
+    const link = `${window.location.origin}/trades?interest=${encodeURIComponent(selectedIds.join(","))}`;
+    await navigator.clipboard.writeText(link);
+    setCopiedRequestLink(true);
+    window.setTimeout(() => setCopiedRequestLink(false), 2200);
   };
 
   return (
@@ -173,8 +184,8 @@ export default function PublicTradesPage() {
         )}
         {selectedTrades.length > 0 && (
           <div className="fixed bottom-5 left-1/2 z-20 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-blue-500/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur dark:bg-slate-900/95">
-            <div className="min-w-0"><p className="text-sm font-bold text-slate-900 dark:text-white">{selectedTrades.length} {selectedTrades.length === 1 ? "carta selecionada" : "cartas selecionadas"}</p><p className="truncate text-xs text-slate-500">Copie a lista para enviar ao dono da vitrine.</p></div>
-            <button type="button" onClick={() => void copySelection()} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"><Copy size={16} />{copiedSelection ? "Copiado!" : "Copiar seleção"}</button>
+            <div className="min-w-0"><p className="text-sm font-bold text-slate-900 dark:text-white">{selectedTrades.length} {selectedTrades.length === 1 ? "carta selecionada" : "cartas selecionadas"}</p><p className="text-sm font-black text-blue-600 dark:text-blue-400">Total: {selectedTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>{selectedWithoutPrice > 0 && <p className="truncate text-[11px] text-slate-500">{selectedWithoutPrice} {selectedWithoutPrice === 1 ? "carta" : "cartas"} apenas para troca não incluída no total</p>}</div>
+            <div className="flex shrink-0 gap-2"><button type="button" onClick={() => void copySelection()} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700"><Copy size={16} />{copiedSelection ? "Copiado!" : "Copiar seleção"}</button><button type="button" onClick={() => void copyRequestLink()} className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm font-bold text-blue-600 transition hover:bg-blue-50 dark:border-blue-800 dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-slate-700"><LinkIcon size={16} />{copiedRequestLink ? "Copiado!" : "Link"}</button></div>
           </div>
         )}
       </div>

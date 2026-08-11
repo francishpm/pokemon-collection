@@ -18,7 +18,7 @@ import { LigaPriceBatchUpdate } from "@/components/collection/LigaPriceBatchUpda
 
 type SortOption = "dateAsc" | "dateDesc" | "priceDesc" | "priceAsc";
 type CardTypeFilter = "all" | "pokemon" | "trainer";
-type LigaStatusFilter = "all" | "found" | "not_found" | "error" | "needs_confirmation" | "pending";
+type LigaStatusFilter = "all" | "found" | "not_found" | "error" | "needs_confirmation" | "pending" | "price_difference";
 
 function isTrainerCard(card: PokemonCard) {
   const labels = [card.supertype, ...card.subtypes]
@@ -37,6 +37,7 @@ export default function CollectionPage() {
   const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
   const [typeFilter, setTypeFilter] = useState<CardTypeFilter>("all");
   const [ligaStatusFilter, setLigaStatusFilter] = useState<LigaStatusFilter>("all");
+  const [selectedPriceIds, setSelectedPriceIds] = useState<string[]>([]);
   
   // Estados para Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,6 +71,7 @@ export default function CollectionPage() {
     error: collectionView.filter(({ collection }) => collection.ligaPriceStatus === "error").length,
     needs_confirmation: collectionView.filter(({ collection }) => collection.ligaPriceStatus === "needs_confirmation").length,
     pending: collectionView.filter(({ collection }) => !collection.ligaPriceStatus).length,
+    price_difference: collectionView.filter(({ collection }) => collection.ligaValue != null && collection.ligaLowestPrice != null && Math.round(collection.ligaValue * 100) !== Math.round(collection.ligaLowestPrice * 100)).length,
   }), [collectionView]);
 
   const handleDelete = async (id: string) => {
@@ -112,7 +114,9 @@ export default function CollectionPage() {
       result = result.filter(({ pokemon }) => !isTrainerCard(pokemon));
     }
 
-    if (ligaStatusFilter === "pending") {
+    if (ligaStatusFilter === "price_difference") {
+      result = result.filter(({ collection }) => collection.ligaValue != null && collection.ligaLowestPrice != null && Math.round(collection.ligaValue * 100) !== Math.round(collection.ligaLowestPrice * 100));
+    } else if (ligaStatusFilter === "pending") {
       result = result.filter(({ collection }) => !collection.ligaPriceStatus);
     } else if (ligaStatusFilter !== "all") {
       result = result.filter(({ collection }) => collection.ligaPriceStatus === ligaStatusFilter);
@@ -226,12 +230,13 @@ export default function CollectionPage() {
             <option value="error">Erro na consulta ({ligaStatusCounts.error})</option>
             <option value="needs_confirmation">Precisa conferir ({ligaStatusCounts.needs_confirmation})</option>
             <option value="pending">Ainda não consultada ({ligaStatusCounts.pending})</option>
+            <option value="price_difference">Valor manual diferente da Liga ({ligaStatusCounts.price_difference})</option>
           </select>
 
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:col-start-2">
-          <LigaPriceBatchUpdate collectionView={collectionView} />
+          <LigaPriceBatchUpdate collectionView={paginatedCards} selectedIds={selectedPriceIds} onSelectedIdsChange={setSelectedPriceIds} />
           <CollectionShareButton />
           <Button className="gap-2" onClick={() => openSearchModal("collection")}>
             <Plus size={18} />
@@ -266,6 +271,9 @@ export default function CollectionPage() {
                 onEdit={handleEdit}
                 isPokedexRepresentative={pokedexRepresentatives[pokemon.nationalPokedexNumbers?.[0] ?? 0] === collection.id}
                 onSetPokedexRepresentative={handleSetPokedexRepresentative}
+                isPriceSelected={selectedPriceIds.includes(collection.id)}
+                onTogglePriceSelection={(id) => setSelectedPriceIds((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id])}
+                onClick={() => setSelectedPriceIds((current) => current.includes(collection.id) ? current.filter((selectedId) => selectedId !== collection.id) : [...current, collection.id])}
               />
             ))}
           </div>
