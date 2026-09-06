@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -7,8 +6,6 @@ import { Topbar } from "@/components/layout/Topbar";
 import { GlobalModals } from "@/components/layout/GlobalModals";
 import { Toaster } from "sonner";
 import { AuthGuard } from "@/components/AuthGuard"; // <-- Importado aqui
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "ColecionaDex - Gerenciador de Coleção Pokémon",
@@ -22,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {/* AuthGuard envolvendo a estrutura principal */}
           <AuthGuard>

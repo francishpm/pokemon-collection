@@ -132,12 +132,15 @@ export default function PokedexPage() {
   };
 
   const openSpecialArtworks = async (number: number) => {
+    const speciesName = speciesNames[number] ?? "";
     setMissingNumber(number);
-    setMissingSpeciesName(speciesNames[number] ?? "");
+    setMissingSpeciesName(speciesName);
     setSpecialArtworks([]);
     setLoadingSpecialArtworks(true);
     try {
-      const response = await fetch(`/api/pokemon/special-artworks?number=${number}`);
+      const params = new URLSearchParams({ number: String(number) });
+      if (speciesName) params.set("name", speciesName);
+      const response = await fetch(`/api/pokemon/special-artworks?${params}`);
       const data = await response.json() as SpecialArtworksResponse;
       if (!response.ok) throw new Error(data.error ?? "Não foi possível buscar as artes especiais.");
       setMissingSpeciesName(data.speciesName ?? "Pokémon");

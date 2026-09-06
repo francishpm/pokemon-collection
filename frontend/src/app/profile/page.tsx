@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Eye, EyeOff, Lock, Mail, Save, User } from "lucide-react";
+import { CalendarDays, DatabaseBackup, Download, Eye, EyeOff, FileSpreadsheet, Lock, Mail, Save, User } from "lucide-react";
+import { fetchCardsFromSupabase } from "@/services/collectionService";
+import { fetchWishlistFromSupabase } from "@/services/wishlistService";
 
 interface AccountData {
   name: string;
@@ -23,6 +25,84 @@ export default function ProfilePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [savingName, setSavingName] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [exportingFormat, setExportingFormat] = useState<"json" | "csv" | null>(null);
+
+  const downloadFile = (content: BlobPart, type: string, filename: string) => {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportDate = () => new Date().toISOString().split("T")[0];
+
+  const handleJsonExport = async () => {
+    setExportingFormat("json");
+    try {
+      const [collection, wishlist] = await Promise.all([fetchCardsFromSupabase(), fetchWishlistFromSupabase()]);
+      downloadFile(
+        JSON.stringify({ collection, wishlist, exportedAt: new Date().toISOString() }, null, 2),
+        "application/json",
+        `colecionadex-backup-${exportDate()}.json`,
+      );
+      toast.success("Backup baixado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível gerar o backup da nuvem.");
+    } finally {
+      setExportingFormat(null);
+    }
+  };
+
+  const handleCsvExport = async () => {
+    setExportingFormat("csv");
+    try {
+      const collection = await fetchCardsFromSupabase();
+      const csvCell = (value: unknown) => {
+        let text = value == null ? "" : String(value);
+        if (/^[=+\-@]/.test(text)) text = `'${text}`;
+        return `"${text.replaceAll('"', '""')}"`;
+      };
+      const sortedCollection = [...collection].sort((a, b) => {
+        const pokedexNumberA = a.pokemonData?.nationalPokedexNumbers?.[0];
+        const pokedexNumberB = b.pokemonData?.nationalPokedexNumbers?.[0];
+
+        if (pokedexNumberA != null && pokedexNumberB != null && pokedexNumberA !== pokedexNumberB) {
+          return pokedexNumberA - pokedexNumberB;
+        }
+        if (pokedexNumberA != null) return -1;
+        if (pokedexNumberB != null) return 1;
+
+        const nameA = a.pokemonData?.name ?? a.pokemonCardId;
+        const nameB = b.pokemonData?.name ?? b.pokemonCardId;
+
+        return nameA.localeCompare(nameB, "pt-BR", { sensitivity: "base", numeric: true });
+      });
+      const rows = sortedCollection.map((card) => [
+        card.pokemonData?.name ?? card.pokemonCardId,
+        card.pokemonData
+          ? `${card.pokemonData.number}/${card.pokemonData.set.printedTotalLabel ?? card.pokemonData.set.printedTotal}`
+          : "",
+        card.ligaPriceUrl,
+        card.language,
+        card.condition,
+        card.acquisitionValue,
+        card.ligaValue,
+        card.notes,
+      ]);
+      const header = ["Carta", "Número na coleção", "Link Liga", "Idioma", "Condição", "Valor de aquisição", "Valor atual", "Observações"];
+      const csv = [header, ...rows].map((row) => row.map(csvCell).join(";")).join("\r\n");
+      downloadFile(`\uFEFF${csv}`, "text/csv;charset=utf-8", `colecionadex-colecao-${exportDate()}.csv`);
+      toast.success("Planilha da coleção baixada com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível exportar a coleção.");
+    } finally {
+      setExportingFormat(null);
+    }
+  };
 
   useEffect(() => {
     const loadUser = async () => {
@@ -134,6 +214,23 @@ export default function ProfilePage() {
       </div>
 
       <Card><CardContent className="flex items-center gap-3 p-5 text-sm text-muted-foreground"><CalendarDays size={18} /><span>Conta criada em <strong className="text-foreground">{account.createdAt}</strong>.</span></CardContent></Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><DatabaseBackup size={18} />Seus dados</CardTitle>
+          <CardDescription>Baixe uma cópia de segurança completa ou uma planilha da sua coleção.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2">
+          <button type="button" disabled={exportingFormat !== null} onClick={() => void handleJsonExport()} className="flex items-start gap-3 rounded-xl border bg-background p-4 text-left transition hover:bg-muted disabled:pointer-events-none disabled:opacity-50">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400"><Download size={19} /></span>
+            <span><strong className="block text-sm">Backup completo</strong><span className="mt-1 block text-xs text-muted-foreground">Coleção e Wishlist em formato JSON.</span><span className="mt-2 block text-xs font-semibold text-blue-600 dark:text-blue-400">{exportingFormat === "json" ? "Preparando..." : "Baixar JSON"}</span></span>
+          </button>
+          <button type="button" disabled={exportingFormat !== null} onClick={() => void handleCsvExport()} className="flex items-start gap-3 rounded-xl border bg-background p-4 text-left transition hover:bg-muted disabled:pointer-events-none disabled:opacity-50">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"><FileSpreadsheet size={19} /></span>
+            <span><strong className="block text-sm">Planilha da coleção</strong><span className="mt-1 block text-xs text-muted-foreground">Abra e organize suas cartas no Excel.</span><span className="mt-2 block text-xs font-semibold text-emerald-600 dark:text-emerald-400">{exportingFormat === "csv" ? "Preparando..." : "Baixar CSV"}</span></span>
+          </button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -133,7 +133,7 @@ export default function TradesPage() {
 
                             {/* IMAGEM E INFORMAÇÕES */}
                             <div>
-                                <Image src={pokemon.images.small} alt={pokemon.name} width={245} height={342} className="mx-auto h-40 md:h-52 w-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                                <Image unoptimized src={pokemon.images.small} alt={pokemon.name} width={245} height={342} className="mx-auto h-40 md:h-52 w-full object-contain transition-transform duration-300 group-hover:scale-105" />
 
                                 <div className="mt-3 flex flex-col items-center gap-1 text-center">
                                     <h3 className="line-clamp-2 h-11 text-base font-bold leading-5">{pokemon.name}</h3>

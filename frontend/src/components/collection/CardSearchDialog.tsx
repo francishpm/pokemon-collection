@@ -235,6 +235,10 @@ function TradePriceForm({
       setLigaReferenceCriteria(`${language}:${condition}`);
       if (result.status === "found" && result.price != null) {
         toast.success(`Referência encontrada: ${result.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`);
+      } else if (result.status === "needs_confirmation" && result.reason === "cloudflare_challenge") {
+        toast.warning("A Liga solicitou verificação de segurança. Abra a pesquisa abaixo para conferir o preço manualmente.");
+      } else if (result.status === "error") {
+        toast.error("A Liga está temporariamente indisponível.");
       } else {
         toast.info("Nenhum anúncio compatível foi encontrado na Liga.");
       }
@@ -334,6 +338,10 @@ function TradePriceForm({
                 </p>
               ) : ligaReference?.status === "not_found" ? (
                 <p className="mt-1 text-xs text-muted-foreground">Sem anúncio compatível.</p>
+              ) : ligaReference?.status === "needs_confirmation" ? (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">A Liga pediu verificação. Confira pela pesquisa manual abaixo.</p>
+              ) : ligaReference?.status === "error" ? (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">Consulta temporariamente indisponível.</p>
               ) : (
                 <p className="mt-1 text-xs text-muted-foreground">Ainda não consultada.</p>
               )}

@@ -1,27 +1,9 @@
 import { NextResponse } from "next/server";
 import { PokemonCard } from "@/types/pokemon-card";
+import { isSpecialArtworkRarity } from "@/lib/specialArtwork";
 
 const TCGDEX_API = "https://api.tcgdex.net/v2/en/cards";
-const SPECIAL_RARITIES = new Set([
-  "amazing rare",
-  "black white rare",
-  "character rare",
-  "character super rare",
-  "classic collection",
-  "full art trainer",
-  "hyper rare",
-  "illustration rare",
-  "mega hyper rare",
-  "radiant rare",
-  "secret rare",
-  "shiny rare",
-  "shiny rare v",
-  "shiny rare vmax",
-  "shiny ultra rare",
-  "special illustration rare",
-  "ultra rare",
-]);
-
+const POKEMON_TCG_API = "https://api.pokemontcg.io/v2/cards";
 interface TcgDexSummary {
   id: string;
   localId: string;
@@ -90,40 +72,79 @@ async function fetchCardDetails(summaries: TcgDexSummary[]) {
   return results.filter((card): card is TcgDexCard => card !== null);
 }
 
+async function fetchPokemonTcgArtworks(speciesName: string, pokedexNumber: number) {
+  const params = new URLSearchParams({
+    q: `name:"${speciesName.replace(/["\\]/g, " ")}*"`,
+    pageSize: "250",
+  });
+  const apiKey = process.env.NEXT_PUBLIC_POKEMON_TCG_API_KEY;
+  const attempts: HeadersInit[] = apiKey ? [{ "X-Api-Key": apiKey }, {}] : [{}];
+  let payload: { data?: PokemonCard[] } | null = null;
+  for (const headers of attempts) {
+    try {
+      const response = await fetch(`${POKEMON_TCG_API}?${params}`, {
+        headers,
+        next: { revalidate: 86_400 },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (response.ok) {
+        payload = await response.json() as { data?: PokemonCard[] };
+        break;
+      }
+    } catch {
+      // A tentativa seguinte remove uma chave expirada ou sem cota.
+    }
+  }
+  if (!payload) throw new Error("Catálogo Pokémon TCG indisponível");
+
+  return (payload.data ?? [])
+    .filter((card) => card.nationalPokedexNumbers?.includes(pokedexNumber))
+    .filter((card) => isSpecialArtworkRarity(card.rarity));
+}
+
 export async function GET(request: Request) {
-  const pokedexNumber = Number(new URL(request.url).searchParams.get("number"));
+  const searchParams = new URL(request.url).searchParams;
+  const pokedexNumber = Number(searchParams.get("number"));
   if (!Number.isInteger(pokedexNumber) || pokedexNumber < 1 || pokedexNumber > 1025) {
     return NextResponse.json({ error: "Número da Pokédex inválido." }, { status: 400 });
   }
 
   try {
-    const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokedexNumber}`, {
-      next: { revalidate: 86_400 },
-      signal: AbortSignal.timeout(8_000),
-    });
-    if (!speciesResponse.ok) throw new Error("Espécie não encontrada");
-    const species = await speciesResponse.json() as {
-      name: string;
-      names?: Array<{ language: { name: string }; name: string }>;
-    };
-    const speciesName = species.names?.find(({ language }) => language.name === "en")?.name
-      ?? species.name.replace(/(^|-)(\w)/g, (_, separator: string, letter: string) => `${separator}${letter.toUpperCase()}`);
+    let speciesName = searchParams.get("name")?.trim() ?? "";
+    if (!speciesName) {
+      const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokedexNumber}`, {
+        next: { revalidate: 86_400 },
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!speciesResponse.ok) throw new Error("Espécie não encontrada");
+      const species = await speciesResponse.json() as {
+        name: string;
+        names?: Array<{ language: { name: string }; name: string }>;
+      };
+      speciesName = species.names?.find(({ language }) => language.name === "en")?.name
+        ?? species.name.replace(/(^|-)(\w)/g, (_, separator: string, letter: string) => `${separator}${letter.toUpperCase()}`);
+    }
 
-    const summariesResponse = await fetch(`${TCGDEX_API}?name=${encodeURIComponent(speciesName)}`, {
-      next: { revalidate: 86_400 },
-      signal: AbortSignal.timeout(8_000),
-    });
-    if (!summariesResponse.ok) throw new Error("Catálogo indisponível");
-    const summaries = (await summariesResponse.json() as TcgDexSummary[]).slice(0, 150);
-    const details = await fetchCardDetails(summaries);
+    let cards: PokemonCard[];
+    try {
+      cards = await fetchPokemonTcgArtworks(speciesName, pokedexNumber);
+    } catch {
+      const summariesResponse = await fetch(`${TCGDEX_API}?name=${encodeURIComponent(speciesName)}`, {
+        next: { revalidate: 86_400 },
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (!summariesResponse.ok) throw new Error("Catálogo indisponível");
+      const summaries = (await summariesResponse.json() as TcgDexSummary[]).slice(0, 150);
+      const details = await fetchCardDetails(summaries);
+      cards = details
+        .filter((card) => card.category === "Pokemon")
+        .filter((card) => card.dexId?.includes(pokedexNumber))
+        .filter((card) => isSpecialArtworkRarity(card.rarity))
+        .map((card) => toPokemonCard(card, pokedexNumber))
+        .filter((card): card is PokemonCard => card !== null);
+    }
 
-    const cards = details
-      .filter((card) => card.category === "Pokemon")
-      .filter((card) => card.dexId?.includes(pokedexNumber))
-      .filter((card) => card.rarity && SPECIAL_RARITIES.has(card.rarity.toLocaleLowerCase("en-US")))
-      .map((card) => toPokemonCard(card, pokedexNumber))
-      .filter((card): card is PokemonCard => card !== null)
-      .sort((a, b) => (a.rarity ?? "").localeCompare(b.rarity ?? "") || a.set.name.localeCompare(b.set.name));
+    cards.sort((a, b) => (a.rarity ?? "").localeCompare(b.rarity ?? "") || a.set.name.localeCompare(b.set.name));
 
     return NextResponse.json({ speciesName, cards });
   } catch (error) {

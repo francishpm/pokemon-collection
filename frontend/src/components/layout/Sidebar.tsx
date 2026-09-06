@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     ChartColumn,
+    ChartPie,
     ChartNoAxesCombined,
     FolderOpen,
+    BookMarked,
     BookOpen,
     Layers3,
     House,
-    Settings,
     Star,
     Repeat,
 } from "lucide-react";
@@ -23,13 +24,14 @@ export function Sidebar() {
     const links = [
         { href: "/", icon: House, label: "Dashboard" },
         { href: "/collection", icon: FolderOpen, label: "Minha coleção" },
+        { href: "/album", icon: BookMarked, label: "Álbum" },
+        { href: "/statistics", icon: ChartPie, label: "Estatísticas" },
         { href: "/pokedex", icon: BookOpen, label: "Pokédex" },
         { href: "/master-sets", icon: Layers3, label: "Master Sets" },
         { href: "/wishlist", icon: Star, label: "Wishlist" },
         { href: "/trades", icon: Repeat, label: "Trocas" },
         { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
         { href: "/price-history", icon: ChartNoAxesCombined, label: "Histórico de preços" },
-        { href: "/settings", icon: Settings, label: "Configurações" },
     ];
 
     return (

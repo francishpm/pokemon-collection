@@ -6,6 +6,7 @@ import { Search, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useWishlist } from "@/hooks/useWishlist";
 import { getGeneration } from "@/lib/getGeneration";
+import { comparePokedexNumbers } from "@/lib/pokedexOrdering";
 
 const GENERATIONS = [
   { id: 1, region: "Kanto" },
@@ -28,20 +29,25 @@ export default function WishlistPage() {
   const filteredWishlist = useMemo(() => {
     const term = localSearch.trim().toLowerCase();
 
-    return wishlistView.filter(({ pokemon }) => {
-      const pokedexNumber = pokemon.nationalPokedexNumbers?.[0];
-      if (generation !== "all" && (!pokedexNumber || getGeneration(pokedexNumber) !== Number(generation))) {
-        return false;
-      }
+    return wishlistView
+      .filter(({ pokemon }) => {
+        const pokedexNumber = pokemon.nationalPokedexNumbers?.[0];
+        if (generation !== "all" && (!pokedexNumber || getGeneration(pokedexNumber) !== Number(generation))) {
+          return false;
+        }
 
-      const fullNumber = `${pokemon.number}/${pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal}`.toLowerCase();
-      return !term || (
-        pokemon.name.toLowerCase().includes(term) ||
-        pokemon.number.toLowerCase().includes(term) ||
-        fullNumber.includes(term) ||
-        pokemon.set.name.toLowerCase().includes(term)
-      );
-    });
+        const fullNumber = `${pokemon.number}/${pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal}`.toLowerCase();
+        return !term || (
+          pokemon.name.toLowerCase().includes(term) ||
+          pokemon.number.toLowerCase().includes(term) ||
+          fullNumber.includes(term) ||
+          pokemon.set.name.toLowerCase().includes(term)
+        );
+      })
+      .sort((a, b) => comparePokedexNumbers(
+        a.pokemon.nationalPokedexNumbers,
+        b.pokemon.nationalPokedexNumbers,
+      ));
   }, [wishlistView, localSearch, generation]);
 
   return (
@@ -98,7 +104,7 @@ export default function WishlistPage() {
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
           {filteredWishlist.map(({ wishlist, pokemon }) => (
             <div key={wishlist.id} className="group relative rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition-all">
-              <Image src={pokemon.images.small} alt={pokemon.name} width={245} height={342} className="mx-auto h-64 object-contain transition-transform group-hover:scale-105" />
+              <Image unoptimized src={pokemon.images.small} alt={pokemon.name} width={245} height={342} className="mx-auto h-64 object-contain transition-transform group-hover:scale-105" />
               
               <div className="mt-3 text-center">
                 <h3 className="line-clamp-1 font-bold text-sm text-foreground">{pokemon.name}</h3>

@@ -10,34 +10,52 @@ function getCache(): PokemonCache {
         return {};
     }
 
-    const cache = window.localStorage.getItem(STORAGE_KEY);
+    let cache: string | null;
+    try {
+        cache = window.localStorage.getItem(STORAGE_KEY);
+    } catch {
+        return {};
+    }
 
     if (!cache) {
         return {};
     }
 
-    return JSON.parse(cache);
+    try {
+        const parsed: unknown = JSON.parse(cache);
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            ? parsed as PokemonCache
+            : {};
+    } catch {
+        try {
+            window.localStorage.removeItem(STORAGE_KEY);
+        } catch {
+            // The app remains usable when browser storage is unavailable.
+        }
+        return {};
+    }
 }
 
 function saveCache(cache: PokemonCache) {
-    window.localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(cache)
-    );
+    try {
+        window.localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(cache)
+        );
+    } catch {
+        // Cache is optional; Supabase remains the source of truth.
+    }
 }
 
 export async function getPokemonCached(
     id: string
 ): Promise<PokemonCard | null> {
-    console.time(id);
     const cache = getCache();
 
     if (cache[id]) {
-        console.timeEnd(id);
         return cache[id];
     }
 
-    console.log("API:", id);
     const pokemon = await getCardById(id);
 
     if (!pokemon) {
@@ -47,8 +65,6 @@ export async function getPokemonCached(
     cache[id] = pokemon;
 
     saveCache(cache);
-
-    console.timeEnd(id);
 
     return pokemon;
 }

@@ -1,5 +1,6 @@
 import { CardCondition, CardLanguage, CollectionCard } from "@/types/collection-card";
 import { PokemonCard } from "@/types/pokemon-card";
+import { supabase } from "@/lib/supabase";
 
 export interface LigaPriceRequest {
   id?: string;
@@ -56,9 +57,15 @@ export function toLigaPriceRequest(
 }
 
 export async function consultLigaPrices(cards: LigaPriceRequest[]) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente para consultar os valores.");
+
   const response = await fetch("/api/liga/price-reference", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
     body: JSON.stringify({ cards }),
   });
   const payload = await response.json() as { results?: LigaPriceResponse[]; error?: string };

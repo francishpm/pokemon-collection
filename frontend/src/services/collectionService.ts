@@ -89,6 +89,29 @@ export async function saveCardToSupabase(card: CollectionCard): Promise<Collecti
   return toCollectionCard(data as CollectionRow);
 }
 
+export async function saveCardsToSupabase(cards: CollectionCard[]): Promise<CollectionCard[]> {
+  if (cards.length === 0) return [];
+  const user = await getAuthenticatedUser();
+  const rows = cards.map((card) => ({
+    id: card.id,
+    user_id: user.id,
+    pokemon_card_id: card.pokemonCardId,
+    language: card.language,
+    condition: card.condition,
+    acquisition_value: card.acquisitionValue ?? null,
+    liga_value: card.ligaValue ?? null,
+    acquisition_date: card.acquisitionDate ?? null,
+    notes: card.notes ?? null,
+    pokemon_data: card.pokemonData ?? null,
+  }));
+  const { data, error } = await supabase
+    .from("collection")
+    .insert(rows)
+    .select();
+  if (error) throw error;
+  return ((data as CollectionRow[] | null) ?? []).map(toCollectionCard);
+}
+
 export async function deleteCardFromSupabase(id: string): Promise<void> {
   const user = await getAuthenticatedUser();
   const { error } = await supabase

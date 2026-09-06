@@ -35,7 +35,9 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
 
   const selectableIds = selectedCards.map(({ collection }) => collection.id);
   const effectiveSelectedIds = selectedIds.filter((id) => selectableIds.includes(id));
-  const selectedResults: Array<LigaPriceResponse & { id: string; price: number }> = effectiveSelectedIds.flatMap((id) => {
+  // Fresh results must remain actionable when a status filter makes the card
+  // disappear from collectionView after fetchCards refreshes the screen.
+  const selectedResults: Array<LigaPriceResponse & { id: string; price: number }> = selectedIds.flatMap((id) => {
     const currentResult = results[id];
     if (currentResult?.status === "found" && currentResult.price != null) {
       return [{ ...currentResult, id, price: currentResult.price }];
@@ -69,7 +71,7 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
 
     setRunning(true);
     setProgress({ done: 0, total: cardsToConsult.length });
-    const summary = { found: 0, notFound: 0, errors: 0 };
+    const summary = { found: 0, notFound: 0, needsConfirmation: 0, errors: 0 };
 
     try {
       for (let offset = 0; offset < cardsToConsult.length; offset += BATCH_SIZE) {
@@ -90,6 +92,7 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
             setResults((current) => ({ ...current, [collection.id]: result }));
             if (result.status === "found") summary.found += 1;
             else if (result.status === "not_found") summary.notFound += 1;
+            else if (result.status === "needs_confirmation") summary.needsConfirmation += 1;
             else summary.errors += 1;
           }));
         } catch (error) {
@@ -104,7 +107,7 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
 
       await fetchCards();
       toast.success(
-        `Consulta concluída: ${summary.found} com preço, ${summary.notFound} sem anúncio e ${summary.errors} com erro.`,
+        `Consulta concluída: ${summary.found} com preço, ${summary.notFound} sem anúncio, ${summary.needsConfirmation} para conferir e ${summary.errors} com erro.`,
       );
     } finally {
       setRunning(false);
@@ -145,7 +148,7 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
       </Button>
       <Button variant="outline" className="gap-2 whitespace-nowrap" onClick={toggleAll} disabled={running || !selectableIds.length}>
         {effectiveSelectedIds.length === selectableIds.length ? <CheckSquare size={16} /> : <Square size={16} />}
-        {effectiveSelectedIds.length === selectableIds.length ? "Desmarcar página" : "Selecionar página"}
+        {effectiveSelectedIds.length === selectableIds.length ? "Desmarcar filtradas" : `Selecionar filtradas (${selectableIds.length})`}
       </Button>
       <Button className="gap-2 whitespace-nowrap" onClick={() => void applySelected()} disabled={applying || !selectedResults.length}>
         {applying ? <Loader2 size={16} className="animate-spin" /> : <CheckSquare size={16} />}

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useCollectionStore } from "@/store/collectionStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, Layers, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, Globe, Layers, TrendingDown, TrendingUp } from "lucide-react";
 import { useCollection } from "@/hooks/useCollection";
 import { PokedexProgressCard } from "@/components/dashboard/PokedexProgressCard";
 import { RecentCardsCard } from "@/components/dashboard/RecentCardsCard";
@@ -58,9 +59,7 @@ export default function DashboardPage() {
   const marketVariation = useMemo(() => {
     if (historyLoadedAt === null) return { amount: 0, percentage: 0, comparedCards: 0 };
     const cutoff = historyLoadedAt - variationPeriod * 24 * 60 * 60 * 1000;
-    const cardCreatedAt = new Map(
-      collectionView.map(({ collection }) => [collection.id, new Date(collection.createdAt).getTime()]),
-    );
+    const collectionCardIds = new Set(collectionView.map(({ collection }) => collection.id));
     const grouped = new Map<string, PriceHistory[]>();
 
     for (const entry of history) {
@@ -74,8 +73,7 @@ export default function DashboardPage() {
     let comparedCards = 0;
 
     for (const [cardId, allEntries] of grouped) {
-      const createdAt = cardCreatedAt.get(cardId);
-      if (createdAt === undefined || createdAt > cutoff) continue;
+      if (!collectionCardIds.has(cardId)) continue;
 
       const entries = allEntries
         .filter((entry) => entry.source === "manual")
@@ -150,14 +148,16 @@ export default function DashboardPage() {
             </div>
             <p className="mt-1 text-xs text-muted-foreground">Soma dos valores de mercado preenchidos manualmente</p>
             {cardsWithoutManualValue.length === 1 && (
-              <p className="mt-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                Sem valor: {cardsWithoutManualValue[0].pokemon.name} #{cardsWithoutManualValue[0].pokemon.number} · {cardsWithoutManualValue[0].pokemon.set.name}
-              </p>
+              <Link href="/collection?value=missing" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:underline dark:text-amber-400">
+                Preencher valor de {cardsWithoutManualValue[0].pokemon.name}
+                <ArrowRight size={13} />
+              </Link>
             )}
             {cardsWithoutManualValue.length > 1 && (
-              <p className="mt-2 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                {cardsWithoutManualValue.length} cartas ainda estão sem valor manual
-              </p>
+              <Link href="/collection?value=missing" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:underline dark:text-amber-400">
+                Preencher valor de {cardsWithoutManualValue.length} cartas
+                <ArrowRight size={13} />
+              </Link>
             )}
           </CardContent>
         </Card>

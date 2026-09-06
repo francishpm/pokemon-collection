@@ -3,6 +3,7 @@ import { CollectionCard } from "@/types/collection-card";
 import {
   fetchCardsFromSupabase,
   saveCardToSupabase,
+  saveCardsToSupabase,
   deleteCardFromSupabase,
   updateCardInSupabase,
   savePokemonSnapshotToSupabase,
@@ -68,6 +69,7 @@ interface CollectionStore {
   error: string | null;
   fetchCards: () => Promise<void>;
   addCard: (card: CollectionCard) => Promise<void>;
+  addCards: (cards: CollectionCard[]) => Promise<number>;
   removeCard: (id: string) => Promise<void>;
   updateCard: (card: CollectionCard) => Promise<void>;
   setPokedexRepresentative: (pokedexNumber: number, collectionCardId: string) => Promise<void>;
@@ -116,6 +118,18 @@ export const useCollectionStore = create<CollectionStore>((set, get) => ({
       set((state) => ({ cards: [...state.cards, savedCard] }));
     } catch (error) {
       set({ error: errorMessage(error, "Unable to add the card.") });
+      throw error;
+    }
+  },
+
+  addCards: async (cards) => {
+    set({ error: null });
+    try {
+      const savedCards = await saveCardsToSupabase(cards);
+      set((state) => ({ cards: [...state.cards, ...savedCards] }));
+      return savedCards.length;
+    } catch (error) {
+      set({ error: errorMessage(error, "Não foi possível importar as cartas.") });
       throw error;
     }
   },

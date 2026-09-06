@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMemo, useState, useEffect } from "react";
@@ -15,10 +15,12 @@ import { useCollectionStore } from "@/store/collectionStore"; // <-- Importaçã
 import { toast } from "sonner";
 import { CollectionShareButton } from "@/components/collection/CollectionShareButton";
 import { LigaPriceBatchUpdate } from "@/components/collection/LigaPriceBatchUpdate";
+import { CollectionCsvActions } from "@/components/collection/CollectionCsvActions";
 
 type SortOption = "dateAsc" | "dateDesc" | "priceDesc" | "priceAsc";
 type CardTypeFilter = "all" | "pokemon" | "trainer";
 type LigaStatusFilter = "all" | "found" | "not_found" | "error" | "needs_confirmation" | "pending" | "price_difference";
+type ManualValueFilter = "all" | "missing";
 
 function isTrainerCard(card: PokemonCard) {
   const labels = [card.supertype, ...card.subtypes]
@@ -37,6 +39,7 @@ export default function CollectionPage() {
   const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
   const [typeFilter, setTypeFilter] = useState<CardTypeFilter>("all");
   const [ligaStatusFilter, setLigaStatusFilter] = useState<LigaStatusFilter>("all");
+  const [manualValueFilter, setManualValueFilter] = useState<ManualValueFilter>("all");
   const [selectedPriceIds, setSelectedPriceIds] = useState<string[]>([]);
   
   // Estados para Paginação
@@ -56,6 +59,16 @@ export default function CollectionPage() {
       toast.error("Não foi possível carregar sua coleção.");
     });
   }, [fetchCards]);
+
+  useEffect(() => {
+    const syncFilterFromUrl = window.setTimeout(() => {
+      if (new URLSearchParams(window.location.search).get("value") === "missing") {
+        setManualValueFilter("missing");
+      }
+    }, 0);
+
+    return () => window.clearTimeout(syncFilterFromUrl);
+  }, []);
   // -----------------------------------------------
 
   const openSearchModal = useUiStore((state) => state.openSearchModal);
@@ -73,6 +86,11 @@ export default function CollectionPage() {
     pending: collectionView.filter(({ collection }) => !collection.ligaPriceStatus).length,
     price_difference: collectionView.filter(({ collection }) => collection.ligaValue != null && collection.ligaLowestPrice != null && Math.round(collection.ligaValue * 100) !== Math.round(collection.ligaLowestPrice * 100)).length,
   }), [collectionView]);
+
+  const cardsWithoutManualValue = useMemo(
+    () => collectionView.filter(({ collection }) => !collection.ligaValue || collection.ligaValue <= 0).length,
+    [collectionView],
+  );
 
   const handleDelete = async (id: string) => {
     if (!confirm("Deseja realmente excluir esta carta?")) return;
@@ -122,6 +140,10 @@ export default function CollectionPage() {
       result = result.filter(({ collection }) => collection.ligaPriceStatus === ligaStatusFilter);
     }
 
+    if (manualValueFilter === "missing") {
+      result = result.filter(({ collection }) => !collection.ligaValue || collection.ligaValue <= 0);
+    }
+
     // 3. Filtro por Texto (Nome, número, set)
     const term = localSearch.trim().toLowerCase();
     if (term) {
@@ -159,7 +181,7 @@ export default function CollectionPage() {
       return 0;
     });
     return sortedResult;
-  }, [collectionView, localSearch, sortOrder, typeFilter, ligaStatusFilter]);
+  }, [collectionView, localSearch, sortOrder, typeFilter, ligaStatusFilter, manualValueFilter]);
 
   // Cálculos de Paginação
   const totalPages = Math.ceil(filteredAndSortedCollection.length / ITEMS_PER_PAGE);
@@ -184,7 +206,7 @@ export default function CollectionPage() {
           />
         </div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-[minmax(150px,184px)_minmax(190px,224px)_minmax(200px,232px)]">
+        <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {/* Menu de Ordenação original e novos */}
           <select
             value={typeFilter}
@@ -233,10 +255,24 @@ export default function CollectionPage() {
             <option value="price_difference">Valor manual diferente da Liga ({ligaStatusCounts.price_difference})</option>
           </select>
 
+          <select
+            value={manualValueFilter}
+            onChange={(e) => {
+              setManualValueFilter(e.target.value as ManualValueFilter);
+              setCurrentPage(1);
+            }}
+            className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label="Filtrar por valor manual"
+          >
+            <option value="all">Todos os valores</option>
+            <option value="missing">Sem valor manual ({cardsWithoutManualValue})</option>
+          </select>
+
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:col-start-2">
-          <LigaPriceBatchUpdate collectionView={paginatedCards} selectedIds={selectedPriceIds} onSelectedIdsChange={setSelectedPriceIds} />
+          <LigaPriceBatchUpdate collectionView={filteredAndSortedCollection} selectedIds={selectedPriceIds} onSelectedIdsChange={setSelectedPriceIds} />
+          <CollectionCsvActions collectionView={collectionView} />
           <CollectionShareButton />
           <Button className="gap-2" onClick={() => openSearchModal("collection")}>
             <Plus size={18} />
@@ -244,6 +280,27 @@ export default function CollectionPage() {
           </Button>
         </div>
       </div>
+
+      {manualValueFilter === "missing" && (
+        <div className="flex flex-col gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+          <div>
+            <p className="font-semibold">Cartas pendentes de valor manual</p>
+            <p className="text-sm opacity-80">
+              {filteredAndSortedCollection.length === 1
+                ? "1 carta precisa ter o valor preenchido."
+                : `${filteredAndSortedCollection.length} cartas precisam ter o valor preenchido.`}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="w-fit gap-1 bg-background" onClick={() => {
+            setManualValueFilter("all");
+            setCurrentPage(1);
+            window.history.replaceState(null, "", window.location.pathname);
+          }}>
+            <X size={14} />
+            Limpar filtro
+          </Button>
+        </div>
+      )}
 
       {collectionView.length === 0 ? (
         <div className="rounded-xl border bg-card p-12 text-center">

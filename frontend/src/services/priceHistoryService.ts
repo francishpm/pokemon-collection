@@ -15,15 +15,25 @@ export async function fetchPriceHistory(): Promise<PriceHistory[]> {
   if (authError) throw authError;
   if (!authData.user) throw new Error("Sua sessão expirou.");
 
-  const { data, error } = await supabase
-    .from("price_history")
-    .select("id, collection_card_id, price, created_at, source, source_trust")
-    .eq("user_id", authData.user.id)
-    .order("created_at", { ascending: false });
+  const pageSize = 1_000;
+  const rows: PriceHistoryRow[] = [];
 
-  if (error) throw error;
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from("price_history")
+      .select("id, collection_card_id, price, created_at, source, source_trust")
+      .eq("user_id", authData.user.id)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(from, from + pageSize - 1);
 
-  return ((data as PriceHistoryRow[] | null) ?? []).map((row) => ({
+    if (error) throw error;
+    const page = (data as PriceHistoryRow[] | null) ?? [];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+
+  return rows.map((row) => ({
     id: row.id,
     collectionCardId: row.collection_card_id,
     price: Number(row.price),

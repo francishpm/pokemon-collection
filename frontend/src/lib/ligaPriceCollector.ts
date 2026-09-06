@@ -2,11 +2,19 @@ import "server-only";
 
 import * as cheerio from "cheerio";
 import sharp from "sharp";
+import { selectLowestPreferredLigaOffer } from "@/lib/ligaPriceSelection";
 
 const LIGA_ORIGIN = "https://www.ligapokemon.com.br";
 const REQUEST_HEADERS = { "User-Agent": "Mozilla/5.0 ColecionaDex/1.0" };
 const LANGUAGE_IDS = { PT: "8", EN: "2", JP: "6" } as const;
 const CONDITION_IDS = { M: "1", NM: "2", SP: "3", MP: "4", HP: "5", D: "6" } as const;
+
+class LigaChallengeError extends Error {
+  constructor() {
+    super("cloudflare_challenge");
+    this.name = "LigaChallengeError";
+  }
+}
 
 // Binary glyphs sampled from Liga's numeric sprite font. The class names and
 // sprite positions change on every page, but the rendered digit shapes do not.
@@ -106,15 +114,35 @@ async function fetchLigaHtml(url: string) {
         headers: REQUEST_HEADERS,
         signal: AbortSignal.timeout(20_000),
       });
-      if (response.ok) return response.text();
+      if (response.ok) {
+        const html = await response.text();
+        if (/cf-chl-|challenge-platform|executando verifica[cç][aã]o de seguran[cç]a|checking your browser|just a moment/i.test(html)) {
+          throw new LigaChallengeError();
+        }
+        return html;
+      }
+      if (response.status === 403) throw new LigaChallengeError();
       lastError = new Error(`Liga respondeu HTTP ${response.status}`);
       if (![403, 408, 429, 500, 502, 503, 504].includes(response.status)) break;
     } catch (error) {
+      if (error instanceof LigaChallengeError) throw error;
       lastError = error instanceof Error ? error : new Error("Falha ao consultar a Liga");
     }
     if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 600 * (attempt + 1)));
   }
   throw lastError ?? new Error("Liga indisponível");
+}
+
+function getSearchNames(name: string) {
+  const names = [name];
+  const possessive = name.match(/^(.+?)[’']s\s+(.+)$/i);
+  if (possessive) {
+    const [, owner, subject] = possessive;
+    names.push(`${subject} de ${owner}`);
+    const suffix = subject.match(/^(.+?)\s+(ex|gx|v|vmax|vstar)$/i);
+    if (suffix) names.push(`${suffix[1]} de ${owner} ${suffix[2]}`);
+  }
+  return [...new Set(names)];
 }
 
 function isCardPage(html: string) {
@@ -155,25 +183,28 @@ async function resolveCardPage(query: LigaPriceQuery) {
       ? query.setName?.trim().split(/\s+/).at(-1)
       : undefined
   );
-  const directUrl = buildDirectUrl(query, inferredEdition);
-  const directHtml = await fetchLigaHtml(directUrl);
-  if (isCardPage(directHtml) && cardPageMatches(directHtml, query)) {
-    return { html: directHtml, url: directUrl };
-  }
+  for (const name of getSearchNames(query.name)) {
+    const candidateQuery = { ...query, name };
+    const directUrl = buildDirectUrl(candidateQuery, inferredEdition);
+    const directHtml = await fetchLigaHtml(directUrl);
+    if (isCardPage(directHtml) && cardPageMatches(directHtml, candidateQuery)) {
+      return { html: directHtml, url: directUrl };
+    }
 
-  for (const page of [1, 2]) {
-    const params = new URLSearchParams({ view: "cards/search", card: query.name });
-    if (page > 1) params.set("page", String(page));
-    const searchUrl = `${LIGA_ORIGIN}/?${params}`;
-    const html = await fetchLigaHtml(searchUrl);
-    if (isCardPage(html) && cardPageMatches(html, query)) return { html, url: searchUrl };
+    for (const page of [1, 2]) {
+      const params = new URLSearchParams({ view: "cards/search", card: name });
+      if (page > 1) params.set("page", String(page));
+      const searchUrl = `${LIGA_ORIGIN}/?${params}`;
+      const html = await fetchLigaHtml(searchUrl);
+      if (isCardPage(html) && cardPageMatches(html, candidateQuery)) return { html, url: searchUrl };
 
-    const $ = cheerio.load(html);
-    const hrefs = $("a[href*='view=cards/card']").map((_, element) => $(element).attr("href") ?? "").get();
-    const href = hrefs.find((value) => candidateMatches(value, query));
-    if (href) {
-      const url = new URL(href, LIGA_ORIGIN).toString();
-      return { html: await fetchLigaHtml(url), url };
+      const $ = cheerio.load(html);
+      const hrefs = $("a[href*='view=cards/card']").map((_, element) => $(element).attr("href") ?? "").get();
+      const href = hrefs.find((value) => candidateMatches(value, candidateQuery));
+      if (href) {
+        const url = new URL(href, LIGA_ORIGIN).toString();
+        return { html: await fetchLigaHtml(url), url };
+      }
     }
   }
 
@@ -277,20 +308,40 @@ export async function collectLigaPrice(query: LigaPriceQuery): Promise<LigaPrice
       // does not make an offer eligible for the trusted-price preference.
       return Number(store?.lj_selo ?? 0) === 1;
     };
-    const selected = eligible.find(isTrusted) ?? eligible[0];
-    const price = selected.precoFinal != null
-      ? Number(selected.precoFinal)
-      : await decodeProtectedPrice(page.html, selected.precoCss ?? "");
+    const pricedOffers = await Promise.all(eligible.map(async (offer) => {
+      try {
+        return {
+          offer,
+          price: offer.precoFinal != null
+            ? Number(offer.precoFinal)
+            : await decodeProtectedPrice(page.html, offer.precoCss ?? ""),
+          trusted: isTrusted(offer),
+        };
+      } catch {
+        return { offer, price: Number.NaN, trusted: isTrusted(offer) };
+      }
+    }));
+    const selected = selectLowestPreferredLigaOffer(pricedOffers);
+    if (!selected) throw new Error("Nenhum preço válido encontrado");
 
     return {
       id: query.id,
-      price,
+      price: selected.price,
       checkedAt,
       url: page.url,
       status: "found",
-      sourceTrust: isTrusted(selected) ? "trusted" : "unverified",
+      sourceTrust: selected.trusted ? "trusted" : "unverified",
     };
   } catch (error) {
+    if (error instanceof LigaChallengeError) {
+      return {
+        id: query.id,
+        checkedAt,
+        url: buildDirectUrl(query, query.edition),
+        status: "needs_confirmation",
+        reason: "cloudflare_challenge",
+      };
+    }
     return {
       id: query.id,
       checkedAt,
