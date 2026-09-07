@@ -1,18 +1,9 @@
 import { supabase } from "@/lib/supabase";
+import { MASTER_SET_BY_ID, masterSetLogo } from "@/lib/masterSetConfig";
 import { MasterSetCatalog, MasterSetProgress, MasterSetVariant } from "@/types/master-set";
 
-const SET_META: Record<string, { name: string; logo: string; totalCards: number }> = {
-  mep: { name: "Promos Mega Evolution", logo: "https://assets.tcgdex.net/en/me/me01/logo.webp", totalCards: 110 },
-  me01: { name: "Megaevolução", logo: "https://assets.tcgdex.net/pt/me/me01/logo.webp", totalCards: 188 },
-  me02: { name: "Chamas Fantasmagóricas", logo: "https://assets.tcgdex.net/pt/me/me02/logo.webp", totalCards: 130 },
-  "me02.5": { name: "Heróis Ascendentes", logo: "https://assets.tcgdex.net/pt/me/me02.5/logo.webp", totalCards: 295 },
-  me03: { name: "Ordem Perfeita", logo: "https://assets.tcgdex.net/pt/me/me03/logo.webp", totalCards: 124 },
-  me04: { name: "Ascensão do Caos", logo: "https://assets.tcgdex.net/pt/me/me04/logo.webp", totalCards: 122 },
-  me05: { name: "Pitch Black", logo: "https://assets.tcgdex.net/en/me/me05/logo.png", totalCards: 120 },
-};
-
 export async function fetchMasterSetCatalog(setId: string): Promise<MasterSetCatalog | null> {
-  const meta = SET_META[setId];
+  const meta = MASTER_SET_BY_ID.get(setId);
   if (!meta) return null;
   const { data, error } = await supabase.from("master_set_catalog")
     .select("card_id, variant, card_number, card_name, image_url, rarity")
@@ -23,7 +14,9 @@ export async function fetchMasterSetCatalog(setId: string): Promise<MasterSetCat
 
   return {
     id: setId,
-    ...meta,
+    name: meta.name,
+    logo: masterSetLogo(meta.seriesId, meta),
+    totalCards: meta.cards,
     slots: data.map((row) => ({
       id: `${row.card_id}:${row.variant}`,
       cardId: row.card_id,

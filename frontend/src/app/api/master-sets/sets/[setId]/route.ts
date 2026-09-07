@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { MASTER_SET_BY_ID, masterSetLogo } from "@/lib/masterSetConfig";
 import { MasterSetCatalog, MasterSetSlot, MasterSetVariant } from "@/types/master-set";
 
-const TCGDEX = "https://api.tcgdex.net/v2/pt";
-const ALLOWED_SETS = new Set(["me01", "me02", "me02.5", "me03", "me04", "me05", "me-promos", "mep"]);
+const TCGDEX_ROOT = "https://api.tcgdex.net/v2";
 
 interface CardBrief { id: string; localId: string; name: string; image?: string }
 interface SetDetail {
@@ -20,6 +20,17 @@ interface CardDetail extends CardBrief {
 
 function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+function imageUrlForCard(setId: string, seriesId: string, localId: string) {
+  if (setId !== "sve") {
+    return `https://assets.tcgdex.net/en/${seriesId}/${setId}/${localId.padStart(3, "0")}/low.webp`;
+  }
+
+  const number = Number(localId);
+  return number <= 16
+    ? `https://images.pokemontcg.io/sve/${number}.png`
+    : `https://pkmncards.com/wp-content/uploads/sve_en_${localId.padStart(3, "0")}_std.png`;
 }
 
 function variantsForCard(card: CardDetail, setId: string): MasterSetVariant[] {
@@ -48,20 +59,32 @@ async function fetchJson<T>(url: string): Promise<T> {
 
 export async function GET(_: Request, context: { params: Promise<{ setId: string }> }) {
   const { setId } = await context.params;
-  if (!ALLOWED_SETS.has(setId)) return NextResponse.json({ error: "Coleção inválida." }, { status: 404 });
+  const configuredSet = MASTER_SET_BY_ID.get(setId);
+  if (!configuredSet) return NextResponse.json({ error: "Coleção inválida." }, { status: 404 });
 
   try {
-    const set = await fetchJson<SetDetail>(`${TCGDEX}/sets/${encodeURIComponent(setId)}`);
-    const details: CardDetail[] = new Array(set.cards.length);
+    const encodedSetId = encodeURIComponent(setId);
+    const [set, englishSet] = await Promise.all([
+      fetchJson<SetDetail>(`${TCGDEX_ROOT}/pt/sets/${encodedSetId}`),
+      fetchJson<SetDetail>(`${TCGDEX_ROOT}/en/sets/${encodedSetId}`),
+    ]);
+    const localizedIds = new Set(set.cards.map((card) => card.id));
+    const cards = [...new Map([...englishSet.cards, ...set.cards].map((card) => [card.id, card])).values()];
+    const details: CardDetail[] = new Array(cards.length);
     let cursor = 0;
-    const workers = Array.from({ length: 20 }, async () => {
-      while (cursor < set.cards.length) {
+    const workers = Array.from({ length: Math.min(20, cards.length) }, async () => {
+      while (cursor < cards.length) {
         const index = cursor++;
-        const brief = set.cards[index];
+        const brief = cards[index];
+        const preferredLanguage = localizedIds.has(brief.id) ? "pt" : "en";
         try {
-          details[index] = await fetchJson<CardDetail>(`${TCGDEX}/cards/${encodeURIComponent(brief.id)}`);
+          details[index] = await fetchJson<CardDetail>(`${TCGDEX_ROOT}/${preferredLanguage}/cards/${encodeURIComponent(brief.id)}`);
         } catch {
-          details[index] = brief;
+          try {
+            details[index] = await fetchJson<CardDetail>(`${TCGDEX_ROOT}/en/cards/${encodeURIComponent(brief.id)}`);
+          } catch {
+            details[index] = brief;
+          }
         }
       }
     });
@@ -72,7 +95,7 @@ export async function GET(_: Request, context: { params: Promise<{ setId: string
       cardId: card.id,
       number: card.localId,
       name: card.name,
-      image: card.image ? `${card.image}/low.webp` : "",
+      image: imageUrlForCard(setId, configuredSet.seriesId, card.localId),
       rarity: card.rarity,
       variant,
     })));
@@ -80,8 +103,8 @@ export async function GET(_: Request, context: { params: Promise<{ setId: string
     const catalog: MasterSetCatalog = {
       id: set.id,
       name: set.name,
-      logo: set.logo ? `${set.logo}.${setId === "me05" ? "png" : "webp"}` : undefined,
-      totalCards: set.cardCount.total,
+      logo: set.logo ? `${set.logo}.webp` : masterSetLogo(configuredSet.seriesId, configuredSet),
+      totalCards: Math.max(set.cardCount.total, englishSet.cardCount.total),
       slots,
     };
     return NextResponse.json(catalog);

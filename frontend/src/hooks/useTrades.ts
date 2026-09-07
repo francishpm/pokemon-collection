@@ -16,8 +16,11 @@ export interface TradeItem {
   card_set_name?: string | null;
   card_number?: string | null;
   card_set_printed_total?: number | null;
+  status?: TradeStatus;
   created_at: string;
 }
+
+export type TradeStatus = "available" | "reserved" | "completed";
 
 export interface TradeView {
   trade: TradeItem;
@@ -34,8 +37,19 @@ function createCardSnapshot(card: PokemonCard) {
   };
 }
 
+function inferPromoEdition(trade: TradeItem): string | undefined {
+  if ((trade.card_set_printed_total ?? 0) !== 0) return undefined;
+
+  const editionInName = trade.card_set_name?.match(/edi(?:ç|Ã§)[aã]o\s+([a-z0-9.-]+)/i)?.[1];
+  if (editionInName) return editionInName.toUpperCase();
+
+  const setId = trade.card_id.match(/^(.+)-[^-]+$/)?.[1];
+  return setId?.toUpperCase();
+}
+
 function pokemonFromSnapshot(trade: TradeItem): PokemonCard | null {
   if (!trade.card_name || !trade.card_image_url) return null;
+  const promoEdition = inferPromoEdition(trade);
 
   return {
     id: trade.card_id,
@@ -49,6 +63,8 @@ function pokemonFromSnapshot(trade: TradeItem): PokemonCard | null {
       name: trade.card_set_name ?? "",
       series: "",
       printedTotal: trade.card_set_printed_total ?? 0,
+      printedTotalLabel: promoEdition ? "∞" : undefined,
+      ligaEdition: promoEdition,
     },
   };
 }
@@ -59,7 +75,7 @@ interface TradesStore {
   loading: boolean;
   fetchTrades: () => Promise<void>;
   addTrade: (card: PokemonCard, price?: number | null, condition?: string, language?: string) => Promise<void>;
-  updatePrice: (tradeId: string, newPrice: number | null) => Promise<void>;
+  updateTradeDetails: (tradeId: string, newPrice: number | null, status: TradeStatus) => Promise<boolean>;
   removeTrade: (tradeId: string) => Promise<void>;
 }
 
@@ -161,20 +177,22 @@ export const useTrades = create<TradesStore>((set) => ({
     }
   },
 
-  updatePrice: async (tradeId, newPrice) => {
+  updateTradeDetails: async (tradeId, newPrice, status) => {
     try {
-      const { error } = await supabase.from("trades").update({ price: newPrice }).eq("id", tradeId);
+      const { error } = await supabase.from("trades").update({ price: newPrice, status }).eq("id", tradeId);
       if (error) throw error;
       set((state) => ({
-        trades: state.trades.map((trade) => trade.id === tradeId ? { ...trade, price: newPrice } : trade),
+        trades: state.trades.map((trade) => trade.id === tradeId ? { ...trade, price: newPrice, status } : trade),
         tradesView: state.tradesView.map((item) => item.trade.id === tradeId
-          ? { ...item, trade: { ...item.trade, price: newPrice } }
+          ? { ...item, trade: { ...item.trade, price: newPrice, status } }
           : item),
       }));
-      toast.success("Preço atualizado!");
+      toast.success(status === "completed" ? "Negociação concluída!" : "Carta atualizada!");
+      return true;
     } catch (error) {
       console.error(error);
-      toast.error("Erro ao atualizar preço.");
+      toast.error("Erro ao atualizar a carta.");
+      return false;
     }
   },
 

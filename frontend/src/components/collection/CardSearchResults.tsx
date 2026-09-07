@@ -14,7 +14,7 @@ export function CardSearchResults({
     error,
     onAdd,
 }: CardSearchResultsProps) {
-    if (loading) {
+    if (loading && cards.length === 0) {
         return (
             <div className="p-10 text-center text-muted-foreground">
                 Carregando...

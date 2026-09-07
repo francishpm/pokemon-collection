@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getLigaPokemonUrl } from "@/lib/ligaPokemon";
 import { consultLigaPrices, LigaPriceResponse, toLigaPriceRequest } from "@/services/ligaPriceService";
+import { supabase } from "@/lib/supabase";
+import { MASTER_SET_BY_ID } from "@/lib/masterSetConfig";
 
 interface CardSearchDialogProps {
   open: boolean;
@@ -37,6 +39,50 @@ function parseNameAndNumber(value: string) {
     number: match[2].toLowerCase(),
     printedTotal: match[4],
   };
+}
+
+async function searchMasterSetCards(term: string): Promise<PokemonCard[]> {
+  const namedCard = parseNameAndNumber(term);
+  const name = namedCard?.name ?? (/\d/.test(term) ? "" : term.trim());
+
+  let query = supabase
+    .from("master_set_catalog")
+    .select("set_id, card_id, card_number, card_name, image_url, rarity, sort_order")
+    .order("sort_order", { ascending: true })
+    .limit(150);
+
+  if (name) query = query.ilike("card_name", `%${name}%`);
+  if (!name && term.trim()) query = query.ilike("card_number", `%${term.trim().replace(/[^a-z0-9]/gi, "")}%`);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const uniqueRows = [...new Map((data ?? []).map((row) => [row.card_id, row])).values()];
+  return uniqueRows.flatMap((row) => {
+    const meta = MASTER_SET_BY_ID.get(row.set_id);
+    if (!meta) return [];
+    const numberMatches = !namedCard || Number(row.card_number) === Number(namedCard.number);
+    if (!numberMatches) return [];
+    const isPromo = row.set_id === "mep" || row.set_id === "svp";
+
+    return [{
+      id: row.card_id,
+      name: row.card_name,
+      number: row.card_number,
+      images: { small: row.image_url, large: row.image_url },
+      rarity: row.rarity ?? undefined,
+      supertype: "Pokémon",
+      subtypes: [],
+      set: {
+        id: row.set_id,
+        name: meta.name,
+        series: meta.seriesId,
+        printedTotal: isPromo ? 0 : (meta.printedCards ?? meta.cards),
+        printedTotalLabel: isPromo ? "∞" : undefined,
+        ligaEdition: isPromo ? row.set_id.toUpperCase() : undefined,
+      },
+    } satisfies PokemonCard];
+  });
 }
 
 export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) {
@@ -62,6 +108,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
   }, [open]);
 
   useEffect(() => {
+    let cancelled = false;
     const loadCards = async () => {
       const term = search.trim();
       const isNumber = /^[a-z]*\d+[a-z]*$/i.test(term);
@@ -76,18 +123,31 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
       try {
         setLoading(true);
         setSearchError(null);
-        const result = await searchCards(term);
-        setApiCards(result);
+        const masterSetSearch = searchMasterSetCards(term);
+        void masterSetSearch.then((localCards) => {
+          if (!cancelled && localCards.length > 0) setApiCards(localCards);
+        }).catch(() => undefined);
+
+        const results = await Promise.allSettled([searchCards(term), masterSetSearch]);
+        const cards = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+        if (cards.length === 0 && results.every((result) => result.status === "rejected")) {
+          throw new Error("Não foi possível pesquisar os catálogos agora.");
+        }
+        if (!cancelled) setApiCards([...new Map(cards.map((card) => [card.id, card])).values()]);
       } catch (error) {
+        if (cancelled) return;
         setApiCards([]);
         setSearchError(error instanceof Error ? error.message : "Não foi possível pesquisar agora.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     const timeout = setTimeout(loadCards, 350);
-    return () => clearTimeout(timeout);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [search]);
 
   const cards = useMemo(() => {

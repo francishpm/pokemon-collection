@@ -2,12 +2,36 @@ import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
-const TCGDEX = "https://api.tcgdex.net/v2/pt";
-const SET_IDS = ["me01", "me02", "me02.5", "me03", "me04", "me05", "mep"];
-const output = resolve(dirname(fileURLToPath(import.meta.url)), "../supabase/migrations/20260809_seed_mega_evolution_master_sets.sql");
+const TCGDEX_ROOT = "https://api.tcgdex.net/v2";
+const SERIES = {
+  me: {
+    setIds: ["me01", "me02", "me02.5", "me03", "me04", "me05", "mep"],
+    output: "20260809_seed_mega_evolution_master_sets.sql",
+  },
+  sv: {
+    setIds: ["sv01", "sv02", "sv03", "sv03.5", "sv04", "sv04.5", "sv05", "sv06", "sv06.5", "sv07", "sv08", "sv08.5", "sv09", "sv10", "sv10.5w", "sv10.5b", "svp", "sve"],
+    output: "20260906_seed_scarlet_violet_master_sets.sql",
+  },
+};
+const seriesId = process.argv[2] ?? "me";
+const series = SERIES[seriesId];
+if (!series) throw new Error(`Série inválida: ${seriesId}. Use uma destas: ${Object.keys(SERIES).join(", ")}`);
+const SET_IDS = series.setIds;
+const output = resolve(dirname(fileURLToPath(import.meta.url)), `../supabase/migrations/${series.output}`);
 
 const normalize = (value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const escapeSql = (value) => `'${String(value ?? "").replaceAll("'", "''")}'`;
+
+function imageUrlForCard(setId, localId) {
+  if (setId !== "sve") {
+    return `https://assets.tcgdex.net/en/${seriesId}/${setId}/${localId.padStart(3, "0")}/high.webp`;
+  }
+
+  const number = Number(localId);
+  return number <= 16
+    ? `https://images.pokemontcg.io/sve/${number}_hires.png`
+    : `https://pkmncards.com/wp-content/uploads/sve_en_${localId.padStart(3, "0")}_std.png`;
+}
 
 function variantsForCard(card, setId) {
   const variants = card.variants ?? {};
@@ -36,19 +60,30 @@ async function getJson(url) {
 
 const rows = [];
 for (const setId of SET_IDS) {
-  const set = await getJson(`${TCGDEX}/sets/${setId}`);
-  const details = new Array(set.cards.length);
+  const [localizedSet, englishSet] = await Promise.all([
+    getJson(`${TCGDEX_ROOT}/pt/sets/${setId}`),
+    getJson(`${TCGDEX_ROOT}/en/sets/${setId}`),
+  ]);
+  const localizedIds = new Set(localizedSet.cards.map((card) => card.id));
+  const cards = [...new Map([...englishSet.cards, ...localizedSet.cards].map((card) => [card.id, card])).values()];
+  const details = new Array(cards.length);
   let cursor = 0;
   await Promise.all(Array.from({ length: 30 }, async () => {
-    while (cursor < set.cards.length) {
+    while (cursor < cards.length) {
       const index = cursor++;
-      details[index] = await getJson(`${TCGDEX}/cards/${set.cards[index].id}`);
+      const cardId = cards[index].id;
+      const preferredLanguage = localizedIds.has(cardId) ? "pt" : "en";
+      try {
+        details[index] = await getJson(`${TCGDEX_ROOT}/${preferredLanguage}/cards/${cardId}`);
+      } catch {
+        details[index] = await getJson(`${TCGDEX_ROOT}/en/cards/${cardId}`);
+      }
     }
   }));
   details.forEach((card, cardIndex) => variantsForCard(card, setId).forEach((variant, variantIndex) => {
     rows.push([
       setId, card.id, variant, card.localId, card.name,
-      card.image ? `${card.image}/high.webp` : `https://assets.tcgdex.net/en/me/${setId}/${card.localId.padStart(3, "0")}/high.webp`, card.rarity ?? "",
+      imageUrlForCard(setId, card.localId), card.rarity ?? "",
       cardIndex * 10 + variantIndex,
     ]);
   }));

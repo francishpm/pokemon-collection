@@ -128,3 +128,27 @@
     @apply font-sans;
   }
 }
+
+.app-scrollbar {
+  scrollbar-color: color-mix(in oklch, var(--foreground) 42%, transparent) var(--background);
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+}
+
+.app-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.app-scrollbar::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+.app-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 42%, transparent);
+  border: 3px solid var(--background);
+  border-radius: 999px;
+}
+
+.app-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--foreground) 62%, transparent);
+}

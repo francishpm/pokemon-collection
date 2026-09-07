@@ -18,6 +18,7 @@ interface PublicTrade {
   card_set_name: string | null;
   card_number: string | null;
   card_set_printed_total: number | null;
+  status?: "available" | "reserved";
 }
 
 export default function PublicTradesPage() {
@@ -76,6 +77,7 @@ export default function PublicTradesPage() {
   const selectedWithoutPrice = selectedTrades.filter((trade) => trade.price == null).length;
 
   const toggleSelection = (tradeId: string) => {
+    if (trades.find((trade) => trade.id === tradeId)?.status === "reserved") return;
     setSelectedIds((current) => current.includes(tradeId) ? current.filter((id) => id !== tradeId) : [...current, tradeId]);
     setCopiedSelection(false);
   };
@@ -145,8 +147,9 @@ export default function PublicTradesPage() {
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5 mt-8">
             {filteredTrades.map((trade) => (
-              <div key={trade.id} className={`relative rounded-xl border bg-white dark:bg-slate-900 p-3 shadow-sm flex flex-col justify-between transition-shadow ${selectedIds.includes(trade.id) ? "border-blue-500 ring-2 ring-blue-500/20" : "border-slate-200 dark:border-slate-800 hover:shadow-md"}`}>
-                <button type="button" onClick={() => toggleSelection(trade.id)} aria-pressed={selectedIds.includes(trade.id)} className={`absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-colors ${selectedIds.includes(trade.id) ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 bg-white/90 text-slate-500 hover:border-blue-500 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900/90"}`} title={selectedIds.includes(trade.id) ? "Remover da seleção" : "Selecionar carta"}>
+              <div key={trade.id} className={`relative rounded-xl border bg-white dark:bg-slate-900 p-3 shadow-sm flex flex-col justify-between transition-shadow ${trade.status === "reserved" ? "border-amber-400/60" : selectedIds.includes(trade.id) ? "border-blue-500 ring-2 ring-blue-500/20" : "border-slate-200 dark:border-slate-800 hover:shadow-md"}`}>
+                {trade.status === "reserved" && <span className="absolute left-3 top-3 z-10 rounded-full bg-amber-400 px-2.5 py-1 text-[10px] font-black uppercase text-amber-950 shadow">Reservada</span>}
+                <button type="button" disabled={trade.status === "reserved"} onClick={() => toggleSelection(trade.id)} aria-pressed={selectedIds.includes(trade.id)} className={`absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${selectedIds.includes(trade.id) ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 bg-white/90 text-slate-500 hover:border-blue-500 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900/90"}`} title={trade.status === "reserved" ? "Negociação em andamento" : selectedIds.includes(trade.id) ? "Remover da seleção" : "Selecionar carta"}>
                   {selectedIds.includes(trade.id) ? <Check size={16} /> : <ShoppingCart size={15} />}
                 </button>
                 {trade.card_image_url ? (
