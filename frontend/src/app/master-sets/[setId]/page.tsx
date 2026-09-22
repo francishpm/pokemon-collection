@@ -126,8 +126,8 @@ export default function MasterSetDetailPage() {
   if (!catalog) return <div className="rounded-xl border bg-card p-10 text-center">Coleção indisponível.</div>;
 
   return (
-    <div className={`space-y-5 ${tab !== "collection" && setId === "30th" ? "md:pt-[90px]" : "md:pt-[170px]"}`}>
-      <div className="sticky top-0 z-30 -mx-4 -mt-4 space-y-2 bg-background px-4 pb-2 pt-2 shadow-[0_12px_18px_-18px_rgba(0,0,0,.8)] md:fixed md:left-72 md:right-3 md:top-[103px] md:mx-0 md:mt-0 md:px-8 md:pt-2">
+    <div className="space-y-5">
+      <div className="space-y-2">
       <div className="flex flex-col gap-2 rounded-xl border bg-card p-3 sm:flex-row sm:items-center">
         <Link href="/master-sets" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft size={16} /> Coleções</Link>
         {catalog.logo && <img src={catalog.logo} alt={catalog.name} className="h-16 w-32 shrink-0 object-contain" />}
