@@ -22,7 +22,9 @@ export async function fetchMasterSetCatalog(setId: string): Promise<MasterSetCat
       cardId: row.card_id,
       number: row.card_number,
       name: row.card_name,
-      image: row.image_url.replace("/high.webp", "/low.webp"),
+      image: setId === "30th-c"
+        ? `/cards/30th-c/${row.card_number.padStart(3, "0")}.webp`
+        : row.image_url.replace("/high.webp", "/low.webp"),
       rarity: row.rarity ?? undefined,
       variant: row.variant as MasterSetVariant,
     })),

@@ -1,0 +1,1698 @@
+{
+  "30th": [
+    {
+      "id": "30th-001:normal",
+      "cardId": "30th-001",
+      "variant": "normal",
+      "number": "001",
+      "name": "Exeggcute",
+      "image": "https://assets.tcgdex.net/en/me/30th/001/low.webp",
+      "rarity": "Comum"
+    },
+    {
+      "id": "30th-002:normal",
+      "cardId": "30th-002",
+      "variant": "normal",
+      "number": "002",
+      "name": "Exeggutor de Alola",
+      "image": "https://assets.tcgdex.net/en/me/30th/002/low.webp",
+      "rarity": "Comum"
+    },
+    {
+      "id": "30th-003:normal",
+      "cardId": "30th-003",
+      "variant": "normal",
+      "number": "003",
+      "name": "Volbeat",
+      "image": "https://assets.tcgdex.net/en/me/30th/003/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-004:normal",
+      "cardId": "30th-004",
+      "variant": "normal",
+      "number": "004",
+      "name": "Illumise",
+      "image": "https://assets.tcgdex.net/en/me/30th/004/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-005:normal",
+      "cardId": "30th-005",
+      "variant": "normal",
+      "number": "005",
+      "name": "Tropius",
+      "image": "https://assets.tcgdex.net/en/me/30th/005/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-006:normal",
+      "cardId": "30th-006",
+      "variant": "normal",
+      "number": "006",
+      "name": "Cherubi",
+      "image": "https://assets.tcgdex.net/en/me/30th/006/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-007:normal",
+      "cardId": "30th-007",
+      "variant": "normal",
+      "number": "007",
+      "name": "Cherrim",
+      "image": "https://assets.tcgdex.net/en/me/30th/007/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-008:normal",
+      "cardId": "30th-008",
+      "variant": "normal",
+      "number": "008",
+      "name": "Vivillon",
+      "image": "https://assets.tcgdex.net/en/me/30th/008/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-009:normal",
+      "cardId": "30th-009",
+      "variant": "normal",
+      "number": "009",
+      "name": "Vulpix",
+      "image": "https://assets.tcgdex.net/en/me/30th/009/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-010:normal",
+      "cardId": "30th-010",
+      "variant": "normal",
+      "number": "010",
+      "name": "Ninetales",
+      "image": "https://assets.tcgdex.net/en/me/30th/010/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-011:normal",
+      "cardId": "30th-011",
+      "variant": "normal",
+      "number": "011",
+      "name": "Moltres",
+      "image": "https://assets.tcgdex.net/en/me/30th/011/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-012:normal",
+      "cardId": "30th-012",
+      "variant": "normal",
+      "number": "012",
+      "name": "Ho-Oh",
+      "image": "https://assets.tcgdex.net/en/me/30th/012/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-013:normal",
+      "cardId": "30th-013",
+      "variant": "normal",
+      "number": "013",
+      "name": "Victini",
+      "image": "https://assets.tcgdex.net/en/me/30th/013/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-014:normal",
+      "cardId": "30th-014",
+      "variant": "normal",
+      "number": "014",
+      "name": "Reshiram",
+      "image": "https://assets.tcgdex.net/en/me/30th/014/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-015:normal",
+      "cardId": "30th-015",
+      "variant": "normal",
+      "number": "015",
+      "name": "Fuecoco ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/015/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-016:normal",
+      "cardId": "30th-016",
+      "variant": "normal",
+      "number": "016",
+      "name": "Slowpoke",
+      "image": "https://assets.tcgdex.net/en/me/30th/016/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-017:normal",
+      "cardId": "30th-017",
+      "variant": "normal",
+      "number": "017",
+      "name": "Lapras",
+      "image": "https://assets.tcgdex.net/en/me/30th/017/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-018:normal",
+      "cardId": "30th-018",
+      "variant": "normal",
+      "number": "018",
+      "name": "Articuno",
+      "image": "https://assets.tcgdex.net/en/me/30th/018/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-019:normal",
+      "cardId": "30th-019",
+      "variant": "normal",
+      "number": "019",
+      "name": "Kyogre",
+      "image": "https://assets.tcgdex.net/en/me/30th/019/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-020:normal",
+      "cardId": "30th-020",
+      "variant": "normal",
+      "number": "020",
+      "name": "Palkia",
+      "image": "https://assets.tcgdex.net/en/me/30th/020/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-021:normal",
+      "cardId": "30th-021",
+      "variant": "normal",
+      "number": "021",
+      "name": "Greninja ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/021/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-022:normal",
+      "cardId": "30th-022",
+      "variant": "normal",
+      "number": "022",
+      "name": "Wishiwashi",
+      "image": "https://assets.tcgdex.net/en/me/30th/022/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-023:normal",
+      "cardId": "30th-023",
+      "variant": "normal",
+      "number": "023",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/023/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-024:normal",
+      "cardId": "30th-024",
+      "variant": "normal",
+      "number": "024",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/024/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-025:normal",
+      "cardId": "30th-025",
+      "variant": "normal",
+      "number": "025",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/025/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-026:normal",
+      "cardId": "30th-026",
+      "variant": "normal",
+      "number": "026",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/026/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-027:normal",
+      "cardId": "30th-027",
+      "variant": "normal",
+      "number": "027",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/027/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-028:normal",
+      "cardId": "30th-028",
+      "variant": "normal",
+      "number": "028",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/028/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-029:normal",
+      "cardId": "30th-029",
+      "variant": "normal",
+      "number": "029",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/029/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-030:normal",
+      "cardId": "30th-030",
+      "variant": "normal",
+      "number": "030",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/030/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-031:normal",
+      "cardId": "30th-031",
+      "variant": "normal",
+      "number": "031",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/031/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-032:normal",
+      "cardId": "30th-032",
+      "variant": "normal",
+      "number": "032",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/032/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-033:normal",
+      "cardId": "30th-033",
+      "variant": "normal",
+      "number": "033",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/033/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-034:normal",
+      "cardId": "30th-034",
+      "variant": "normal",
+      "number": "034",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/034/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-035:normal",
+      "cardId": "30th-035",
+      "variant": "normal",
+      "number": "035",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/035/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-036:normal",
+      "cardId": "30th-036",
+      "variant": "normal",
+      "number": "036",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/036/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-037:normal",
+      "cardId": "30th-037",
+      "variant": "normal",
+      "number": "037",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/037/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-038:normal",
+      "cardId": "30th-038",
+      "variant": "normal",
+      "number": "038",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/038/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-039:normal",
+      "cardId": "30th-039",
+      "variant": "normal",
+      "number": "039",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/039/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-040:normal",
+      "cardId": "30th-040",
+      "variant": "normal",
+      "number": "040",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/040/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-041:normal",
+      "cardId": "30th-041",
+      "variant": "normal",
+      "number": "041",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/041/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-042:normal",
+      "cardId": "30th-042",
+      "variant": "normal",
+      "number": "042",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/042/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-043:normal",
+      "cardId": "30th-043",
+      "variant": "normal",
+      "number": "043",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/043/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-044:normal",
+      "cardId": "30th-044",
+      "variant": "normal",
+      "number": "044",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/044/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-045:normal",
+      "cardId": "30th-045",
+      "variant": "normal",
+      "number": "045",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/045/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-046:normal",
+      "cardId": "30th-046",
+      "variant": "normal",
+      "number": "046",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/046/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-047:normal",
+      "cardId": "30th-047",
+      "variant": "normal",
+      "number": "047",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/047/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-048:normal",
+      "cardId": "30th-048",
+      "variant": "normal",
+      "number": "048",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/048/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-049:normal",
+      "cardId": "30th-049",
+      "variant": "normal",
+      "number": "049",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/049/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-050:normal",
+      "cardId": "30th-050",
+      "variant": "normal",
+      "number": "050",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/050/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-051:normal",
+      "cardId": "30th-051",
+      "variant": "normal",
+      "number": "051",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/051/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-052:normal",
+      "cardId": "30th-052",
+      "variant": "normal",
+      "number": "052",
+      "name": "Pikachu",
+      "image": "https://assets.tcgdex.net/en/me/30th/052/low.webp",
+      "rarity": "Pikachu Rare"
+    },
+    {
+      "id": "30th-053:normal",
+      "cardId": "30th-053",
+      "variant": "normal",
+      "number": "053",
+      "name": "Pikachu ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/053/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-054:normal",
+      "cardId": "30th-054",
+      "variant": "normal",
+      "number": "054",
+      "name": "Pikachu ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/054/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-055:normal",
+      "cardId": "30th-055",
+      "variant": "normal",
+      "number": "055",
+      "name": "Zapdos",
+      "image": "https://assets.tcgdex.net/en/me/30th/055/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-056:normal",
+      "cardId": "30th-056",
+      "variant": "normal",
+      "number": "056",
+      "name": "Zekrom",
+      "image": "https://assets.tcgdex.net/en/me/30th/056/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-057:normal",
+      "cardId": "30th-057",
+      "variant": "normal",
+      "number": "057",
+      "name": "Zeraora",
+      "image": "https://assets.tcgdex.net/en/me/30th/057/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-058:normal",
+      "cardId": "30th-058",
+      "variant": "normal",
+      "number": "058",
+      "name": "Toxel",
+      "image": "https://assets.tcgdex.net/en/me/30th/058/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-059:normal",
+      "cardId": "30th-059",
+      "variant": "normal",
+      "number": "059",
+      "name": "Toxtricity",
+      "image": "https://assets.tcgdex.net/en/me/30th/059/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-060:normal",
+      "cardId": "30th-060",
+      "variant": "normal",
+      "number": "060",
+      "name": "Toxtricity",
+      "image": "https://assets.tcgdex.net/en/me/30th/060/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-061:normal",
+      "cardId": "30th-061",
+      "variant": "normal",
+      "number": "061",
+      "name": "Morpeko",
+      "image": "https://assets.tcgdex.net/en/me/30th/061/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-062:normal",
+      "cardId": "30th-062",
+      "variant": "normal",
+      "number": "062",
+      "name": "Miraidon",
+      "image": "https://assets.tcgdex.net/en/me/30th/062/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-063:normal",
+      "cardId": "30th-063",
+      "variant": "normal",
+      "number": "063",
+      "name": "Mewtwo",
+      "image": "https://assets.tcgdex.net/en/me/30th/063/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-064:normal",
+      "cardId": "30th-064",
+      "variant": "normal",
+      "number": "064",
+      "name": "Mewtwo ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/064/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-065:normal",
+      "cardId": "30th-065",
+      "variant": "normal",
+      "number": "065",
+      "name": "Mew",
+      "image": "https://assets.tcgdex.net/en/me/30th/065/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-066:normal",
+      "cardId": "30th-066",
+      "variant": "normal",
+      "number": "066",
+      "name": "Mew ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/066/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-067:normal",
+      "cardId": "30th-067",
+      "variant": "normal",
+      "number": "067",
+      "name": "Marill",
+      "image": "https://assets.tcgdex.net/en/me/30th/067/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-068:normal",
+      "cardId": "30th-068",
+      "variant": "normal",
+      "number": "068",
+      "name": "Azumarill",
+      "image": "https://assets.tcgdex.net/en/me/30th/068/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-069:normal",
+      "cardId": "30th-069",
+      "variant": "normal",
+      "number": "069",
+      "name": "Espeon",
+      "image": "https://assets.tcgdex.net/en/me/30th/069/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-070:normal",
+      "cardId": "30th-070",
+      "variant": "normal",
+      "number": "070",
+      "name": "Espeon ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/070/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-071:normal",
+      "cardId": "30th-071",
+      "variant": "normal",
+      "number": "071",
+      "name": "Sylveon ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/071/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-072:normal",
+      "cardId": "30th-072",
+      "variant": "normal",
+      "number": "072",
+      "name": "Unown",
+      "image": "https://assets.tcgdex.net/en/me/30th/072/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-073:normal",
+      "cardId": "30th-073",
+      "variant": "normal",
+      "number": "073",
+      "name": "Drifloon",
+      "image": "https://assets.tcgdex.net/en/me/30th/073/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-074:normal",
+      "cardId": "30th-074",
+      "variant": "normal",
+      "number": "074",
+      "name": "Cresselia",
+      "image": "https://assets.tcgdex.net/en/me/30th/074/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-075:normal",
+      "cardId": "30th-075",
+      "variant": "normal",
+      "number": "075",
+      "name": "Chandelure",
+      "image": "https://assets.tcgdex.net/en/me/30th/075/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-076:normal",
+      "cardId": "30th-076",
+      "variant": "normal",
+      "number": "076",
+      "name": "Xerneas",
+      "image": "https://assets.tcgdex.net/en/me/30th/076/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-077:normal",
+      "cardId": "30th-077",
+      "variant": "normal",
+      "number": "077",
+      "name": "Comfey",
+      "image": "https://assets.tcgdex.net/en/me/30th/077/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-078:normal",
+      "cardId": "30th-078",
+      "variant": "normal",
+      "number": "078",
+      "name": "Cosmog",
+      "image": "https://assets.tcgdex.net/en/me/30th/078/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-079:normal",
+      "cardId": "30th-079",
+      "variant": "normal",
+      "number": "079",
+      "name": "Cosmoem",
+      "image": "https://assets.tcgdex.net/en/me/30th/079/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-080:normal",
+      "cardId": "30th-080",
+      "variant": "normal",
+      "number": "080",
+      "name": "Lunala",
+      "image": "https://assets.tcgdex.net/en/me/30th/080/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-081:normal",
+      "cardId": "30th-081",
+      "variant": "normal",
+      "number": "081",
+      "name": "Gimmighoul",
+      "image": "https://assets.tcgdex.net/en/me/30th/081/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-082:normal",
+      "cardId": "30th-082",
+      "variant": "normal",
+      "number": "082",
+      "name": "Groudon",
+      "image": "https://assets.tcgdex.net/en/me/30th/082/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-083:normal",
+      "cardId": "30th-083",
+      "variant": "normal",
+      "number": "083",
+      "name": "Lucario",
+      "image": "https://assets.tcgdex.net/en/me/30th/083/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-084:normal",
+      "cardId": "30th-084",
+      "variant": "normal",
+      "number": "084",
+      "name": "Seismitoad",
+      "image": "https://assets.tcgdex.net/en/me/30th/084/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-085:normal",
+      "cardId": "30th-085",
+      "variant": "normal",
+      "number": "085",
+      "name": "Lycanroc",
+      "image": "https://assets.tcgdex.net/en/me/30th/085/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-086:normal",
+      "cardId": "30th-086",
+      "variant": "normal",
+      "number": "086",
+      "name": "Koraidon",
+      "image": "https://assets.tcgdex.net/en/me/30th/086/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-087:normal",
+      "cardId": "30th-087",
+      "variant": "normal",
+      "number": "087",
+      "name": "Nidoran♀",
+      "image": "https://assets.tcgdex.net/en/me/30th/087/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-088:normal",
+      "cardId": "30th-088",
+      "variant": "normal",
+      "number": "088",
+      "name": "Nidorina",
+      "image": "https://assets.tcgdex.net/en/me/30th/088/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-089:normal",
+      "cardId": "30th-089",
+      "variant": "normal",
+      "number": "089",
+      "name": "Alolan Meowth",
+      "image": "https://assets.tcgdex.net/en/me/30th/089/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-090:normal",
+      "cardId": "30th-090",
+      "variant": "normal",
+      "number": "090",
+      "name": "Gengar ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/090/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-091:normal",
+      "cardId": "30th-091",
+      "variant": "normal",
+      "number": "091",
+      "name": "Umbreon",
+      "image": "https://assets.tcgdex.net/en/me/30th/091/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-092:normal",
+      "cardId": "30th-092",
+      "variant": "normal",
+      "number": "092",
+      "name": "Umbreon ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/092/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-093:normal",
+      "cardId": "30th-093",
+      "variant": "normal",
+      "number": "093",
+      "name": "Murkrow",
+      "image": "https://assets.tcgdex.net/en/me/30th/093/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-094:normal",
+      "cardId": "30th-094",
+      "variant": "normal",
+      "number": "094",
+      "name": "Scraggy",
+      "image": "https://assets.tcgdex.net/en/me/30th/094/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-095:normal",
+      "cardId": "30th-095",
+      "variant": "normal",
+      "number": "095",
+      "name": "Zorua",
+      "image": "https://assets.tcgdex.net/en/me/30th/095/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-096:normal",
+      "cardId": "30th-096",
+      "variant": "normal",
+      "number": "096",
+      "name": "Zoroark",
+      "image": "https://assets.tcgdex.net/en/me/30th/096/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-097:normal",
+      "cardId": "30th-097",
+      "variant": "normal",
+      "number": "097",
+      "name": "Deino",
+      "image": "https://assets.tcgdex.net/en/me/30th/097/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-098:normal",
+      "cardId": "30th-098",
+      "variant": "normal",
+      "number": "098",
+      "name": "Zweilous",
+      "image": "https://assets.tcgdex.net/en/me/30th/098/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-099:normal",
+      "cardId": "30th-099",
+      "variant": "normal",
+      "number": "099",
+      "name": "Hydreigon",
+      "image": "https://assets.tcgdex.net/en/me/30th/099/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-100:normal",
+      "cardId": "30th-100",
+      "variant": "normal",
+      "number": "100",
+      "name": "Yveltal",
+      "image": "https://assets.tcgdex.net/en/me/30th/100/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-101:normal",
+      "cardId": "30th-101",
+      "variant": "normal",
+      "number": "101",
+      "name": "Galarian Meowth",
+      "image": "https://assets.tcgdex.net/en/me/30th/101/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-102:normal",
+      "cardId": "30th-102",
+      "variant": "normal",
+      "number": "102",
+      "name": "Jirachi ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/102/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-103:normal",
+      "cardId": "30th-103",
+      "variant": "normal",
+      "number": "103",
+      "name": "Dialga",
+      "image": "https://assets.tcgdex.net/en/me/30th/103/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-104:normal",
+      "cardId": "30th-104",
+      "variant": "normal",
+      "number": "104",
+      "name": "Ferrothorn",
+      "image": "https://assets.tcgdex.net/en/me/30th/104/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-105:normal",
+      "cardId": "30th-105",
+      "variant": "normal",
+      "number": "105",
+      "name": "Solgaleo",
+      "image": "https://assets.tcgdex.net/en/me/30th/105/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-106:normal",
+      "cardId": "30th-106",
+      "variant": "normal",
+      "number": "106",
+      "name": "Zacian",
+      "image": "https://assets.tcgdex.net/en/me/30th/106/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-107:normal",
+      "cardId": "30th-107",
+      "variant": "normal",
+      "number": "107",
+      "name": "Zamazenta",
+      "image": "https://assets.tcgdex.net/en/me/30th/107/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-108:normal",
+      "cardId": "30th-108",
+      "variant": "normal",
+      "number": "108",
+      "name": "Gholdengo",
+      "image": "https://assets.tcgdex.net/en/me/30th/108/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-109:normal",
+      "cardId": "30th-109",
+      "variant": "normal",
+      "number": "109",
+      "name": "Salamence ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/109/low.webp",
+      "rarity": "Double rare"
+    },
+    {
+      "id": "30th-110:normal",
+      "cardId": "30th-110",
+      "variant": "normal",
+      "number": "110",
+      "name": "Jangmo-o",
+      "image": "https://assets.tcgdex.net/en/me/30th/110/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-111:normal",
+      "cardId": "30th-111",
+      "variant": "normal",
+      "number": "111",
+      "name": "Hakamo-o",
+      "image": "https://assets.tcgdex.net/en/me/30th/111/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-112:normal",
+      "cardId": "30th-112",
+      "variant": "normal",
+      "number": "112",
+      "name": "Kommo-o",
+      "image": "https://assets.tcgdex.net/en/me/30th/112/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-113:normal",
+      "cardId": "30th-113",
+      "variant": "normal",
+      "number": "113",
+      "name": "Meowth",
+      "image": "https://assets.tcgdex.net/en/me/30th/113/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-114:normal",
+      "cardId": "30th-114",
+      "variant": "normal",
+      "number": "114",
+      "name": "Kangaskhan",
+      "image": "https://assets.tcgdex.net/en/me/30th/114/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-115:normal",
+      "cardId": "30th-115",
+      "variant": "normal",
+      "number": "115",
+      "name": "Ditto",
+      "image": "https://assets.tcgdex.net/en/me/30th/115/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-116:normal",
+      "cardId": "30th-116",
+      "variant": "normal",
+      "number": "116",
+      "name": "Eevee",
+      "image": "https://assets.tcgdex.net/en/me/30th/116/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-117:normal",
+      "cardId": "30th-117",
+      "variant": "normal",
+      "number": "117",
+      "name": "Eevee",
+      "image": "https://assets.tcgdex.net/en/me/30th/117/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-118:normal",
+      "cardId": "30th-118",
+      "variant": "normal",
+      "number": "118",
+      "name": "Eevee",
+      "image": "https://assets.tcgdex.net/en/me/30th/118/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-119:normal",
+      "cardId": "30th-119",
+      "variant": "normal",
+      "number": "119",
+      "name": "Snorlax",
+      "image": "https://assets.tcgdex.net/en/me/30th/119/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-120:normal",
+      "cardId": "30th-120",
+      "variant": "normal",
+      "number": "120",
+      "name": "Igglybuff",
+      "image": "https://assets.tcgdex.net/en/me/30th/120/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-121:normal",
+      "cardId": "30th-121",
+      "variant": "normal",
+      "number": "121",
+      "name": "Lugia",
+      "image": "https://assets.tcgdex.net/en/me/30th/121/low.webp",
+      "rarity": "Rare"
+    },
+    {
+      "id": "30th-122:normal",
+      "cardId": "30th-122",
+      "variant": "normal",
+      "number": "122",
+      "name": "Hisuian Zorua",
+      "image": "https://assets.tcgdex.net/en/me/30th/122/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-123:normal",
+      "cardId": "30th-123",
+      "variant": "normal",
+      "number": "123",
+      "name": "Hisuian Zoroark",
+      "image": "https://assets.tcgdex.net/en/me/30th/123/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-124:normal",
+      "cardId": "30th-124",
+      "variant": "normal",
+      "number": "124",
+      "name": "Minior",
+      "image": "https://assets.tcgdex.net/en/me/30th/124/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-125:normal",
+      "cardId": "30th-125",
+      "variant": "normal",
+      "number": "125",
+      "name": "Maushold",
+      "image": "https://assets.tcgdex.net/en/me/30th/125/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-126:normal",
+      "cardId": "30th-126",
+      "variant": "normal",
+      "number": "126",
+      "name": "Poké Pad",
+      "image": "https://assets.tcgdex.net/en/me/30th/126/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-127:normal",
+      "cardId": "30th-127",
+      "variant": "normal",
+      "number": "127",
+      "name": "Switch",
+      "image": "https://assets.tcgdex.net/en/me/30th/127/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-128:normal",
+      "cardId": "30th-128",
+      "variant": "normal",
+      "number": "128",
+      "name": "Ultra Ball",
+      "image": "https://assets.tcgdex.net/en/me/30th/128/low.webp",
+      "rarity": "Common"
+    },
+    {
+      "id": "30th-129:normal",
+      "cardId": "30th-129",
+      "variant": "normal",
+      "number": "129",
+      "name": "Alolan Exeggutor",
+      "image": "https://assets.tcgdex.net/en/me/30th/129/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-130:normal",
+      "cardId": "30th-130",
+      "variant": "normal",
+      "number": "130",
+      "name": "Moltres",
+      "image": "https://assets.tcgdex.net/en/me/30th/130/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-131:normal",
+      "cardId": "30th-131",
+      "variant": "normal",
+      "number": "131",
+      "name": "Lapras",
+      "image": "https://assets.tcgdex.net/en/me/30th/131/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-132:normal",
+      "cardId": "30th-132",
+      "variant": "normal",
+      "number": "132",
+      "name": "Articuno",
+      "image": "https://assets.tcgdex.net/en/me/30th/132/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-133:normal",
+      "cardId": "30th-133",
+      "variant": "normal",
+      "number": "133",
+      "name": "Zapdos",
+      "image": "https://assets.tcgdex.net/en/me/30th/133/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-134:normal",
+      "cardId": "30th-134",
+      "variant": "normal",
+      "number": "134",
+      "name": "Toxtricity",
+      "image": "https://assets.tcgdex.net/en/me/30th/134/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-135:normal",
+      "cardId": "30th-135",
+      "variant": "normal",
+      "number": "135",
+      "name": "Morpeko",
+      "image": "https://assets.tcgdex.net/en/me/30th/135/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-136:normal",
+      "cardId": "30th-136",
+      "variant": "normal",
+      "number": "136",
+      "name": "Drifloon",
+      "image": "https://assets.tcgdex.net/en/me/30th/136/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-137:normal",
+      "cardId": "30th-137",
+      "variant": "normal",
+      "number": "137",
+      "name": "Chandelure",
+      "image": "https://assets.tcgdex.net/en/me/30th/137/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-138:normal",
+      "cardId": "30th-138",
+      "variant": "normal",
+      "number": "138",
+      "name": "Lycanroc",
+      "image": "https://assets.tcgdex.net/en/me/30th/138/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-139:normal",
+      "cardId": "30th-139",
+      "variant": "normal",
+      "number": "139",
+      "name": "Alolan Meowth",
+      "image": "https://assets.tcgdex.net/en/me/30th/139/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-140:normal",
+      "cardId": "30th-140",
+      "variant": "normal",
+      "number": "140",
+      "name": "Scraggy",
+      "image": "https://assets.tcgdex.net/en/me/30th/140/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-141:normal",
+      "cardId": "30th-141",
+      "variant": "normal",
+      "number": "141",
+      "name": "Galarian Meowth",
+      "image": "https://assets.tcgdex.net/en/me/30th/141/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-142:normal",
+      "cardId": "30th-142",
+      "variant": "normal",
+      "number": "142",
+      "name": "Gholdengo",
+      "image": "https://assets.tcgdex.net/en/me/30th/142/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-143:normal",
+      "cardId": "30th-143",
+      "variant": "normal",
+      "number": "143",
+      "name": "Kommo-o",
+      "image": "https://assets.tcgdex.net/en/me/30th/143/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-144:normal",
+      "cardId": "30th-144",
+      "variant": "normal",
+      "number": "144",
+      "name": "Meowth",
+      "image": "https://assets.tcgdex.net/en/me/30th/144/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-145:normal",
+      "cardId": "30th-145",
+      "variant": "normal",
+      "number": "145",
+      "name": "Hisuian Zorua",
+      "image": "https://assets.tcgdex.net/en/me/30th/145/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-146:normal",
+      "cardId": "30th-146",
+      "variant": "normal",
+      "number": "146",
+      "name": "Maushold",
+      "image": "https://assets.tcgdex.net/en/me/30th/146/low.webp",
+      "rarity": "Illustration rare"
+    },
+    {
+      "id": "30th-147:normal",
+      "cardId": "30th-147",
+      "variant": "normal",
+      "number": "147",
+      "name": "Fuecoco ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/147/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-148:normal",
+      "cardId": "30th-148",
+      "variant": "normal",
+      "number": "148",
+      "name": "Greninja ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/148/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-149:normal",
+      "cardId": "30th-149",
+      "variant": "normal",
+      "number": "149",
+      "name": "Pikachu ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/149/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-150:normal",
+      "cardId": "30th-150",
+      "variant": "normal",
+      "number": "150",
+      "name": "Pikachu ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/150/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-151:normal",
+      "cardId": "30th-151",
+      "variant": "normal",
+      "number": "151",
+      "name": "Mewtwo ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/151/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-152:normal",
+      "cardId": "30th-152",
+      "variant": "normal",
+      "number": "152",
+      "name": "Mew ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/152/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-153:normal",
+      "cardId": "30th-153",
+      "variant": "normal",
+      "number": "153",
+      "name": "Sylveon ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/153/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-154:normal",
+      "cardId": "30th-154",
+      "variant": "normal",
+      "number": "154",
+      "name": "Gengar ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/154/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-155:normal",
+      "cardId": "30th-155",
+      "variant": "normal",
+      "number": "155",
+      "name": "Jirachi ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/155/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-156:normal",
+      "cardId": "30th-156",
+      "variant": "normal",
+      "number": "156",
+      "name": "Salamence ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/156/low.webp",
+      "rarity": "Special illustration rare"
+    },
+    {
+      "id": "30th-157:normal",
+      "cardId": "30th-157",
+      "variant": "normal",
+      "number": "157",
+      "name": "Mewtwo ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/157/low.webp",
+      "rarity": "Futuristic Rare"
+    },
+    {
+      "id": "30th-158:normal",
+      "cardId": "30th-158",
+      "variant": "normal",
+      "number": "158",
+      "name": "Mew ex",
+      "image": "https://assets.tcgdex.net/en/me/30th/158/low.webp",
+      "rarity": "Futuristic Rare"
+    }
+  ],
+  "30th-c": [
+    {
+      "id": "30th-c-001:normal",
+      "cardId": "30th-c-001",
+      "variant": "normal",
+      "number": "001",
+      "name": "Charizard",
+      "image": "/cards/30th-c/001.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-002:normal",
+      "cardId": "30th-c-002",
+      "variant": "normal",
+      "number": "002",
+      "name": "Delcatty",
+      "image": "/cards/30th-c/002.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-003:normal",
+      "cardId": "30th-c-003",
+      "variant": "normal",
+      "number": "003",
+      "name": "Metagross",
+      "image": "/cards/30th-c/003.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-004:normal",
+      "cardId": "30th-c-004",
+      "variant": "normal",
+      "number": "004",
+      "name": "Genesect EX",
+      "image": "/cards/30th-c/004.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-005:normal",
+      "cardId": "30th-c-005",
+      "variant": "normal",
+      "number": "005",
+      "name": "Misty",
+      "image": "/cards/30th-c/005.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-006:normal",
+      "cardId": "30th-c-006",
+      "variant": "normal",
+      "number": "006",
+      "name": "Tyranitar Sombrio",
+      "image": "/cards/30th-c/006.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-007:normal",
+      "cardId": "30th-c-007",
+      "variant": "normal",
+      "number": "007",
+      "name": "Sneasel",
+      "image": "/cards/30th-c/007.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-008:normal",
+      "cardId": "30th-c-008",
+      "variant": "normal",
+      "number": "008",
+      "name": "Pikachu e Zekrom GX",
+      "image": "/cards/30th-c/008.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-009:normal",
+      "cardId": "30th-c-009",
+      "variant": "normal",
+      "number": "009",
+      "name": "Greninja TURBO",
+      "image": "/cards/30th-c/009.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-010:normal",
+      "cardId": "30th-c-010",
+      "variant": "normal",
+      "number": "010",
+      "name": "Uxie",
+      "image": "/cards/30th-c/010.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-011:normal",
+      "cardId": "30th-c-011",
+      "variant": "normal",
+      "number": "011",
+      "name": "Crobat G",
+      "image": "/cards/30th-c/011.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-012:normal",
+      "cardId": "30th-c-012",
+      "variant": "normal",
+      "number": "012",
+      "name": "Raikou",
+      "image": "/cards/30th-c/012.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-013:normal",
+      "cardId": "30th-c-013",
+      "variant": "normal",
+      "number": "013",
+      "name": "Buzzwole GX",
+      "image": "/cards/30th-c/013.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-014:normal",
+      "cardId": "30th-c-014",
+      "variant": "normal",
+      "number": "014",
+      "name": "Pikachu",
+      "image": "/cards/30th-c/014.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-015:normal",
+      "cardId": "30th-c-015",
+      "variant": "normal",
+      "number": "015",
+      "name": "Jigglypuff da Érica",
+      "image": "/cards/30th-c/015.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-016:normal",
+      "cardId": "30th-c-016",
+      "variant": "normal",
+      "number": "016",
+      "name": "Rayquaza EX",
+      "image": "/cards/30th-c/016.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-017:normal",
+      "cardId": "30th-c-017",
+      "variant": "normal",
+      "number": "017",
+      "name": "Solgaleo GX",
+      "image": "/cards/30th-c/017.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-018:normal",
+      "cardId": "30th-c-018",
+      "variant": "normal",
+      "number": "018",
+      "name": "Gengar",
+      "image": "/cards/30th-c/018.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-019:normal",
+      "cardId": "30th-c-019",
+      "variant": "normal",
+      "number": "019",
+      "name": "Darkrai & Cresselia LENDA",
+      "image": "/cards/30th-c/019.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-020:normal",
+      "cardId": "30th-c-020",
+      "variant": "normal",
+      "number": "020",
+      "name": "Darkrai & Cresselia LENDA",
+      "image": "/cards/30th-c/020.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-021:normal",
+      "cardId": "30th-c-021",
+      "variant": "normal",
+      "number": "021",
+      "name": "N",
+      "image": "/cards/30th-c/021.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-022:normal",
+      "cardId": "30th-c-022",
+      "variant": "normal",
+      "number": "022",
+      "name": "Palkia",
+      "image": "/cards/30th-c/022.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-023:normal",
+      "cardId": "30th-c-023",
+      "variant": "normal",
+      "number": "023",
+      "name": "M Gardevoir EX",
+      "image": "/cards/30th-c/023.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-024:normal",
+      "cardId": "30th-c-024",
+      "variant": "normal",
+      "number": "024",
+      "name": "Celebi Luminescente",
+      "image": "/cards/30th-c/024.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-025:normal",
+      "cardId": "30th-c-025",
+      "variant": "normal",
+      "number": "025",
+      "name": "Scizor ex",
+      "image": "/cards/30th-c/025.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-026:normal",
+      "cardId": "30th-c-026",
+      "variant": "normal",
+      "number": "026",
+      "name": "Mew VMAX",
+      "image": "/cards/30th-c/026.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-027:normal",
+      "cardId": "30th-c-027",
+      "variant": "normal",
+      "number": "027",
+      "name": "Arceus V-ASTRO",
+      "image": "/cards/30th-c/027.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-028:normal",
+      "cardId": "30th-c-028",
+      "variant": "normal",
+      "number": "028",
+      "name": "Zacian V",
+      "image": "/cards/30th-c/028.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-029:normal",
+      "cardId": "30th-c-029",
+      "variant": "normal",
+      "number": "029",
+      "name": "Lugia",
+      "image": "/cards/30th-c/029.webp",
+      "rarity": "None"
+    },
+    {
+      "id": "30th-c-030:normal",
+      "cardId": "30th-c-030",
+      "variant": "normal",
+      "number": "030",
+      "name": "Magikarp",
+      "image": "/cards/30th-c/030.webp",
+      "rarity": "None"
+    }
+  ]
+}

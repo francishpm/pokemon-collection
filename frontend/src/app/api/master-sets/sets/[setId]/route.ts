@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { MASTER_SET_BY_ID, masterSetLogo } from "@/lib/masterSetConfig";
 import { MasterSetCatalog, MasterSetSlot, MasterSetVariant } from "@/types/master-set";
+import anniversaryCatalog from "@/data/anniversary-catalog.json";
 
 const TCGDEX_ROOT = "https://api.tcgdex.net/v2";
 
@@ -61,6 +62,16 @@ export async function GET(_: Request, context: { params: Promise<{ setId: string
   const { setId } = await context.params;
   const configuredSet = MASTER_SET_BY_ID.get(setId);
   if (!configuredSet) return NextResponse.json({ error: "Coleção inválida." }, { status: 404 });
+
+  if (setId === "30th" || setId === "30th-c") {
+    return NextResponse.json({
+      id: setId,
+      name: configuredSet.name,
+      logo: masterSetLogo(configuredSet.seriesId, configuredSet),
+      totalCards: configuredSet.cards,
+      slots: anniversaryCatalog[setId],
+    });
+  }
 
   try {
     const encodedSetId = encodeURIComponent(setId);

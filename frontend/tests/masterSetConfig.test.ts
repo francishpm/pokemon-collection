@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { MASTER_SET_BY_ID, MASTER_SET_SERIES, masterSetLogo } from "../src/lib/masterSetConfig.ts";
 
 test("disponibiliza a série Scarlet & Violet completa", () => {
@@ -23,7 +24,12 @@ test("mantém as coleções Mega Evolution disponíveis", () => {
 test("gera um logotipo para toda coleção configurada", () => {
   for (const series of MASTER_SET_SERIES) {
     for (const set of series.sets) {
-      assert.match(masterSetLogo(series.id, set), /^https:\/\/assets\.tcgdex\.net\//);
+      const logo = masterSetLogo(series.id, set);
+      if (logo.startsWith("/")) {
+        assert.ok(existsSync(new URL(`../public${logo}`, import.meta.url)), `Logotipo ausente: ${logo}`);
+      } else {
+        assert.match(logo, /^https:\/\/assets\.tcgdex\.net\//);
+      }
     }
   }
 });

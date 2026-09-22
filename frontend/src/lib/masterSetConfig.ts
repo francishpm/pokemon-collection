@@ -23,6 +23,8 @@ export const MASTER_SET_SERIES: MasterSetSeriesDefinition[] = [
     name: "Mega Evolution",
     logo: assetLogo("pt", "me", "me01"),
     sets: [
+      { id: "30th", name: "Celebração de 30 Anos", cards: 158, printedCards: 128, logo: "/30th-celebration.png" },
+      { id: "30th-c", name: "30 Anos — Coleção Clássica", cards: 30, special: true, logo: "/30th-celebration.png" },
       { id: "me05", name: "Escuridão Absoluta", cards: 120, printedCards: 84, logo: assetLogo("en", "me", "me05") },
       { id: "me04", name: "Caos Ascendente", cards: 122, printedCards: 86 },
       { id: "me03", name: "Equilíbrio Perfeito", cards: 124, printedCards: 88 },
