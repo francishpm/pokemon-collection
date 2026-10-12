@@ -2,6 +2,19 @@
 // Price collectors must always discard listings containing this extra.
 export const LIGA_IGNORED_EXTRA_IDS = new Set([29]);
 
+export function resolveLigaCardIdentity(name: string, number: string, total: string, edition?: string, setName?: string) {
+    // The classic anniversary catalogue uses sequential numbers; Liga uses
+    // the original printed numbers for these cards.
+    const classicAnniversary = edition === "30C-C" || /30.*(?:clássica|classica|classic)/i.test(setName ?? "");
+    if (classicAnniversary && /^lugia$/i.test(name.trim()) && Number(total) === 30 && [29, 149].includes(Number(number))) {
+        return { number: "149", total: "30", edition: "30C-C" };
+    }
+    if (classicAnniversary && /^charizard$/i.test(name.trim()) && Number(total) === 30 && [1, 4].includes(Number(number))) {
+        return { number: "004", total: "30", edition: "30C-C" };
+    }
+    return { number, total, edition };
+}
+
 export function getLigaPokemonUrl(
     name: string,
     number: string,
@@ -29,12 +42,13 @@ export function getLigaPokemonUrl(
             ? String(printedTotal).replace(/^0+(?=\d)/, "")
             : paddedTotal;
 
+    const identity = resolveLigaCardIdentity(name, number, total, edition, setName);
     const params = new URLSearchParams({
         view: "cards/card",
-        card: `${name} (${number}/${total})`,
-        num: number,
+        card: `${name} (${identity.number}/${identity.total})`,
+        num: identity.number,
     });
 
-    if (edition) params.set("ed", edition);
+    if (identity.edition) params.set("ed", identity.edition);
     return `https://www.ligapokemon.com.br/?${params.toString()}`;
 }

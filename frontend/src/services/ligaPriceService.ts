@@ -1,6 +1,7 @@
 import { CardCondition, CardLanguage, CollectionCard } from "@/types/collection-card";
 import { PokemonCard } from "@/types/pokemon-card";
 import { supabase } from "@/lib/supabase";
+import { resolveLigaCardIdentity } from "@/lib/ligaPokemon";
 
 export interface LigaPriceRequest {
   id?: string;
@@ -44,13 +45,14 @@ export function toLigaPriceRequest(
   condition: CardCondition,
   id?: string,
 ): LigaPriceRequest {
+  const identity = resolveLigaCardIdentity(pokemon.name, pokemon.number, getLigaPrintedTotal(pokemon), pokemon.set.ligaEdition, pokemon.set.name);
   return {
     id,
     name: pokemon.name,
-    number: pokemon.number,
-    total: getLigaPrintedTotal(pokemon),
+    number: identity.number,
+    total: identity.total,
     setName: pokemon.set.name,
-    edition: pokemon.set.ligaEdition,
+    edition: identity.edition,
     language,
     condition,
   };

@@ -68,7 +68,7 @@ export function PikachuDuplicates({ slots, quantities, onSave }: {
         <Button variant={filter === "en" ? "default" : "outline"} aria-pressed={filter === "en"} onClick={() => setFilter("en")}>Repetidas em Inglês</Button>
       </div>
       {filter !== "all" ? <div className="flex flex-wrap items-center gap-3 rounded-lg bg-muted p-3">
-        <p className="flex-1 basis-56 text-sm">{visible.length} carta(s) com repetidas em {CARD_LANGUAGES[filter]}. O PDF inclui as cartas exibidas, o idioma e as quantidades extras.</p>
+        <p className="flex-1 basis-56 text-sm">{visible.length} carta(s) com repetidas em {CARD_LANGUAGES[filter]}. Exporte em PDF ou fotos JPG com as cartas exibidas, o idioma e as quantidades extras.</p>
         <Button disabled={!visible.length || pending.size > 0} onClick={exportDuplicates}>Exportar repetidas em {CARD_LANGUAGES[filter]} ({visible.length})</Button>
       </div> : <p className="text-sm text-muted-foreground">Escolha “Repetidas em Português” ou “Repetidas em Inglês” para gerar o PDF.</p>}
     </div>

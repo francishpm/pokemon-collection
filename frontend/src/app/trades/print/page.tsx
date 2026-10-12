@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, FileDown, Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { filterAndSortTrades } from "@/lib/tradeFilters";
+import { createTradePhotos, PHOTO_CARD_COUNTS } from "@/lib/tradePhotoExport";
+import { ArrowLeft, FileDown, Loader2, ImageDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TradeStatus, useTrades } from "@/hooks/useTrades";
 
@@ -11,15 +14,28 @@ const statusOf = (status?: TradeStatus): TradeStatus => status ?? "available";
 
 export default function TradePrintPage() {
   const { tradesView, loading, fetchTrades } = useTrades();
+  const searchParams = useSearchParams();
+  const requestedStatus = searchParams.get("statusFilter");
+  const statusFilter = requestedStatus === "available" || requestedStatus === "reserved" || requestedStatus === "completed" ? requestedStatus : "active";
   const [settledImageIds, setSettledImageIds] = useState<Set<string>>(() => new Set());
+  const [photoCount, setPhotoCount] = useState(36);
+  const [photoExport, setPhotoExport] = useState<{ photos: string[]; missingImages: number } | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoProgress, setPhotoProgress] = useState(0);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   useEffect(() => {
     void fetchTrades();
   }, [fetchTrades]);
 
   const activeTrades = useMemo(
-    () => tradesView.filter(({ trade }) => statusOf(trade.status) !== "completed"),
-    [tradesView],
+    () => filterAndSortTrades(tradesView, {
+      search: searchParams.get("search") ?? "",
+      sortBy: searchParams.get("sortBy") ?? "recent",
+      priceFilter: searchParams.get("priceFilter") ?? "all",
+      statusFilter,
+    }),
+    [tradesView, searchParams, statusFilter],
   );
 
   const pages = useMemo(
@@ -50,22 +66,62 @@ export default function TradePrintPage() {
     else window.history.back();
   };
 
+  const preparePhotos = async () => {
+    setPhotoBusy(true);
+    setPhotoError(null);
+    setPhotoExport(null);
+    setPhotoProgress(0);
+    try {
+      setPhotoExport(await createTradePhotos(activeTrades, photoCount, (done) => setPhotoProgress(done)));
+    } catch (error) {
+      setPhotoError(error instanceof Error ? error.message : "Não foi possível gerar as fotos. Tente novamente.");
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
   return (
     <div className="trade-pdf-root min-h-screen bg-white text-slate-950">
       <div className="trade-pdf-toolbar sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b bg-white/95 p-4 shadow-sm backdrop-blur">
         <div>
-          <h1 className="text-lg font-black">Catálogo de trocas - prévia 4×4</h1>
+          <h1 className="text-lg font-black">Catálogo de trocas — PDF e fotos</h1>
           <p className="text-xs text-slate-500">
             {loading ? "Carregando cartas..." : `${activeTrades.length} cartas em ${pages.length} página(s)`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={goBack}><ArrowLeft /> Voltar</Button>
+          <label className="flex items-center gap-2 text-sm">
+            Cartas por foto
+            <select className="rounded-md border bg-white px-2 py-2" value={photoCount} disabled={photoBusy} onChange={(event) => { setPhotoCount(Number(event.target.value)); setPhotoExport(null); }}>
+              {PHOTO_CARD_COUNTS.map((count) => <option key={count} value={count}>{count} ({Math.sqrt(count)}×{Math.sqrt(count)})</option>)}
+            </select>
+          </label>
+          <Button variant="outline" disabled={loading || photoBusy || activeTrades.length === 0} onClick={preparePhotos}>
+            {photoBusy ? <Loader2 className="animate-spin" /> : <ImageDown />}
+            {photoBusy ? `Preparando ${photoProgress}/${activeTrades.length}` : "Gerar fotos"}
+          </Button>
           <Button disabled={loading || !imagesReady || activeTrades.length === 0} onClick={() => window.print()}>
             {loading || !imagesReady ? <Loader2 className="animate-spin" /> : <FileDown />}
             {loading ? "Carregando" : !imagesReady ? `Imagens ${settledImages}/${activeTrades.length}` : "Salvar como PDF"}
           </Button>
         </div>
+      </div>
+
+      <div className="trade-photo-preview mx-auto max-w-6xl space-y-4 p-6">
+        <p className="text-sm text-slate-600">Fotos em JPG para enviar aos grupos, com os filtros e a ordem selecionados. O PDF mantém 16 cartas por página.</p>
+        {photoError && <p role="alert" className="text-sm text-red-700">{photoError}</p>}
+        {photoExport && <>
+          <p role="status" className="text-sm font-semibold">{photoExport.photos.length} foto(s) pronta(s). Baixe cada uma abaixo.</p>
+          {photoExport.missingImages > 0 && <p role="alert" className="text-sm text-amber-700">{photoExport.missingImages} imagem(ns) não carregaram. Confira as fotos ou clique em Gerar fotos para tentar novamente.</p>}
+          <div className="grid gap-6 md:grid-cols-2">
+            {photoExport.photos.map((photo, index) => <section key={index} className="space-y-2 rounded-xl border bg-slate-50 p-3">
+              <a href={photo} download={`cartas-troca-${index + 1}.jpg`} className={"inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white"}><ImageDown size={16} /> Salvar foto {index + 1}</a>
+              {/* Export previews are local JPEGs, already rendered at full resolution. */}
+              <img src={photo} alt={`Foto ${index + 1} das cartas para troca e venda`} className="h-auto w-full rounded border" />
+            </section>)}
+          </div>
+        </>}
       </div>
 
       {!loading && activeTrades.length === 0 && (
@@ -130,7 +186,7 @@ export default function TradePrintPage() {
           body * { visibility: hidden !important; }
           .trade-pdf-root, .trade-pdf-root * { visibility: visible !important; }
           .trade-pdf-root { position: absolute; inset: 0; width: 210mm; }
-          .trade-pdf-toolbar { display: none !important; }
+          .trade-pdf-toolbar, .trade-photo-preview { display: none !important; }
           .trade-pdf-preview { margin: 0 !important; padding: 0 !important; background: white !important; }
           .trade-pdf-page { margin: 0 !important; box-shadow: none !important; break-after: page; page-break-after: always; }
           .trade-pdf-page:last-child { break-after: auto; page-break-after: auto; }

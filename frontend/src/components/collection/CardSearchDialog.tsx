@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
+import { Search, ArrowLeft, ExternalLink, RefreshCw, Camera } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ import { getLigaPokemonUrl } from "@/lib/ligaPokemon";
 import { consultLigaPrices, LigaPriceResponse, toLigaPriceRequest } from "@/services/ligaPriceService";
 import { supabase } from "@/lib/supabase";
 import { MASTER_SET_BY_ID } from "@/lib/masterSetConfig";
+import { normalizeSearchNumber, searchNumberVariants } from "@/lib/cardSearchNumber";
+import { CardScanner } from "./CardScanner";
 
 interface CardSearchDialogProps {
   open: boolean;
@@ -43,6 +45,8 @@ function parseNameAndNumber(value: string) {
 
 async function searchMasterSetCards(term: string): Promise<PokemonCard[]> {
   const namedCard = parseNameAndNumber(term);
+  const number = namedCard?.number ?? term.trim().match(/^([a-z]*\d+[a-z]*)(?:\/[a-z]*\d+)?$/i)?.[1];
+  const total = namedCard?.printedTotal ?? term.trim().match(/\/[a-z]*(\d+)$/i)?.[1];
   const name = namedCard?.name ?? (/\d/.test(term) ? "" : term.trim());
 
   let query = supabase
@@ -52,7 +56,8 @@ async function searchMasterSetCards(term: string): Promise<PokemonCard[]> {
     .limit(150);
 
   if (name) query = query.ilike("card_name", `%${name}%`);
-  if (!name && term.trim()) query = query.ilike("card_number", `%${term.trim().replace(/[^a-z0-9]/gi, "")}%`);
+  if (number) query = query.in("card_number", searchNumberVariants(number));
+  else if (!name && term.trim()) query = query.ilike("card_number", `%${term.trim().replace(/[^a-z0-9]/gi, "")}%`);
 
   const { data, error } = await query;
   if (error) throw error;
@@ -61,6 +66,7 @@ async function searchMasterSetCards(term: string): Promise<PokemonCard[]> {
   return uniqueRows.flatMap((row) => {
     const meta = MASTER_SET_BY_ID.get(row.set_id);
     if (!meta) return [];
+    if (total && Number(total) !== (meta.printedCards ?? meta.cards)) return [];
     const numberMatches = !namedCard || Number(row.card_number) === Number(namedCard.number);
     if (!numberMatches) return [];
     const isPromo = row.set_id === "mep" || row.set_id === "svp";
@@ -92,11 +98,13 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
     if (!open) {
       setSearch("");
+      setScanning(false);
       setApiCards([]);
       setSelectedCard(null);
       setLoading(false);
@@ -130,7 +138,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
 
         const results = await Promise.allSettled([searchCards(term), masterSetSearch]);
         const cards = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
-        if (cards.length === 0 && results.every((result) => result.status === "rejected")) {
+        if (cards.length === 0 && results.some((result) => result.status === "rejected")) {
           throw new Error("Não foi possível pesquisar os catálogos agora.");
         }
         if (!cancelled) setApiCards([...new Map(cards.map((card) => [card.id, card])).values()]);
@@ -161,12 +169,13 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
       if (namedCard) {
         const numberMatches = namedCard.printedTotal
           ? normalizeCardNumber(fullNumber) === normalizeCardNumber(`${namedCard.number}/${namedCard.printedTotal}`)
-          : card.number.toLowerCase() === namedCard.number;
+          : normalizeSearchNumber(card.number) === normalizeSearchNumber(namedCard.number);
         return card.name.toLowerCase().includes(namedCard.name) && numberMatches;
       }
       return (
         card.name.toLowerCase().includes(term) ||
         card.number.toLowerCase().includes(term) ||
+        normalizeSearchNumber(card.number) === normalizeSearchNumber(term) ||
         fullNumber.includes(term) ||
         normalizeCardNumber(fullNumber) === normalizedTerm ||
         card.set.name.toLowerCase().includes(term)
@@ -202,6 +211,17 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
             </DialogHeader>
 
             <div className="space-y-6">
+              {scanning && open ? (
+                <CardScanner
+                  onClose={() => setScanning(false)}
+                  onSearch={(query) => { setSearch(query); setScanning(false); }}
+                />
+              ) : (
+                <Button type="button" variant="outline" className="w-full gap-2" onClick={() => setScanning(true)}>
+                  <Camera size={18} /> Escanear carta pela câmera
+                </Button>
+              )}
+              {!scanning && <>
               <div className="relative">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -230,6 +250,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
                   </div>
                 )}
               </div>
+              </>}
             </div>
           </>
         ) : (
