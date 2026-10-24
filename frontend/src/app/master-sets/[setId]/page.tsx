@@ -12,7 +12,10 @@ import { MasterSetCatalog, MasterSetVariant } from "@/types/master-set";
 import { openMissingCardsPrint } from "@/lib/masterSetExport";
 import { PikachuLanguages } from "@/components/collection/PikachuLanguages";
 import { PikachuDuplicates } from "@/components/collection/PikachuDuplicates";
+import { AnniversaryMissing } from "@/components/collection/AnniversaryMissing";
 import { isAnniversaryPikachu } from "@/lib/pikachuLanguages";
+import anniversaryCatalog from "@/data/anniversary-catalog.json";
+import { isSpecialArtworkRarity } from "@/lib/specialArtwork";
 
 const VARIANT_LABELS: Record<MasterSetVariant, string> = {
   normal: "Normal",
@@ -30,17 +33,19 @@ export default function MasterSetDetailPage() {
   const [catalog, setCatalog] = useState<MasterSetCatalog | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [progressReady, setProgressReady] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [variant, setVariant] = useState<"all" | MasterSetVariant>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [tab, setTab] = useState<"collection" | "pikachus" | "duplicates">("collection");
+  const [tab, setTab] = useState<"collection" | "pikachus" | "duplicates" | "artwork-duplicates" | "missing">("collection");
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       setLoading(true);
+      setProgressReady(false);
       try {
         let catalogData: MasterSetCatalog | null = null;
         try {
@@ -58,7 +63,14 @@ export default function MasterSetDetailPage() {
 
         try {
           const progress = await fetchMasterSetProgress(setId);
-          if (!cancelled) setQuantities(Object.fromEntries(progress.map((item) => [item.slotId, item.quantity])));
+          if (setId === "30th") {
+            const classics = await fetchMasterSetProgress("30th-c");
+            progress.push(...classics);
+          }
+          if (!cancelled) {
+            setQuantities(Object.fromEntries(progress.map((item) => [item.slotId, item.quantity])));
+            setProgressReady(true);
+          }
         } catch (error) {
           console.error("Não foi possível carregar o progresso:", error);
           toast.error("Execute a SQL do Master Set no Supabase para salvar seu progresso.");
@@ -74,6 +86,14 @@ export default function MasterSetDetailPage() {
   }, [setId]);
 
   const pikachuSlots = useMemo(() => (catalog?.slots ?? []).filter(isAnniversaryPikachu), [catalog]);
+  const anniversarySlots = useMemo(() => [
+    ...(catalog?.slots ?? []),
+    ...anniversaryCatalog["30th-c"].map((slot) => ({ ...slot, variant: "normal" as const })),
+  ], [catalog]);
+  const artworkSlots = useMemo(() => [
+    ...(catalog?.slots ?? []).filter((slot) => !isAnniversaryPikachu(slot) && (isSpecialArtworkRarity(slot.rarity) || slot.rarity === "Futuristic Rare" || /\bex$/i.test(slot.name.trim()))),
+    ...anniversaryCatalog["30th-c"].map((slot) => ({ ...slot, variant: "normal" as const })),
+  ], [catalog]);
   const ownedCount = catalog?.slots.filter((slot) => (quantities[slot.id] ?? 0) > 0).length ?? 0;
   const progress = catalog?.slots.length ? (ownedCount / catalog.slots.length) * 100 : 0;
   const availableVariants = useMemo(() => [...new Set(catalog?.slots.map((slot) => slot.variant) ?? [])], [catalog]);
@@ -118,7 +138,7 @@ export default function MasterSetDetailPage() {
   };
 
   const saveDuplicates = async (slotId: string, cardId: string, variant: string, quantity: number) => {
-    await saveMasterSetQuantity(setId, cardId, variant, quantity);
+    await saveMasterSetQuantity(cardId.startsWith("30th-c-") ? "30th-c" : setId, cardId, variant, quantity);
     setQuantities((current) => ({ ...current, [slotId]: quantity }));
   };
 
@@ -153,9 +173,11 @@ export default function MasterSetDetailPage() {
         <Button variant={tab === "collection" ? "default" : "ghost"} aria-pressed={tab === "collection"} onClick={() => setTab("collection")}>Master set</Button>
         <Button variant={tab === "pikachus" ? "default" : "ghost"} aria-pressed={tab === "pikachus"} onClick={() => setTab("pikachus")}>Pikachus ({pikachuSlots.length})</Button>
         <Button variant={tab === "duplicates" ? "default" : "ghost"} aria-pressed={tab === "duplicates"} onClick={() => setTab("duplicates")}>Pikachus repetidos</Button>
+        <Button variant={tab === "artwork-duplicates" ? "default" : "ghost"} aria-pressed={tab === "artwork-duplicates"} onClick={() => setTab("artwork-duplicates")}>EX, Full Art e clássicas repetidas</Button>
+        <Button variant={tab === "missing" ? "default" : "ghost"} aria-pressed={tab === "missing"} onClick={() => setTab("missing")}>Cartas que me faltam</Button>
       </div>}
 
-      {tab === "duplicates" && setId === "30th" ? <PikachuDuplicates slots={pikachuSlots} quantities={quantities} onSave={saveDuplicates} /> : tab === "pikachus" && setId === "30th" ? <PikachuLanguages slots={pikachuSlots} quantities={quantities} onSave={saveLanguage} /> : <>
+      {tab === "missing" && setId === "30th" ? <AnniversaryMissing slots={anniversarySlots} quantities={quantities} progressReady={progressReady} /> : tab === "artwork-duplicates" && setId === "30th" ? <PikachuDuplicates key="artwork" artwork slots={artworkSlots} quantities={quantities} onSave={saveDuplicates} /> : tab === "duplicates" && setId === "30th" ? <PikachuDuplicates key="pikachu" slots={pikachuSlots} quantities={quantities} onSave={saveDuplicates} /> : tab === "pikachus" && setId === "30th" ? <PikachuLanguages slots={pikachuSlots} quantities={quantities} onSave={saveLanguage} /> : <>
       <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4">
         <div className="min-w-0 flex-1 basis-64">
           <h3 className="font-bold">Compartilhar faltantes</h3>

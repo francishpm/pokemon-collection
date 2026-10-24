@@ -17,7 +17,7 @@ import { CollectionShareButton } from "@/components/collection/CollectionShareBu
 import { LigaPriceBatchUpdate } from "@/components/collection/LigaPriceBatchUpdate";
 import { CollectionCsvActions } from "@/components/collection/CollectionCsvActions";
 
-type SortOption = "dateAsc" | "dateDesc" | "priceDesc" | "priceAsc";
+type SortOption = "dateAsc" | "dateDesc" | "priceDesc" | "priceAsc" | "pokedexAsc" | "pokedexDesc";
 type CardTypeFilter = "all" | "pokemon" | "trainer";
 type LigaStatusFilter = "all" | "found" | "not_found" | "error" | "needs_confirmation" | "pending" | "price_difference";
 type ManualValueFilter = "all" | "missing";
@@ -32,6 +32,8 @@ function isTrainerCard(card: PokemonCard) {
 }
 
 // Atualizado para 30 cartas por página (5 linhas de 6)
+// Retained for restoring the Liga workflow when queries are available again.
+const LIGA_CONTROLS_ENABLED = false;
 const ITEMS_PER_PAGE = 30; 
 
 export default function CollectionPage() {
@@ -132,11 +134,11 @@ export default function CollectionPage() {
       result = result.filter(({ pokemon }) => !isTrainerCard(pokemon));
     }
 
-    if (ligaStatusFilter === "price_difference") {
+    if (LIGA_CONTROLS_ENABLED && ligaStatusFilter === "price_difference") {
       result = result.filter(({ collection }) => collection.ligaValue != null && collection.ligaLowestPrice != null && Math.round(collection.ligaValue * 100) !== Math.round(collection.ligaLowestPrice * 100));
-    } else if (ligaStatusFilter === "pending") {
+    } else if (LIGA_CONTROLS_ENABLED && ligaStatusFilter === "pending") {
       result = result.filter(({ collection }) => !collection.ligaPriceStatus);
-    } else if (ligaStatusFilter !== "all") {
+    } else if (LIGA_CONTROLS_ENABLED && ligaStatusFilter !== "all") {
       result = result.filter(({ collection }) => collection.ligaPriceStatus === ligaStatusFilter);
     }
 
@@ -160,6 +162,17 @@ export default function CollectionPage() {
 
     // 4. Ordenação
     const sortedResult = [...result].sort((a, b) => {
+      if (sortOrder === "pokedexAsc" || sortOrder === "pokedexDesc") {
+        const numberA = a.pokemon.nationalPokedexNumbers?.[0] ?? Infinity;
+        const numberB = b.pokemon.nationalPokedexNumbers?.[0] ?? Infinity;
+        if (numberA !== numberB) {
+          if (!Number.isFinite(numberA)) return 1;
+          if (!Number.isFinite(numberB)) return -1;
+          return sortOrder === "pokedexAsc" ? numberA - numberB : numberB - numberA;
+        }
+        return new Date(a.collection.createdAt).getTime() - new Date(b.collection.createdAt).getTime();
+      }
+
       // Ordenação por preço
       if (sortOrder === "priceDesc" || sortOrder === "priceAsc") {
         const getPrice = (item: typeof a) => {
@@ -192,12 +205,12 @@ export default function CollectionPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2 lg:grid lg:grid-cols-[minmax(260px,320px)_1fr] lg:items-center">
-        <div className="relative w-full">
+      <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+        <div className="relative w-full min-w-0 lg:w-auto lg:min-w-[160px] lg:flex-[1.2]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             placeholder="Pesquisar na sua coleção..."
-            className="pl-10"
+            className="h-9 pl-10"
             value={localSearch}
             onChange={(e) => {
               setLocalSearch(e.target.value);
@@ -206,7 +219,7 @@ export default function CollectionPage() {
           />
         </div>
 
-        <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:min-w-[360px] lg:flex-1">
           {/* Menu de Ordenação original e novos */}
           <select
             value={typeFilter}
@@ -229,15 +242,18 @@ export default function CollectionPage() {
               setSortOrder(e.target.value as SortOption);
               setCurrentPage(1);
             }}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label="Ordenar cartas"
+            className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="dateAsc">Mais antigas (Padrão)</option>
             <option value="dateDesc">Mais recentes</option>
-            <option value="priceDesc">Maior Valor (Crescente)</option>
-            <option value="priceAsc">Menor Valor (Decrescente)</option>
+            <option value="pokedexAsc">Pokédex (Crescente)</option>
+            <option value="pokedexDesc">Pokédex (Decrescente)</option>
+            <option value="priceDesc">Maior Valor (Decrescente)</option>
+            <option value="priceAsc">Menor Valor (Crescente)</option>
           </select>
 
-          <select
+          {LIGA_CONTROLS_ENABLED && <select
             value={ligaStatusFilter}
             onChange={(e) => {
               setLigaStatusFilter(e.target.value as LigaStatusFilter);
@@ -253,9 +269,9 @@ export default function CollectionPage() {
             <option value="needs_confirmation">Precisa conferir ({ligaStatusCounts.needs_confirmation})</option>
             <option value="pending">Ainda não consultada ({ligaStatusCounts.pending})</option>
             <option value="price_difference">Valor manual diferente da Liga ({ligaStatusCounts.price_difference})</option>
-          </select>
+          </select>}
 
-          <select
+          {LIGA_CONTROLS_ENABLED && <select
             value={manualValueFilter}
             onChange={(e) => {
               setManualValueFilter(e.target.value as ManualValueFilter);
@@ -266,12 +282,12 @@ export default function CollectionPage() {
           >
             <option value="all">Todos os valores</option>
             <option value="missing">Sem valor manual ({cardsWithoutManualValue})</option>
-          </select>
+          </select>}
 
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 lg:col-start-2">
-          <LigaPriceBatchUpdate collectionView={filteredAndSortedCollection} selectedIds={selectedPriceIds} onSelectedIdsChange={setSelectedPriceIds} />
+        <div className="flex flex-wrap items-center gap-2 lg:shrink-0 lg:flex-nowrap lg:[&_button]:px-2">
+          {LIGA_CONTROLS_ENABLED && <LigaPriceBatchUpdate collectionView={filteredAndSortedCollection} selectedIds={selectedPriceIds} onSelectedIdsChange={setSelectedPriceIds} />}
           <CollectionCsvActions collectionView={collectionView} />
           <CollectionShareButton />
           <Button className="gap-2" onClick={() => openSearchModal("collection")}>
@@ -329,8 +345,8 @@ export default function CollectionPage() {
                 isPokedexRepresentative={pokedexRepresentatives[pokemon.nationalPokedexNumbers?.[0] ?? 0] === collection.id}
                 onSetPokedexRepresentative={handleSetPokedexRepresentative}
                 isPriceSelected={selectedPriceIds.includes(collection.id)}
-                onTogglePriceSelection={(id) => setSelectedPriceIds((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id])}
-                onClick={() => setSelectedPriceIds((current) => current.includes(collection.id) ? current.filter((selectedId) => selectedId !== collection.id) : [...current, collection.id])}
+                onTogglePriceSelection={LIGA_CONTROLS_ENABLED ? (id) => setSelectedPriceIds((current) => current.includes(id) ? current.filter((selectedId) => selectedId !== id) : [...current, id]) : undefined}
+                onClick={LIGA_CONTROLS_ENABLED ? () => setSelectedPriceIds((current) => current.includes(collection.id) ? current.filter((selectedId) => selectedId !== collection.id) : [...current, collection.id]) : undefined}
               />
             ))}
           </div>

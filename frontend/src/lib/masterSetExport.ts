@@ -1,5 +1,6 @@
 import type { MasterSetSlot, MasterSetVariant } from "@/types/master-set";
-import { createCardPhotos, PHOTO_CARD_COUNTS } from "./tradePhotoExport";
+import { createCardPhotos, photoDownloadBlob, PHOTO_CARD_COUNTS } from "./tradePhotoExport";
+import { duplicatePriceLabel } from "./duplicatePrices";
 
 export const MASTER_SET_VARIANT_LABELS: Record<MasterSetVariant, string> = {
   normal: "Normal", reverse: "Reverse Holofoil", holo: "Holofoil",
@@ -14,12 +15,12 @@ export function openMissingCardsPrint(name: string, slots: MasterSetSlot[], lang
   return openCardsPrint(name, slots, { languageLabel });
 }
 
-export function openDuplicateCardsPrint(name: string, slots: MasterSetSlot[], languageLabel: string, quantities: Record<string, number>) {
-  return openCardsPrint(name, slots, { languageLabel, duplicates: quantities });
+export function openDuplicateCardsPrint(name: string, slots: MasterSetSlot[], languageLabel: string, quantities: Record<string, number>, prices?: Record<string, number | null>) {
+  return openCardsPrint(name, slots, { languageLabel, duplicates: quantities, prices });
 }
 
-function openCardsPrint(name: string, slots: MasterSetSlot[], options: { languageLabel?: string; duplicates?: Record<string, number> }) {
-  const { languageLabel, duplicates } = options;
+function openCardsPrint(name: string, slots: MasterSetSlot[], options: { languageLabel?: string; duplicates?: Record<string, number>; prices?: Record<string, number | null> }) {
+  const { languageLabel, duplicates, prices } = options;
   const heading = duplicates ? "REPETIDAS DISPONÍVEIS" : "PROCURO";
   const description = duplicates
     ? `${slots.reduce((total, slot) => total + (duplicates[slot.id] ?? 0), 0)} cópia(s) extra(s) · ${slots.length} carta(s) diferente(s) · Quem tiver interesse, me chama!`
@@ -33,7 +34,7 @@ function openCardsPrint(name: string, slots: MasterSetSlot[], options: { languag
       const url = new URL(slot.image, window.location.origin);
       if (slot.image && ["http:", "https:"].includes(url.protocol)) image = url.href;
     } catch { /* Cards without a usable image keep their identifying caption. */ }
-    return `<article>${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(slot.name)}">` : '<div class="placeholder">Imagem indisponível</div>'}<strong>${escapeHtml(slot.name)}</strong><span>${escapeHtml(slot.number)} · ${escapeHtml(MASTER_SET_VARIANT_LABELS[slot.variant])}${languageLabel ? ` · ${escapeHtml(languageLabel)}` : ""}</span>${duplicates ? `<span>${duplicates[slot.id] ?? 0} cópia(s) extra(s)</span>` : ""}</article>`;
+    return `<article>${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(slot.name)}">` : '<div class="placeholder">Imagem indisponível</div>'}<strong>${escapeHtml(slot.name)}</strong><span>${escapeHtml(slot.number)} · ${escapeHtml(MASTER_SET_VARIANT_LABELS[slot.variant])}${languageLabel ? ` · ${escapeHtml(languageLabel)}` : ""}</span>${duplicates ? `<span>${duplicates[slot.id] ?? 0} cópia(s) extra(s)</span>` : ""}${prices && duplicatePriceLabel(prices[slot.id]) ? `<strong>${escapeHtml(duplicatePriceLabel(prices[slot.id]))}</strong>` : ""}</article>`;
   }).join("");
   popup.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${heading} — ${escapeHtml(name)}</title><style>
     *{box-sizing:border-box}body{margin:0;background:#fff;color:#172033;font-family:Arial,sans-serif}.controls{padding:16px;background:#eef2ff;text-align:center}.controls button{padding:12px 20px;border:0;border-radius:8px;background:#2458d3;color:white;font-weight:bold;cursor:pointer}.controls button:disabled{opacity:.5}main{max-width:1000px;margin:auto;padding:24px}h1{font-size:32px;margin:0 0 8px}h2{font-size:20px;margin:0 0 8px}p{color:#465268}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 12px;margin-top:24px}article{break-inside:avoid;text-align:center;min-width:0}img,.placeholder{width:100%;aspect-ratio:2.5/3.5;object-fit:contain;border-radius:8px}.placeholder{display:grid;place-items:center;background:#eee}strong,span{display:block;margin-top:5px}strong{font-size:13px}span{font-size:11px;color:#465268}@page{size:A4;margin:12mm}@media print{.controls{display:none}main{padding:0}.cards{gap:14px 10px}h1{font-size:26px}}@media screen and (max-width:500px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -46,11 +47,17 @@ function openCardsPrint(name: string, slots: MasterSetSlot[], options: { languag
   const photoCount = popup.document.getElementById("photo-count") as HTMLSelectElement;
   const photoStatus = popup.document.getElementById("photo-status")!;
   const photoResults = popup.document.getElementById("photo-results")!;
-  photoCount.addEventListener("change", () => { photoResults.replaceChildren(); photoStatus.textContent = ""; });
+  const photoUrls: string[] = [];
+  const clearPhotos = () => {
+    photoResults.replaceChildren();
+    photoUrls.splice(0).forEach((url) => URL.revokeObjectURL(url));
+  };
+  popup.addEventListener("pagehide", clearPhotos);
+  photoCount.addEventListener("change", () => { clearPhotos(); photoStatus.textContent = ""; });
   photoButton.addEventListener("click", async () => {
     photoButton.disabled = true;
     photoCount.disabled = true;
-    photoResults.replaceChildren();
+    clearPhotos();
     photoStatus.textContent = "Preparando fotos...";
     try {
       const result = await createCardPhotos(slots.map((slot) => ({
@@ -58,6 +65,7 @@ function openCardsPrint(name: string, slots: MasterSetSlot[], options: { languag
         image: slot.image,
         details: `${slot.number} · ${MASTER_SET_VARIANT_LABELS[slot.variant]}`,
         metadata: languageLabel ?? "",
+        price: duplicatePriceLabel(prices?.[slot.id]),
         value: duplicates ? `${duplicates[slot.id] ?? 0} cópia(s) extra(s)` : "Procuro esta carta",
       })), Number(photoCount.value), (done, total) => {
         if (!popup.closed) photoStatus.textContent = `Preparando ${done}/${total} cartas...`;
@@ -67,11 +75,13 @@ function openCardsPrint(name: string, slots: MasterSetSlot[], options: { languag
       for (const [index, photo] of result.photos.entries()) {
         const article = popup.document.createElement("article");
         const link = popup.document.createElement("a");
-        link.href = photo;
+        const photoUrl = URL.createObjectURL(photoDownloadBlob(photo));
+        photoUrls.push(photoUrl);
+        link.href = photoUrl;
         link.download = `master-set-${duplicates ? "repetidas" : "faltantes"}-${index + 1}.jpg`;
         link.textContent = `Salvar foto ${index + 1}`;
         const image = popup.document.createElement("img");
-        image.src = photo;
+        image.src = photoUrl;
         image.alt = `Foto ${index + 1} — ${name}`;
         article.append(link, image);
         photoResults.append(article);

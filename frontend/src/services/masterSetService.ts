@@ -50,19 +50,20 @@ export async function fetchMasterSetProgress(setId: string): Promise<MasterSetPr
 }
 
 export async function saveMasterSetQuantity(setId: string, cardId: string, variant: string, quantity: number) {
-  const { data: authData, error: authError } = await supabase.auth.getUser();
+  // The database validates the session token and enforces RLS.
+  const { data: authData, error: authError } = await supabase.auth.getSession();
   if (authError) throw authError;
-  if (!authData.user) throw new Error("Sua sessão expirou.");
+  if (!authData.session?.user) throw new Error("Sua sessão expirou.");
 
   if (quantity <= 0) {
     const { error } = await supabase.from("master_set_progress").delete()
-      .eq("user_id", authData.user.id).eq("set_id", setId).eq("card_id", cardId).eq("variant", variant);
+      .eq("user_id", authData.session.user.id).eq("set_id", setId).eq("card_id", cardId).eq("variant", variant);
     if (error) throw error;
     return;
   }
 
   const { error } = await supabase.from("master_set_progress").upsert({
-    user_id: authData.user.id,
+    user_id: authData.session.user.id,
     set_id: setId,
     card_id: cardId,
     variant,

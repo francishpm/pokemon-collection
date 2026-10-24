@@ -7,15 +7,48 @@ export function splitTradePhotos<T>(cards: T[], count: number) {
   return Array.from({ length: Math.ceil(cards.length / count) }, (_, index) => cards.slice(index * count, (index + 1) * count));
 }
 
-function loadCardImage(url: string): Promise<HTMLImageElement> {
+function loadImage(url: string, crossOrigin: boolean): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    if (crossOrigin) image.crossOrigin = "anonymous";
     const timeout = window.setTimeout(() => { image.src = ""; reject(new Error("Tempo de carregamento excedido")); }, 20_000);
     image.onload = () => { clearTimeout(timeout); resolve(image); };
     image.onerror = () => { clearTimeout(timeout); reject(new Error("Imagem indisponível")); };
-    // Same-origin image optimizer allows exporting remote catalogue images to canvas.
-    image.src = `/_next/image?${new URLSearchParams({ url, w: "640", q: "75" })}`;
+    image.src = url;
   });
+}
+
+export async function loadCardImage(url: string): Promise<HTMLImageElement> {
+  if (!url) throw new Error("Imagem indisponível");
+  // Catalogue CDNs support CORS. Avoid requiring the local optimizer to fetch
+  // an image the browser can already reach; retain it for hosts without CORS.
+  try {
+    return await loadImage(url, /^https?:\/\//.test(url));
+  } catch {
+    // The optimizer can also fail during a transient CDN error. Try the other
+    // TCGdex resolution and retry the original before giving up.
+    const alternative = /^https:\/\/assets\.tcgdex\.net\//.test(url) && /\/(low|high)\.webp$/.test(url)
+      ? url.replace(/\/(low|high)\.webp$/, (_, size: string) => `/${size === "low" ? "high" : "low"}.webp`)
+      : null;
+    const candidates = [
+      { url: `/api/cards/image?${new URLSearchParams({ url })}`, cors: false },
+      { url: `/_next/image?${new URLSearchParams({ url, w: "640", q: "75" })}`, cors: false },
+      ...(alternative ? [{ url: alternative, cors: true }] : []),
+      { url, cors: /^https?:\/\//.test(url) },
+    ];
+    for (const candidate of candidates) {
+      try { return await loadImage(candidate.url, candidate.cors); }
+      catch { /* Try the next source; failed attempts never enter the canvas. */ }
+    }
+    throw new Error("Imagem indisponível após novas tentativas");
+  }
+}
+
+export function photoDownloadBlob(photo: string): Blob {
+  const base64 = photo.split(",")[1];
+  if (!photo.startsWith("data:image/jpeg;base64,") || !base64) throw new Error("Foto JPG inválida.");
+  const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+  return new Blob([bytes], { type: "image/jpeg" });
 }
 
 export interface PhotoExportCard {
@@ -24,6 +57,7 @@ export interface PhotoExportCard {
   details: string;
   metadata: string;
   value: string;
+  price?: string;
 }
 
 export function createTradePhotos(cards: TradeView[], count: number, onProgress: (done: number, total: number) => void) {
@@ -43,7 +77,7 @@ export async function createCardPhotos(cards: PhotoExportCard[], count: number, 
   for (const [index, group] of groups.entries()) {
     const columns = Math.sqrt(count);
     const cellWidth = 320;
-    const cellHeight = 520;
+    const cellHeight = group.some((card) => card.price) ? 560 : 520;
     const padding = 36;
     const canvas = document.createElement("canvas");
     canvas.width = columns * cellWidth + padding * 2;
@@ -58,9 +92,10 @@ export async function createCardPhotos(cards: PhotoExportCard[], count: number, 
     ctx.fillStyle = "#64748b";
     ctx.font = "22px Arial";
     ctx.fillText(`Foto ${index + 1}/${groups.length} · ${group.length} cartas · ${subtitle}`, padding, 82, canvas.width - padding * 2);
-    // Limit concurrent image downloads to one row at a time.
-    for (let start = 0; start < group.length; start += columns) {
-      const row = group.slice(start, start + columns);
+    // Keep download pressure low even with seven columns per photo.
+    const batchSize = 3;
+    for (let start = 0; start < group.length; start += batchSize) {
+      const row = group.slice(start, start + batchSize);
       const images = await Promise.all(row.map((card) => loadCardImage(card.image).catch(() => null)));
       row.forEach((card, offset) => {
         const position = start + offset;
@@ -94,9 +129,11 @@ export async function createCardPhotos(cards: PhotoExportCard[], count: number, 
         text(card.details, 430, "19px Arial", "#64748b");
         text(card.metadata, 457, "20px Arial", "#475569");
         text(card.value, 492, "bold 29px Arial", "#047857");
+        if (card.price) text(card.price, 533, "bold 29px Arial", "#047857");
       });
-      onProgress(index * count + Math.min(start + columns, group.length), cards.length);
+      onProgress(index * count + Math.min(start + batchSize, group.length), cards.length);
     }
+    if (missingImages) throw new Error(`${missingImages} imagem(ns) não carregaram após novas tentativas. A foto não foi gerada para evitar cartas em branco. Clique em Gerar fotos para tentar novamente.`);
     photos.push(canvas.toDataURL("image/jpeg", 0.94));
   }
   return { photos, missingImages };

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { speciesNameCandidates } from "@/lib/speciesName";
 
 export const dynamic = "force-dynamic";
 
@@ -11,36 +12,6 @@ function toSpeciesSlug(name: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-function speciesNameCandidates(name: string) {
-  const candidates = new Set<string>();
-  const add = (value: string) => {
-    const normalized = value.replace(/\s+/g, " ").trim();
-    if (normalized) candidates.add(normalized);
-  };
-
-  add(name);
-
-  let baseName = name
-    .replace(/\s+(?:ex|gx|v|vmax|vstar)\s*$/i, "")
-    .replace(/-(?:ex|gx|v|vmax|vstar)\s*$/i, "")
-    .replace(/^mega\s+/i, "")
-    .replace(/^.+?'s\s+/i, "")
-    .replace(/^(?:alolan|galarian|hisuian|paldean)\s+/i, "")
-    .replace(/^(?:cornerstone|hearthflame|teal|wellspring)\s+mask\s+/i, "")
-    .replace(/\s*\([^)]*\)\s*$/i, "")
-    .trim();
-
-  add(baseName);
-  baseName = baseName
-    .replace(/\s+(?:ex|gx|v|vmax|vstar)\s*$/i, "")
-    .replace(/^mega\s+/i, "")
-    .replace(/^.+?'s\s+/i, "")
-    .trim();
-  add(baseName);
-
-  return [...candidates];
 }
 
 export async function GET(request: Request) {
