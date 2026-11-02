@@ -1,7 +1,9 @@
+import { mapTcgDexCard, type TcgDexCard } from "@/lib/tcgDexCard";
 import { NextResponse } from "next/server";
 import { PokemonCard } from "@/types/pokemon-card";
 import * as cheerio from "cheerio";
 import { normalizeSearchNumber, searchNumberVariants } from "@/lib/cardSearchNumber";
+import { getPrizePackCard, isPrizePackSearch, searchPrizePacks } from "@/lib/prizePacks";
 
 const TCG_API_URL = "https://api.pokemontcg.io/v2/cards";
 const TCGDEX_API_URL = "https://api.tcgdex.net/v2/en/cards";
@@ -38,50 +40,6 @@ function buildQuery(term: string) {
     return numberQuery;
   }
   return `name:"${term.replace(/["\\]/g, " ").trim()}*"`;
-}
-
-interface TcgDexCard {
-  id: string;
-  localId: string;
-  name: string;
-  image?: string;
-  category?: string;
-  stage?: string;
-  suffix?: string;
-  rarity?: string;
-  dexId?: number[];
-  set?: {
-    id: string;
-    name: string;
-    cardCount: { official: number };
-  };
-}
-
-function mapTcgDexCard(card: TcgDexCard): PokemonCard | null {
-  if (!card.image || !card.set) return null;
-
-  const galleryPrefix = card.localId.match(/^(GG|TG|RC)(?=\d)/i)?.[1]?.toUpperCase();
-  const printedTotalLabel = galleryPrefix
-    ? `${galleryPrefix}${card.set.cardCount.official}`
-    : undefined;
-
-  return {
-    id: card.id,
-    name: card.name,
-    number: card.localId,
-    images: { small: `${card.image}/low.webp`, large: `${card.image}/high.webp` },
-    nationalPokedexNumbers: card.dexId,
-    rarity: card.rarity,
-    supertype: card.category === "Pokemon" ? "Pokémon" : (card.category ?? "Pokémon"),
-    subtypes: [card.stage, card.suffix].filter((value): value is string => Boolean(value)),
-    set: {
-      id: card.set.id,
-      name: card.set.name,
-      series: card.set.name,
-      printedTotal: card.set.cardCount.official,
-      printedTotalLabel,
-    },
-  };
 }
 
 function stripGlobalPricing(card: Record<string, unknown>) {
@@ -368,13 +326,21 @@ function normalizeIdentityPart(value: string) {
 }
 
 function cardIdentity(card: PokemonCard) {
+  if (card.prizePack) return card.id;
   const number = card.number.replace(/^([a-z]*?)0+(?=\d)/i, "$1");
   const total = String(card.set.printedTotalLabel ?? card.set.printedTotal).replace(/^0+(?=\d)/, "");
   return [card.language === "JP" ? "JP" : "international", normalizeIdentityPart(card.name), normalizeIdentityPart(number), normalizeIdentityPart(total)].join("|");
 }
 
 export async function GET(request: Request) {
-  const term = new URL(request.url).searchParams.get("q")?.trim() ?? "";
+  const params = new URL(request.url).searchParams;
+  const term = params.get("q")?.trim() ?? "";
+  const prizeCard = getPrizePackCard(term);
+  if (prizeCard) return NextResponse.json({ data: [prizeCard], source: "prize-packs" });
+  const prizeCards = searchPrizePacks(term);
+  if (params.get("prizePacks") === "true" || isPrizePackSearch(term)) {
+    return NextResponse.json({ data: prizeCards, source: "prize-packs" });
+  }
   if (!term) return NextResponse.json({ error: "Informe o nome ou número da carta." }, { status: 400 });
 
   const [tcgDexCards, ligaCards, japaneseCodeCards, japaneseCards] = await Promise.all([
@@ -384,7 +350,7 @@ export async function GET(request: Request) {
     searchTcgDex(term, "ja").catch(() => []),
   ]);
   const uniqueCards = new Map<string, PokemonCard>();
-  for (const card of [...tcgDexCards, ...ligaCards, ...japaneseCodeCards, ...japaneseCards]) {
+  for (const card of [...tcgDexCards, ...ligaCards, ...japaneseCodeCards, ...japaneseCards, ...prizeCards]) {
     const identity = cardIdentity(card);
     const existing = uniqueCards.get(identity);
     if (!existing) {

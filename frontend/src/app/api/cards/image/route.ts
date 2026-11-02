@@ -1,5 +1,5 @@
 const IMAGE_HOSTS = new Set([
-  "assets.tcgdex.net", "images.pokemontcg.io", "images.scrydex.com", "repositorio.sbrauble.com",
+  "assets.tcgdex.net", "images.pokemontcg.io", "images.scrydex.com", "repositorio.sbrauble.com", "tcgplayer-cdn.tcgplayer.com",
 ]);
 
 // Return image bytes from our origin. Some catalogue responses contain duplicate

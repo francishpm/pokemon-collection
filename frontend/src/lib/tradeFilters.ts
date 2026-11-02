@@ -21,6 +21,7 @@ export function filterAndSortTrades(tradesView: TradeView[], { search, sortBy, p
                 pokemon.name.toLowerCase().includes(term) ||
                 pokemon.number.toLowerCase().includes(term) ||
                 fullNumber.includes(term) ||
+                trade.variant_label?.toLowerCase().includes(term) ||
                 pokemon.set.name.toLowerCase().includes(term)
             );
         }).sort((a, b) => {

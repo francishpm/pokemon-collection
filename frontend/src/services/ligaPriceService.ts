@@ -45,10 +45,13 @@ export function toLigaPriceRequest(
   condition: CardCondition,
   id?: string,
 ): LigaPriceRequest {
+  if (pokemon.prizePack || pokemon.id.startsWith("prize-pack-")) {
+    throw new Error("Consulte o preço da versão Prize Pack manualmente para conferir o selo.");
+  }
   const identity = resolveLigaCardIdentity(pokemon.name, pokemon.number, getLigaPrintedTotal(pokemon), pokemon.set.ligaEdition, pokemon.set.name);
   return {
     id,
-    name: pokemon.name,
+    name: identity.name?.replace(/&amp;/g, "&") ?? pokemon.name,
     number: identity.number,
     total: identity.total,
     setName: pokemon.set.name,

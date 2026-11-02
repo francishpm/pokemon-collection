@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ConditionSelector } from "./ConditionSelector";
 import { PriceInput } from "./PriceInput";
+import { CardImage } from "./CardImage";
 import { cn } from "@/lib/utils";
 import { ExternalLink, RefreshCw, Star } from "lucide-react";
 import { getLigaPokemonUrl } from "@/lib/ligaPokemon";
@@ -180,13 +181,13 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
     { id: "JP", label: "Japonês" },
   ];
 
-  const ligaUrl = getLigaPokemonUrl(card.name, card.number, card.set.printedTotal, card.set.ligaEdition, card.set.printedTotalLabel, card.set.name);
+  const ligaUrl = card.prizePack?.source ?? getLigaPokemonUrl(card.name, card.number, card.set.printedTotal, card.set.ligaEdition, card.set.printedTotalLabel, card.set.name);
 
   return (
     <div className="space-y-3 text-foreground">
       {/* Card de Apresentação da Carta adaptado para Dark Mode */}
       <div className="flex items-stretch justify-center gap-2 rounded-lg border border-border bg-card p-2 shadow-sm">
-        <img src={card.images.small} alt={card.name} loading="eager" decoding="async" fetchPriority="high" className="h-36 self-stretch rounded object-contain drop-shadow-md" />
+        <CardImage src={card.images.small} fallbackSrc={card.images.large} alt={card.name} loading="eager" decoding="async" fetchPriority="high" className="h-36 w-24 self-stretch rounded object-contain drop-shadow-md" />
 
         <div className="flex min-w-0 flex-1 flex-col justify-center py-0.5">
           <div>
@@ -237,7 +238,7 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
           </div>
         </div>
 
-        <div className="rounded-md border border-sky-500/20 bg-sky-500/5 px-2.5 py-1.5">
+        {!card.prizePack && <div className="rounded-md border border-sky-500/20 bg-sky-500/5 px-2.5 py-1.5">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="text-xs font-bold text-sky-700 dark:text-sky-400">Referência Liga Pokémon</p>
@@ -265,7 +266,7 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
               {consultingLiga ? "Consultando" : "Consultar agora"}
             </Button>
           </div>
-        </div>
+        </div>}
 
         <a
           href={ligaUrl}
@@ -273,7 +274,7 @@ export function AddCardDialog({ card, editingCard, onSuccess }: AddCardDialogPro
           rel="noreferrer"
           className="flex items-center justify-between rounded-md border border-blue-500/20 bg-blue-500/5 px-2.5 py-1.5 text-[11px] font-semibold text-blue-600 transition-colors hover:bg-blue-500/10 dark:text-blue-400"
         >
-          Pesquisar esta carta na Liga Pokémon
+          {card.prizePack ? "Consultar versão Prize Pack" : "Pesquisar esta carta na Liga Pokémon"}
           <ExternalLink size={16} />
         </a>
 

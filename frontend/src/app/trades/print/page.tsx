@@ -19,6 +19,7 @@ export default function TradePrintPage() {
   const statusFilter = requestedStatus === "available" || requestedStatus === "reserved" || requestedStatus === "completed" ? requestedStatus : "active";
   const [settledImageIds, setSettledImageIds] = useState<Set<string>>(() => new Set());
   const [photoCount, setPhotoCount] = useState(36);
+  const [showPrices, setShowPrices] = useState(true);
   const [photoExport, setPhotoExport] = useState<{ photos: string[]; missingImages: number } | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoProgress, setPhotoProgress] = useState(0);
@@ -72,7 +73,7 @@ export default function TradePrintPage() {
     setPhotoExport(null);
     setPhotoProgress(0);
     try {
-      setPhotoExport(await createTradePhotos(activeTrades, photoCount, (done) => setPhotoProgress(done)));
+      setPhotoExport(await createTradePhotos(activeTrades, photoCount, (done) => setPhotoProgress(done), showPrices));
     } catch (error) {
       setPhotoError(error instanceof Error ? error.message : "Não foi possível gerar as fotos. Tente novamente.");
     } finally {
@@ -105,6 +106,10 @@ export default function TradePrintPage() {
             {loading || !imagesReady ? <Loader2 className="animate-spin" /> : <FileDown />}
             {loading ? "Carregando" : !imagesReady ? `Imagens ${settledImages}/${activeTrades.length}` : "Salvar como PDF"}
           </Button>
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={showPrices} disabled={photoBusy} onChange={(event) => { setShowPrices(event.target.checked); setPhotoExport(null); }} className="h-4 w-4 accent-blue-600" />
+            Mostrar valores no PDF e nas fotos
+          </label>
         </div>
       </div>
 
@@ -161,10 +166,12 @@ export default function TradePrintPage() {
                     </div>
                     <div className="mt-[1mm] text-center leading-tight">
                       <h3 className="truncate text-[7pt] font-black">{pokemon.name}</h3>
+                      {trade.variant_label?.trim() && <p className="truncate text-[6pt] font-bold text-amber-700">{trade.variant_label}</p>}
+                      {(trade.quantity ?? 1) > 1 && <p className="text-[6pt] font-bold text-violet-700">{trade.quantity}× disponíveis</p>}
                       <p className="mt-0.5 truncate text-[5.5pt] text-slate-500">#{pokemon.number}/{pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal} · {pokemon.set.name}</p>
-                      <p className="mt-0.5 text-[7pt] font-black text-emerald-700">
+                      {showPrices && <p className="mt-0.5 text-[7pt] font-black text-emerald-700">
                         {trade.price != null ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca"}
-                      </p>
+                      </p>}
                     </div>
                   </article>
                 );

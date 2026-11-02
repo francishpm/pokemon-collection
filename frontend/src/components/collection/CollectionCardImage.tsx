@@ -1,4 +1,5 @@
 import { PokemonCard } from "@/types/pokemon-card";
+import { CardImage } from "./CardImage";
 
 interface Props {
     pokemon: PokemonCard;
@@ -6,8 +7,9 @@ interface Props {
 
 export function CollectionCardImage({ pokemon }: Props) {
     return (
-        <img
+        <CardImage
             src={pokemon.images.small}
+            fallbackSrc={pokemon.images.large}
             alt={pokemon.name}
             loading="lazy"
             decoding="async"

@@ -6,10 +6,13 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { ArrowLeftRight, ArrowUpDown, Check, Copy, ImageOff, Link as LinkIcon, Search, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { TradeVariantBadge } from "@/components/trades/TradeVariantBadge";
 
 interface PublicTrade {
   id: string;
   price: number | null;
+  quantity?: number;
+  variant_label?: string | null;
   condition: string | null;
   language: string | null;
   card_id: string;
@@ -59,7 +62,7 @@ export default function PublicTradesPage() {
   }, [shareToken]);
 
   const filteredTrades = trades.filter((trade) =>
-    (trade.card_name ?? trade.card_id).toLowerCase().includes(search.trim().toLowerCase())
+    `${trade.card_name ?? trade.card_id} ${trade.variant_label ?? ""}`.toLowerCase().includes(search.trim().toLowerCase())
   ).sort((a, b) => {
     if (sort === "name") return (a.card_name ?? a.card_id).localeCompare(b.card_name ?? b.card_id, "pt-BR");
     if (sort === "price-asc" || sort === "price-desc") {
@@ -166,7 +169,9 @@ export default function PublicTradesPage() {
                       {trade.card_set_name} {trade.card_number ? `• #${trade.card_number}${trade.card_set_printed_total ? `/${trade.card_set_printed_total}` : ""}` : ""}
                     </p>
                   )}
-                  <div className="flex justify-center gap-2 mt-1">
+                  <div className="flex flex-wrap justify-center gap-2 mt-1">
+                    <TradeVariantBadge label={trade.variant_label} />
+                    {(trade.quantity ?? 1) > 1 && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700" aria-label={`${trade.quantity} unidades`}>{trade.quantity}×</span>}
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">{trade.condition || "NM"}</span>
                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">{trade.language || "PT"}</span>
                   </div>

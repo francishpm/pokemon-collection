@@ -16,11 +16,15 @@ import { CardCondition, CardLanguage } from "@/types/collection-card";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getLigaPokemonUrl } from "@/lib/ligaPokemon";
+import { TradeQuantityInput } from "@/components/trades/TradeQuantityInput";
+import { TradeVariantInput } from "@/components/trades/TradeVariantInput";
+import { isValidTradeQuantity } from "@/lib/tradeQuantity";
 import { consultLigaPrices, LigaPriceResponse, toLigaPriceRequest } from "@/services/ligaPriceService";
 import { supabase } from "@/lib/supabase";
 import { MASTER_SET_BY_ID } from "@/lib/masterSetConfig";
 import { normalizeSearchNumber, searchNumberVariants } from "@/lib/cardSearchNumber";
 import { CardScanner } from "./CardScanner";
+import { CardImage } from "./CardImage";
 
 interface CardSearchDialogProps {
   open: boolean;
@@ -75,7 +79,7 @@ async function searchMasterSetCards(term: string): Promise<PokemonCard[]> {
       id: row.card_id,
       name: row.card_name,
       number: row.card_number,
-      images: { small: row.image_url, large: row.image_url },
+      images: { small: row.image_url.replace("/high.webp", "/low.webp"), large: row.image_url },
       rarity: row.rarity ?? undefined,
       supertype: "Pokémon",
       subtypes: [],
@@ -94,6 +98,7 @@ async function searchMasterSetCards(term: string): Promise<PokemonCard[]> {
 export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) {
   const modalTarget = useUiStore((state) => state.modalTarget);
   const [search, setSearch] = useState("");
+  const [prizePacksOnly, setPrizePacksOnly] = useState(false);
   const [apiCards, setApiCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -122,7 +127,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
       const isNumber = /^[a-z]*\d+[a-z]*$/i.test(term);
       const isFullNumber = /^[a-z]*\d+[a-z]*\/[a-z]*\d+$/i.test(term);
 
-      if (term.length < 3 && !isNumber && !isFullNumber) {
+      if (!prizePacksOnly && term.length < 3 && !isNumber && !isFullNumber) {
         setApiCards([]);
         setSearchError(null);
         return;
@@ -131,12 +136,12 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
       try {
         setLoading(true);
         setSearchError(null);
-        const masterSetSearch = searchMasterSetCards(term);
+        const masterSetSearch = prizePacksOnly || /\bprizes?\b/i.test(term) ? Promise.resolve([]) : searchMasterSetCards(term);
         void masterSetSearch.then((localCards) => {
           if (!cancelled && localCards.length > 0) setApiCards(localCards);
         }).catch(() => undefined);
 
-        const results = await Promise.allSettled([searchCards(term), masterSetSearch]);
+        const results = await Promise.allSettled([searchCards(term, prizePacksOnly), masterSetSearch]);
         const cards = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
         if (cards.length === 0 && results.some((result) => result.status === "rejected")) {
           throw new Error("Não foi possível pesquisar os catálogos agora.");
@@ -156,12 +161,13 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [search]);
+  }, [search, prizePacksOnly]);
 
   const cards = useMemo(() => {
     const term = search.trim().toLowerCase();
     const normalizedTerm = normalizeCardNumber(term);
     const namedCard = parseNameAndNumber(term);
+    if (prizePacksOnly || /\bprizes?\b/i.test(term)) return apiCards;
     if (!term) return [];
 
     return apiCards.filter((card) => {
@@ -181,7 +187,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
         card.set.name.toLowerCase().includes(term)
       );
     });
-  }, [apiCards, search]);
+  }, [apiCards, search, prizePacksOnly]);
 
   const handleSuccess = () => {
     onOpenChange(false);
@@ -236,8 +242,13 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
                 />
               </div>
 
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                <input type="checkbox" checked={prizePacksOnly} onChange={(event) => { setApiCards([]); setPrizePacksOnly(event.target.checked); }} className="h-4 w-4 accent-blue-600" />
+                Somente Prize Packs
+              </label>
+              {prizePacksOnly && <p className="text-xs text-muted-foreground">Cartas com selo Play! Pokémon. Pesquise por nome, número ou “série 7”.</p>}
               <div className="max-h-[450px] overflow-y-auto rounded-lg border">
-                {search.trim().length >= 3 || /^\d+$/.test(search.trim()) ? (
+                {prizePacksOnly || search.trim().length >= 3 || /^\d+$/.test(search.trim()) ? (
                   <CardSearchResults
                     cards={cards}
                     loading={loading}
@@ -300,8 +311,11 @@ function TradePriceForm({
   onSuccess: () => void;
 }) {
   const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [variantLabel, setVariantLabel] = useState("");
+  const validQuantity = isValidTradeQuantity(Number(quantity));
   const [condition, setCondition] = useState<CardCondition>("NM");
-  const [language, setLanguage] = useState<CardLanguage>("PT");
+  const [language, setLanguage] = useState<CardLanguage>(card.language ?? "PT");
   const [ligaReference, setLigaReference] = useState<LigaPriceResponse | null>(null);
   const [ligaReferenceCriteria, setLigaReferenceCriteria] = useState("");
   const [consultingLiga, setConsultingLiga] = useState(false);
@@ -331,11 +345,12 @@ function TradePriceForm({
   };
 
   const handleSave = async () => {
+    if (saving || !validQuantity) return;
     const num = price ? parseFloat(price.replace(",", ".")) : null;
     setSaving(true);
     try {
-      await addTrade(card, isNaN(num!) ? null : num, condition, language);
-      onSuccess();
+      const saved = await addTrade(card, isNaN(num!) ? null : num, condition, language, Number(quantity), variantLabel);
+      if (saved) onSuccess();
     } finally {
       setSaving(false);
     }
@@ -347,13 +362,13 @@ function TradePriceForm({
     { id: "JP", label: "Japonês" },
   ];
 
-  const ligaUrl = getLigaPokemonUrl(card.name, card.number, card.set.printedTotal, card.set.ligaEdition, card.set.printedTotalLabel, card.set.name);
+  const ligaUrl = card.prizePack?.source ?? getLigaPokemonUrl(card.name, card.number, card.set.printedTotal, card.set.ligaEdition, card.set.printedTotalLabel, card.set.name);
   const referenceIsCurrent = ligaReferenceCriteria === `${language}:${condition}`;
 
   return (
     <div className="space-y-6 text-foreground">
       <div className="flex gap-4 rounded-xl border border-border bg-card p-4 items-center">
-        <img src={card.images.small} alt={card.name} loading="eager" decoding="async" fetchPriority="high" className="h-28 object-contain" />
+        <CardImage src={card.images.small} fallbackSrc={card.images.large} alt={card.name} loading="eager" decoding="async" fetchPriority="high" className="h-28 w-20 shrink-0 object-contain" />
         <div>
           <h3 className="font-bold text-lg">{card.name}</h3>
           <p className="text-xs text-muted-foreground">
@@ -391,10 +406,12 @@ function TradePriceForm({
           </div>
         </div>
 
+        <TradeQuantityInput id="add-trade-quantity" value={quantity} onChange={setQuantity} />
+        <TradeVariantInput id="add-trade-variant" value={variantLabel} onChange={setVariantLabel} />
         {/* Preço */}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Preço de Venda (Opcional - R$)
+            Preço por unidade (Opcional - R$)
           </label>
           <Input
             placeholder="Ex: 50,00 (Deixe vazio para troca)"
@@ -404,7 +421,7 @@ function TradePriceForm({
           />
         </div>
 
-        <div className="rounded-md border border-sky-500/20 bg-sky-500/5 px-2.5 py-2">
+        {!card.prizePack && <div className="rounded-md border border-sky-500/20 bg-sky-500/5 px-2.5 py-2">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="text-xs font-bold text-sky-700 dark:text-sky-400">Referência Liga Pokémon</p>
@@ -432,15 +449,15 @@ function TradePriceForm({
               {consultingLiga ? "Consultando" : "Consultar agora"}
             </Button>
           </div>
-        </div>
+        </div>}
 
         <a href={ligaUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-md border border-blue-500/20 bg-blue-500/5 px-2.5 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-500/10 dark:text-blue-400">
-          Pesquisar esta carta na Liga Pokémon
+          {card.prizePack ? "Consultar versão Prize Pack" : "Pesquisar esta carta na Liga Pokémon"}
           <ExternalLink size={16} />
         </a>
       </div>
 
-      <Button disabled={saving} onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+      <Button disabled={saving || !validQuantity} onClick={handleSave} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold">
         {saving ? "Adicionando..." : "Confirmar e Adicionar às Trocas"}
       </Button>
     </div>

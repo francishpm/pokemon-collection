@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { CardImage } from "@/components/collection/CardImage";
 import { Search, Trash2, Pencil, Plus, ArrowLeftRight, Check, X, ExternalLink, RotateCcw, FileDown, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,6 +13,10 @@ import { useUiStore } from "@/store/uiStore";
 import { TradeShareButton } from "@/components/trades/TradeShareButton";
 import { filterAndSortTrades } from "@/lib/tradeFilters";
 import { getLigaPokemonUrl } from "@/lib/ligaPokemon";
+import { TradeQuantityInput } from "@/components/trades/TradeQuantityInput";
+import { TradeVariantInput } from "@/components/trades/TradeVariantInput";
+import { TradeVariantBadge } from "@/components/trades/TradeVariantBadge";
+import { isValidTradeQuantity } from "@/lib/tradeQuantity";
 
 export default function TradesPage() {
     const { tradesView, loading, removeTrade, updateTradeDetails, fetchTrades } = useTrades();
@@ -27,6 +31,9 @@ export default function TradesPage() {
     const [completingId, setCompletingId] = useState<string | null>(null);
     const [savingTradeId, setSavingTradeId] = useState<string | null>(null);
     const [tempPrice, setTempPrice] = useState<string>("");
+    const [tempQuantity, setTempQuantity] = useState("1");
+    const [tempVariant, setTempVariant] = useState("");
+    const validQuantity = isValidTradeQuantity(Number(tempQuantity));
     const [tempStatus, setTempStatus] = useState<TradeStatus>("available");
     const interestIds = useMemo(() => (searchParams.get("interest") ?? "").split(",").filter(Boolean), [searchParams]);
     const [interestSelected, setInterestSelected] = useState<string[]>(() => interestIds);
@@ -65,11 +72,11 @@ export default function TradesPage() {
     };
 
     const saveTradeDetails = async (tradeId: string) => {
-        if (savingTradeId) return;
+        if (savingTradeId || !validQuantity) return;
         setSavingTradeId(tradeId);
         const num = parseFloat(tempPrice.replace(",", "."));
         try {
-            const saved = await updateTradeDetails(tradeId, isNaN(num) ? null : num, tempStatus);
+            const saved = await updateTradeDetails(tradeId, isNaN(num) ? null : num, tempStatus, Number(tempQuantity), tempVariant);
             if (saved) {
                 setEditingId(null);
                 setCompletingId(null);
@@ -218,7 +225,7 @@ export default function TradesPage() {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 rounded-full border-0 bg-white/20 text-white hover:bg-white/30"
-                                    onClick={() => { setEditingId(trade.id); setTempPrice(trade.price != null ? trade.price.toString() : ""); setTempStatus(status); }}
+                                    onClick={() => { setEditingId(trade.id); setTempPrice(trade.price != null ? trade.price.toString() : ""); setTempStatus(status); setTempQuantity(String(trade.quantity ?? 1)); setTempVariant(trade.variant_label ?? ""); }}
                                     aria-label={`Editar ${pokemon.name}`}
                                     title="Editar carta"
                                 >
@@ -238,7 +245,7 @@ export default function TradesPage() {
 
                             {/* IMAGEM E INFORMAÇÕES */}
                             <div>
-                                <Image unoptimized src={pokemon.images.small} alt={pokemon.name} width={245} height={342} className="mx-auto h-40 md:h-52 w-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                                <CardImage src={pokemon.images.small} fallbackSrc={pokemon.images.large} alt={pokemon.name} width={245} height={342} className="mx-auto h-40 md:h-52 w-full object-contain transition-transform duration-300 group-hover:scale-105" />
 
                                 <div className="mt-3 flex flex-col items-center gap-1 text-center">
                                     <h3 className="line-clamp-2 h-11 text-base font-bold leading-5">{pokemon.name}</h3>
@@ -247,7 +254,9 @@ export default function TradesPage() {
                                     </p>
 
                                     {/* BADGES IDIOMA E CONDIÇÃO */}
-                                    <div className="flex justify-center gap-2 mt-1">
+                                    <div className="flex flex-wrap justify-center gap-2 mt-1">
+                                        <TradeVariantBadge label={trade.variant_label} />
+                                        {(trade.quantity ?? 1) > 1 && <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700" aria-label={`${trade.quantity} unidades`}>{trade.quantity}×</span>}
                                         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                                             {trade.condition || "NM"}
                                         </span>
@@ -274,7 +283,7 @@ export default function TradesPage() {
                 <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
                     {editingTrade && (() => {
                         const { trade, pokemon } = editingTrade;
-                        const ligaUrl = getLigaPokemonUrl(
+                        const ligaUrl = pokemon.prizePack?.source ?? getLigaPokemonUrl(
                             pokemon.name,
                             pokemon.number,
                             pokemon.set.printedTotal,
@@ -287,11 +296,11 @@ export default function TradesPage() {
                             <>
                                 <DialogHeader>
                                     <DialogTitle>Editar carta para troca</DialogTitle>
-                                    <DialogDescription>Atualize o status e o preço anunciado ou consulte a carta na Liga Pokémon.</DialogDescription>
+                                    <DialogDescription>Atualize a quantidade, o status e o preço por unidade ou consulte a carta na Liga Pokémon.</DialogDescription>
                                 </DialogHeader>
 
                                 <div className="flex items-center gap-4 rounded-xl border bg-card p-3">
-                                    <Image unoptimized src={pokemon.images.small} alt={pokemon.name} width={120} height={168} className="h-36 w-24 shrink-0 rounded object-contain drop-shadow-md" />
+                                    <CardImage src={pokemon.images.small} fallbackSrc={pokemon.images.large} alt={pokemon.name} width={120} height={168} className="h-36 w-24 shrink-0 rounded object-contain drop-shadow-md" />
                                     <div className="min-w-0 flex-1">
                                         <h3 className="text-lg font-bold">{pokemon.name}</h3>
                                         <p className="mt-1 text-xs text-muted-foreground">
@@ -329,8 +338,10 @@ export default function TradesPage() {
                                     </p>
                                 </fieldset>
 
+                                <TradeQuantityInput id="trade-quantity" value={tempQuantity} onChange={setTempQuantity} />
+                                <TradeVariantInput id="trade-variant" value={tempVariant} onChange={setTempVariant} />
                                 <div className="space-y-2">
-                                    <label htmlFor="trade-price" className="text-sm font-semibold">Valor anunciado</label>
+                                    <label htmlFor="trade-price" className="text-sm font-semibold">Valor por unidade</label>
                                     <Input
                                         id="trade-price"
                                         type="text"
@@ -344,12 +355,12 @@ export default function TradesPage() {
                                 </div>
 
                                 <a href={ligaUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-md border border-blue-500/20 bg-blue-500/5 px-3 py-2.5 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-500/10 dark:text-blue-400">
-                                    Pesquisar esta carta na Liga Pokémon
+                                    {pokemon.prizePack ? "Consultar versão Prize Pack" : "Pesquisar esta carta na Liga Pokémon"}
                                     <ExternalLink size={16} />
                                 </a>
 
                                 <DialogFooter>
-                                    <Button className="w-full" disabled={savingTradeId === trade.id} onClick={() => handleSaveTrade(trade.id)}>
+                                    <Button className="w-full" disabled={savingTradeId === trade.id || !validQuantity} onClick={() => handleSaveTrade(trade.id)}>
                                         {savingTradeId === trade.id && <Loader2 className="animate-spin" />}
                                         {savingTradeId === trade.id ? "Salvando..." : "Salvar alterações"}
                                     </Button>
@@ -392,7 +403,7 @@ export default function TradesPage() {
                             </DialogHeader>
 
                             <div className="flex items-center gap-3 rounded-xl border bg-card p-3">
-                                <Image unoptimized src={deletingTrade.pokemon.images.small} alt={deletingTrade.pokemon.name} width={80} height={112} className="h-24 w-16 shrink-0 rounded object-contain" />
+                                <CardImage src={deletingTrade.pokemon.images.small} fallbackSrc={deletingTrade.pokemon.images.large} alt={deletingTrade.pokemon.name} width={80} height={112} className="h-24 w-16 shrink-0 rounded object-contain" />
                                 <div className="min-w-0">
                                     <h3 className="font-bold">{deletingTrade.pokemon.name}</h3>
                                     <p className="mt-1 text-xs text-muted-foreground">

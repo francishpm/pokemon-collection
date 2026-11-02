@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createCardPhotos, loadCardImage, photoDownloadBlob, splitTradePhotos } from "../src/lib/tradePhotoExport.ts";
+import { createCardPhotos, createTradePhotos, loadCardImage, photoDownloadBlob, splitTradePhotos } from "../src/lib/tradePhotoExport.ts";
 import type { TradeView } from "../src/hooks/useTrades.ts";
 
 test("photos preserve filtered order and include all cards once", () => {
@@ -86,5 +86,17 @@ test("master set photos render the language, variant and extra quantity", async 
   assert.equal(result.missingImages, 0);
   assert.ok(captions.includes("R$ 12,50 / un."));
   for (const caption of ["REPETIDAS DISPONÍVEIS", "Pikachu", "023 · Normal", "Português", "3 cópia(s) extra(s)"]) assert.ok(captions.includes(caption));
+  const trade = {
+    trade: { price: 12.5, quantity: 3, variant_label: "Pokébola", condition: "NM", language: "PT" },
+    pokemon: { name: "Pikachu", number: "023", images: { small: "/pikachu.webp" }, set: { name: "Coleção", printedTotal: 131 } },
+  } as TradeView;
+  captions.length = 0;
+  await createTradePhotos([trade], 36, () => {}, false);
+  assert.ok(captions.includes("Pikachu"));
+  assert.ok(captions.some((caption) => caption.includes("Pokébola")));
+  assert.ok(!captions.some((caption) => caption.includes("R$")));
+  captions.length = 0;
+  await createTradePhotos([trade], 36, () => {}, true);
+  assert.ok(captions.some((caption) => caption.includes("R$")));
   await assert.rejects(createCardPhotos([{ name: "Carta", image: "/missing.webp", details: "001", metadata: "", value: "1 extra" }], 36, () => {}), /evitar cartas em branco/);
 });

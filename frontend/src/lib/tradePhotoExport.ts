@@ -60,13 +60,13 @@ export interface PhotoExportCard {
   price?: string;
 }
 
-export function createTradePhotos(cards: TradeView[], count: number, onProgress: (done: number, total: number) => void) {
+export function createTradePhotos(cards: TradeView[], count: number, onProgress: (done: number, total: number) => void, showPrices = true) {
   return createCardPhotos(cards.map(({ trade, pokemon }) => ({
     name: pokemon.name,
     image: pokemon.images.small,
     details: `#${pokemon.number}/${pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal} · ${pokemon.set.name}`,
-    metadata: [trade.condition, trade.language, trade.status === "reserved" ? "Reservada" : trade.status === "completed" ? "Concluída" : ""].filter(Boolean).join(" · "),
-    value: trade.price != null ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca",
+    metadata: [(trade.quantity ?? 1) > 1 ? `${trade.quantity}×` : "", trade.variant_label?.trim(), trade.condition, trade.language, trade.status === "reserved" ? "Reservada" : trade.status === "completed" ? "Concluída" : ""].filter(Boolean).join(" · "),
+    value: showPrices ? (trade.price != null ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca") : "",
   })), count, onProgress);
 }
 

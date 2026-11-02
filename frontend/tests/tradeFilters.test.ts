@@ -24,3 +24,11 @@ test("PDF selection respects search, price and status filters together", () => {
   assert.deepEqual(filterAndSortTrades(cards, { ...filters, search: "lugia", priceFilter: "priced", statusFilter: "reserved" }).map(({ trade }) => trade.id), ["Lugia reservada"]);
   assert.deepEqual(filterAndSortTrades(cards, { ...filters, priceFilter: "trade_only" }).map(({ trade }) => trade.id), ["Lugia troca"]);
 });
+
+test("trade search includes optional variant labels without merging separate printings", () => {
+  const normal = card("Vaporeon", 4);
+  const pokeBall = card("Vaporeon Pokébola", 8);
+  pokeBall.pokemon.name = "Vaporeon";
+  pokeBall.trade.variant_label = "Pokébola";
+  assert.deepEqual(filterAndSortTrades([normal, pokeBall], { ...filters, search: "pokébola" }).map(({ trade }) => trade.id), ["Vaporeon Pokébola"]);
+});

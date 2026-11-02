@@ -3,3 +3,10 @@ node_modules
 .env
 dist
 coverage
+
+# Local exports, catalogue audits and development logs
+/outputs/
+/comparison-*.json
+/sheet-review*.json
+/projeto-compartilhar.md
+/frontend/.next-dev*.log

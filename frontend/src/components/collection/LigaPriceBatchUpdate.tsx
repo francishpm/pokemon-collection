@@ -27,7 +27,8 @@ export function LigaPriceBatchUpdate({ collectionView, selectedIds, onSelectedId
   const [applying, setApplying] = useState(false);
   const fetchCards = useCollectionStore((state) => state.fetchCards);
 
-  const selectedCards = useMemo(() => collectionView.filter(({ collection }) => {
+  const selectedCards = useMemo(() => collectionView.filter(({ collection, pokemon }) => {
+    if (pokemon.prizePack || pokemon.id.startsWith("prize-pack-")) return false;
     if (mode === "all") return true;
     if (mode === "pending") return !collection.ligaPriceStatus;
     return ["not_found", "error", "needs_confirmation"].includes(collection.ligaPriceStatus ?? "");

@@ -1,6 +1,13 @@
 export interface PokemonCard {
   id: string;
   language?: "PT" | "EN" | "JP";
+  prizePack?: {
+    series: number[];
+    variant: string;
+    originalSet: string;
+    source: string;
+    imageUnavailable: boolean;
+  };
   name: string;
   number: string;
   images: {
