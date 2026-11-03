@@ -20,6 +20,8 @@ on conflict do nothing;
 
 Nenhuma credencial `service_role` é necessária no navegador. O repositório contém a migração, mas ela não é aplicada automaticamente ao banco remoto.
 
+Para habilitar **Excluir torneio**, execute também `frontend/supabase/migrations/20261103_add_tournament_deletion.sql`. Não execute novamente a migração inicial. Somente o organizador pode excluir, confirmando com o código do evento. A operação é definitiva e remove inscrições, partidas, resultados e auditoria daquele evento; preserva contas, favoritos e outros torneios.
+
 ## Fluxo para testar
 
 1. Entre como Francis, abra **Torneios** no menu e crie um evento.

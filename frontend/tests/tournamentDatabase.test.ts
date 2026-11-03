@@ -21,6 +21,7 @@ test('tournament lifecycle, RLS, dual confirmation, corrections, byes and no rem
       grant execute on function auth.uid() to authenticated,anon;`);
     for (let i = 0; i < ids.length; i++) await db.query('insert into auth.users values($1,$2)', [ids[i], i === 0 ? 'francishpm@gmail.com' : `player${i}@example.test`]);
     await db.exec(await readFile(new URL('../supabase/migrations/20261103_add_tournaments.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261103_add_tournament_deletion.sql', import.meta.url), 'utf8'));
     await asUser(ids[1]);
     assert.equal(await scalar('select public.is_tournament_admin()'), false);
     await assert.rejects(db.query("select public.create_tournament('Inválido')"), /organizador/);
@@ -113,6 +114,18 @@ test('tournament lifecycle, RLS, dual confirmation, corrections, byes and no rem
     assert.deepEqual(ranked.rows.map(r=>r.entry_id),entries);
     assert.deepEqual(ranked.rows.map(r=>Number(r.points)),[6,6,3,3]);
     assert.deepEqual((await db.query('select * from public.tournament_standings($1)',[fixture])).rows,ranked.rows);
+    await asUser(ids[1]);
+    await assert.rejects(db.query('select public.delete_tournament($1,$2)',[tid,code]), /organizador/);
+    await asUser(ids[0]);
+    await assert.rejects(db.query('select public.delete_tournament($1,$2)',[tid,null]), /código/);
+    assert.equal(Number(await scalar('select count(*) from public.tournament_result_audit')),6);
+    await db.query('select public.delete_tournament($1,$2)',[tid,code]);
+    assert.equal(Number(await scalar('select count(*) from public.tournaments where id=$1',[tid])),0);
+    assert.equal(Number(await scalar('select count(*) from public.tournament_matches where tournament_id=$1',[tid])),0);
+    assert.equal(Number(await scalar('select count(*) from public.tournament_entries where tournament_id=$1',[tid])),0);
+    assert.equal(Number(await scalar('select count(*) from public.tournament_result_audit')),0);
+    assert.equal(Number(await scalar('select count(*) from public.tournament_entries where tournament_id=$1',[fixture])),4);
+    assert.equal(await scalar('select favorite_pokemon from public.tournament_profiles where user_id=$1',[ids[0]]),6);
     // Every attendance boundary uses the actual round calculation, not a copied JS formula.
     for (const [count, rounds] of [[4,3],[8,3],[9,4],[16,4],[17,5],[32,5],[33,6],[64,6],[65,7],[128,7]]) {
       await asUser(ids[0]);

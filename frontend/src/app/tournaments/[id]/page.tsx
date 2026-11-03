@@ -2,7 +2,7 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, Copy, RefreshCw, Trophy } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Copy, RefreshCw, Trophy, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { tournamentDetail, tournamentRpc } from '@/services/tournamentService';
 import { PokemonSprite } from '@/components/tournaments/PokemonSprite';
@@ -22,6 +22,8 @@ export default function TournamentPage() {
   const [admin, setAdmin] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteCode, setDeleteCode] = useState('');
   const [correction, setCorrection] = useState<Match | null>(null);
   const [corrected, setCorrected] = useState('draw');
   const [reason, setReason] = useState('');
@@ -76,6 +78,18 @@ export default function TournamentPage() {
       setCorrection(null); setReason(''); toast.success('Correção registrada no histórico.');
     });
   }
+  async function removeTournament(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await tournamentRpc('delete_tournament', { tid: id, confirmation_code: deleteCode });
+      toast.success('Torneio excluído.');
+      router.replace('/tournaments');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Não foi possível excluir o torneio.');
+      setBusy(false);
+    }
+  }
   if (!data) return <div className="space-y-4"><Link href="/tournaments">← Torneios</Link><p role={error ? 'alert' : 'status'}>{error || 'Carregando evento…'}</p>{error && <Button onClick={load}>Tentar novamente</Button>}</div>;
   const { tournament: t, entries, matches, standings } = data;
   const me = entries.find(e => e.user_id === uid);
@@ -98,7 +112,9 @@ export default function TournamentPage() {
       {admin && <div className="mt-5 flex flex-wrap items-center gap-3"><Button disabled={busy || t.status === 'finished' || (t.status === 'registration' ? entries.length < 4 : pending > 0)} onClick={() => { if (window.confirm(t.status === 'registration' ? 'Encerrar inscrições e gerar a primeira rodada?' : t.current_round === t.total_rounds ? 'Encerrar o campeonato?' : 'Gerar a próxima rodada?')) void action(() => tournamentRpc('advance_tournament', { tid: id })); }}>{busy ? 'Processando…' : t.status === 'registration' ? 'Encerrar inscrições e iniciar' : t.current_round === t.total_rounds ? 'Finalizar torneio' : 'Gerar próxima rodada'}</Button><span className="text-sm text-muted-foreground">{t.status === 'registration' ? 'Mínimo de 4 jogadores para iniciar.' : `${pending} partida(s) pendente(s)`}</span></div>}
       {t.status === 'registration' && !me && <div className="mt-5 rounded-xl border border-blue-500/30 bg-blue-500/5 p-4"><p className="mb-3 text-sm">{admin ? 'Você também pode jogar! Inscreva-se com seu nome, deck e Pokémon favorito.' : 'Inscreva-se para participar deste torneio.'}</p><Button className="min-h-11 w-full sm:w-auto" onClick={() => router.push(`/tournaments?code=${t.code}#inscricao`)}>Participar deste torneio</Button></div>}
       {t.status === 'registration' && me && <p className="mt-4 text-sm text-emerald-500">Você está inscrito como {me.player_name}.</p>}
+      {admin && <Button variant="outline" className="mt-5 min-h-11 text-red-500 hover:text-red-600" disabled={busy} onClick={() => { setDeleteCode(''); setDeleteOpen(true); }}><Trash2 size={16} /> Excluir torneio</Button>}
     </header>
+    <Dialog open={deleteOpen} onOpenChange={open => { if (!busy) setDeleteOpen(open); }}><DialogContent><form onSubmit={removeTournament} className="space-y-4"><DialogHeader><DialogTitle>Excluir {t.name}?</DialogTitle><DialogDescription>Esta ação apaga permanentemente o torneio, suas inscrições, partidas, resultados e histórico de correções. As contas e os Pokémon favoritos dos jogadores são preservados.</DialogDescription></DialogHeader><label className="block text-sm">Digite o código <strong className="font-mono">{t.code}</strong> para confirmar<Input autoFocus className="mt-2 font-mono tracking-widest" inputMode="numeric" required maxLength={5} pattern="[0-9]{5}" autoComplete="off" value={deleteCode} onChange={e => setDeleteCode(e.target.value.replace(/\D/g, ''))} /></label><div className="flex flex-col gap-3 sm:flex-row"><Button type="submit" disabled={busy || deleteCode !== t.code} className="min-h-11 bg-red-600 text-white hover:bg-red-700">{busy ? 'Excluindo…' : 'Excluir definitivamente'}</Button><Button type="button" variant="outline" className="min-h-11" disabled={busy} onClick={() => setDeleteOpen(false)}>Cancelar</Button></div></form></DialogContent></Dialog>
     {error && <p role="alert" className="rounded-lg border border-amber-500 p-3">Falha ao atualizar: {error}</p>}
     {mine && <section className="rounded-2xl border border-blue-500/40 bg-card p-6"><h2 className="text-xl font-bold">Sua partida • {mine.result === 'bye' ? 'Bye' : `Mesa ${mine.table_number}`}</h2><div className="mt-3 flex items-center gap-3"><PokemonSprite number={me!.favorite_pokemon} /><span>{mine.result === 'bye' ? 'Você não joga nesta rodada e recebe 3 pontos.' : `Adversário: ${player(mine.player_a === me?.id ? mine.player_b : mine.player_a)?.player_name}`}</span></div><p className="mt-3 font-medium" role="status">{resultName(mine)}</p>
       {!mine.result && <><p className="mt-2 text-sm text-muted-foreground">Informe o resultado pela sua perspectiva. A partida só é confirmada quando as duas respostas combinam.</p><div className="mt-4 flex flex-wrap gap-3">{(['win','draw','loss'] as Choice[]).map(c => <Button key={c} disabled={busy} variant={report === c ? 'default' : 'outline'} onClick={() => void action(() => tournamentRpc('report_tournament_result', { mid: mine.id, choice: c }))}>{report === c && <CheckCircle2 size={16} />}{choiceNames[c]}</Button>)}</div>{report && <p className="mt-3 text-sm text-muted-foreground">Sua resposta: {choiceNames[report]}. Você pode ajustá-la enquanto a partida estiver pendente.</p>}</>}
