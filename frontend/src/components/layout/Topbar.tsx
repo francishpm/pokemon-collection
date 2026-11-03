@@ -58,7 +58,7 @@ export function Topbar() {
     : pages[pathname as keyof typeof pages] ?? { title: "ColecionaDex", subtitle: "" };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope: "local" });
     if (error) {
       toast.error("Erro ao tentar sair da conta.");
     } else {
