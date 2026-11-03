@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { listTournaments, tournamentRpc } from '@/services/tournamentService';
 import type { Tournament } from '@/types/tournament';
 import { PokemonSprite } from '@/components/tournaments/PokemonSprite';
+import { TournamentHistory } from '@/components/tournaments/TournamentHistory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -66,11 +67,13 @@ export default function TournamentsPage() {
   }
   const query = search.trim().toLocaleLowerCase('pt-BR');
   const options = query ? species.filter(p => `${p.number} ${p.name}`.toLocaleLowerCase('pt-BR').includes(query)) : [];
+  const currentEvents = events.filter(t => t.status !== 'finished');
   return <div className="space-y-8">
     <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-cyan-500/5 p-6 md:p-8">
       <Trophy className="mb-3 text-blue-500" size={32} /><h1 className="text-3xl font-bold">Sua próxima rodada começa aqui</h1>
       <p className="mt-2 text-muted-foreground">Liguinha TCG • Categoria única • Suíço sem eliminatórias</p>
     </div>
+    <Link href="/tournaments/ranking" className="flex min-h-12 items-center justify-between gap-3 rounded-xl border bg-card p-4 font-semibold hover:border-blue-500"><span className="flex items-center gap-2"><Trophy size={20} className="text-blue-500"/> Ranking mensal</span><ArrowRight size={20}/></Link>
     {loading && <p role="status">Carregando torneios…</p>}
     {error && <div role="alert" className="rounded-xl border border-amber-500/40 p-5"><p>{error}</p><Button variant="outline" className="mt-3" onClick={load}>Tentar novamente</Button></div>}
     {!loading && !error && <>
@@ -105,9 +108,10 @@ export default function TournamentsPage() {
         </div>
       </div>
       <section><h2 className="mb-4 text-2xl font-bold">{admin ? 'Torneios da liga' : 'Meus torneios'}</h2>
-        {events.length === 0 && <p className="rounded-xl border border-dashed p-8 text-muted-foreground">Nenhum torneio ainda. Use um código para participar.</p>}
-        <div className="grid gap-4 md:grid-cols-2">{events.map(t => <Link key={t.id} href={`/tournaments/${t.id}`} className="rounded-xl border bg-card p-5 transition-colors hover:border-blue-500"><div className="flex justify-between gap-3"><h3 className="text-lg font-semibold">{t.name}</h3><ArrowRight size={20} /></div><p className="mt-3 text-sm text-blue-500">{labels[t.status]}</p><p className="mt-1 text-sm text-muted-foreground">{t.status === 'registration' ? `Código ${t.code}` : `Rodada ${t.current_round} de ${t.total_rounds}`}</p></Link>)}</div>
+        {currentEvents.length === 0 && <p className="rounded-xl border border-dashed p-8 text-muted-foreground">Nenhum torneio ainda. Use um código para participar.</p>}
+        <div className="grid gap-4 md:grid-cols-2">{currentEvents.map(t => <Link key={t.id} href={`/tournaments/${t.id}`} className="rounded-xl border bg-card p-5 transition-colors hover:border-blue-500"><div className="flex justify-between gap-3"><h3 className="text-lg font-semibold">{t.name}</h3><ArrowRight size={20} /></div><p className="mt-3 text-sm text-blue-500">{labels[t.status]}</p><p className="mt-1 text-sm text-muted-foreground">{t.status === 'registration' ? `Código ${t.code}` : `Rodada ${t.current_round} de ${t.total_rounds}`}</p></Link>)}</div>
       </section>
+      <TournamentHistory events={events} />
     </>}
   </div>;
 }

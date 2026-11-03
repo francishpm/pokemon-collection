@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { CollectionShareButton } from "@/components/collection/CollectionShareButton";
 import { LigaPriceBatchUpdate } from "@/components/collection/LigaPriceBatchUpdate";
 import { CollectionCsvActions } from "@/components/collection/CollectionCsvActions";
+import { useConfirmation } from "@/hooks/useConfirmation";
 
 type SortOption = "dateAsc" | "dateDesc" | "priceDesc" | "priceAsc" | "pokedexAsc" | "pokedexDesc";
 type CardTypeFilter = "all" | "pokemon" | "trainer";
@@ -37,6 +38,7 @@ const LIGA_CONTROLS_ENABLED = false;
 const ITEMS_PER_PAGE = 30; 
 
 export default function CollectionPage() {
+  const { confirmAction, confirmationDialog } = useConfirmation();
   const [localSearch, setLocalSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOption>("dateAsc");
   const [typeFilter, setTypeFilter] = useState<CardTypeFilter>("all");
@@ -95,7 +97,7 @@ export default function CollectionPage() {
   );
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Deseja realmente excluir esta carta?")) return;
+    if (!await confirmAction("Deseja realmente excluir esta carta?")) return;
     try {
       await removeCard(id);
       toast.success("Carta removida com sucesso!");
@@ -205,6 +207,7 @@ export default function CollectionPage() {
 
   return (
     <div className="space-y-8">
+      {confirmationDialog}
       <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
         <div className="relative w-full min-w-0 lg:w-auto lg:min-w-[160px] lg:flex-[1.2]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />

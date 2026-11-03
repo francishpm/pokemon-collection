@@ -62,6 +62,19 @@ Atualização automática a cada dez segundos enquanto a aba estiver visível, a
 
 ## Verificação técnica
 
+### Atualizações locais de visibilidade e ranking mensal
+
+Depois da migração do timer, execute em ordem `20261103_restrict_tournament_visibility.sql` e `20261103_add_monthly_tournament_ranking.sql`, ambas em `frontend/supabase/migrations`. Enquanto não forem publicadas/aplicadas, estas mudanças existem somente no código local.
+
+- Jogadores consultam apenas as próprias mesas; o organizador continua vendo todas.
+- Classificação do evento só é liberada após confirmação do resultado da partida atual (bye libera automaticamente). O organizador mantém acesso para gestão e emparceiramento.
+- **Torneios → Ranking mensal** agrega todos os eventos finalizados pela data de criação, no fuso `America/Sao_Paulo`.
+- Pontos por evento: 1º = 11, 2º = 8, 3º = 6, 4º = 4, demais = 1. Os totais já incluem o ponto de participação.
+- Contas são a identidade do jogador; nomes e Pokémon no histórico mensal vêm da inscrição mais recente entre os eventos finalizados criados naquele mês.
+- Pontuações mensais iguais compartilham posição; não foi definido desempate adicional.
+- Excluir ou corrigir um torneio recalcula o mês correspondente. Torneios ainda não finalizados não pontuam, inclusive participação.
+- O ranking agregado é visível aos usuários autenticados da liga, incluindo quem não se inscreveu em determinado evento; não libera acesso a mesas alheias ou classificações de eventos em andamento.
+
 ```powershell
 cd frontend
 npm.cmd test

@@ -13,7 +13,7 @@ test('all players ready, organizer release, common deadline, next-round reset an
    create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
    grant usage on schema auth,public to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;`);
   for(let i=0;i<ids.length;i++)await db.query('insert into auth.users values($1,$2)',[ids[i],i===0?'francishpm@gmail.com':`player${i}@example.test`]);
-  for(const file of ['20261103_add_tournaments.sql','20261103_add_tournament_deletion.sql','20261103_add_tournament_round_clock.sql'])await db.exec(await readFile(new URL(`../supabase/migrations/${file}`,import.meta.url),'utf8'));
+  for(const file of ['20261103_add_tournaments.sql','20261103_add_tournament_deletion.sql','20261103_add_tournament_round_clock.sql','20261103_restrict_tournament_visibility.sql'])await db.exec(await readFile(new URL(`../supabase/migrations/${file}`,import.meta.url),'utf8'));
   await asUser(ids[1]);
   await assert.rejects(db.query("select public.create_tournament('Forbidden',45)"),/organizador/);
   await assert.rejects(db.query("select public._create_tournament_without_clock('Forbidden')"),/permission denied/);
@@ -35,7 +35,10 @@ test('all players ready, organizer release, common deadline, next-round reset an
    const matches=(await db.query<{id:string;player_a:string;player_b:string|null}>('select * from public.tournament_matches where tournament_id=$1 and round=$2 order by table_number',[tid,round])).rows;
    const m=matches.find(m=>m.player_b)!;
    await assert.rejects(db.query("select public.correct_tournament_result($1,'draw','Teste')",[m.id]),/Inicie a rodada/);
-   await asUser(owner(m.player_a));
+   await asUser(owner(m.player_a)===ids[0] ? owner(m.player_b!) : owner(m.player_a));
+   assert.equal(Number(await scalar('select count(*) from public.tournament_matches where tournament_id=$1 and round=$2',[tid,round])),1);
+   assert.equal((await db.query('select * from public.tournament_standings($1)',[tid])).rows.length,0);
+   await assert.rejects(db.query('select * from public._tournament_standings_unrestricted($1)',[tid]),/permission denied/);
    await assert.rejects(db.query("select public.report_tournament_result($1,'win')",[m.id]),/iniciar a rodada/);
    await asUser(ids[5]);await assert.rejects(db.query('select public.ready_tournament_match($1)',[m.id]),/participa/);
    for(const match of matches){
@@ -53,7 +56,9 @@ test('all players ready, organizer release, common deadline, next-round reset an
    for(const match of matches){if(!match.player_b)continue;
     await asUser(owner(match.player_a));await assert.rejects(db.query('select public.ready_tournament_match($1)',[match.id]),/prontidão/);
     await db.query("select public.report_tournament_result($1,'draw')",[match.id]);
+    assert.equal((await db.query('select * from public.tournament_standings($1)',[tid])).rows.length,owner(match.player_a)===ids[0] ? 5 : 0);
     await asUser(owner(match.player_b));await db.query("select public.report_tournament_result($1,'draw')",[match.id]);
+    assert.equal((await db.query('select * from public.tournament_standings($1)',[tid])).rows.length,5);
    }
    await asUser(ids[0]);await db.query('select public.advance_tournament($1)',[tid]);
   }

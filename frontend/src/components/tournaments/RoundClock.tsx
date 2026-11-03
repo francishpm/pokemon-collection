@@ -31,9 +31,9 @@ export function RoundClock({ tournament: t }: { tournament: Tournament }) {
     return () => { clearTimeout(first); clearInterval(timer); };
   }, [clock,t.round_ends_at]);
   return <div className={`rounded-xl border p-5 text-center ${remaining === 0 ? 'border-amber-500 bg-amber-500/10' : 'border-blue-500/30 bg-blue-500/5'}`}>
-    <p className="text-sm font-semibold">Tempo da rodada • todas as mesas</p>
+    <p className="text-sm font-semibold">Tempo da Rodada</p>
     <p className="my-2 font-mono text-5xl font-bold tabular-nums" role="timer" aria-label="Tempo restante">{!t.round_started_at ? `${t.round_minutes ?? 30}:00` : remaining === null ? '—:—' : `${String(Math.floor(remaining/60)).padStart(2,'0')}:${String(remaining%60).padStart(2,'0')}`}</p>
-    <p className="text-sm text-muted-foreground" role="status">{!t.round_started_at ? 'Aguardando prontidão e liberação do organizador.' : remaining === 0 ? 'Tempo encerrado! Aguardem a orientação do organizador e informem o resultado ao concluir.' : 'Rodada em andamento. O prazo é o mesmo para todas as mesas.'}</p>
+    <p className="text-sm text-muted-foreground" role="status">{!t.round_started_at ? 'Aguardando prontidão e liberação do organizador.' : remaining === 0 ? 'Tempo encerrado! Aguardem a orientação do organizador e informem o resultado ao concluir.' : 'Rodada em Andamento'}</p>
     {error && <p className="mt-2 text-xs text-amber-500">Não foi possível sincronizar o relógio. Confira a conexão.</p>}
   </div>;
 }
