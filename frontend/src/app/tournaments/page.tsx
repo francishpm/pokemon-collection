@@ -26,6 +26,7 @@ export default function TournamentsPage() {
   const [species, setSpecies] = useState<{ number: number; name: string }[]>([]);
   const [search, setSearch] = useState('');
   const [eventName, setEventName] = useState('');
+  const [duration, setDuration] = useState(30);
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try {
@@ -59,7 +60,7 @@ export default function TournamentsPage() {
   }
   async function create(e: FormEvent) {
     e.preventDefault(); setBusy(true);
-    try { const id = await tournamentRpc<string>('create_tournament', { event_name: eventName }); router.push(`/tournaments/${id}`); }
+    try { const id = await tournamentRpc<string>('create_tournament', { event_name: eventName, duration_minutes: duration }); router.push(`/tournaments/${id}`); }
     catch (err) { toast.error(err instanceof Error ? err.message : 'Erro ao criar evento.'); }
     finally { setBusy(false); }
   }
@@ -99,7 +100,7 @@ export default function TournamentsPage() {
           <Button disabled={busy} type="submit" className="w-full">{busy ? 'Aguarde…' : 'Confirmar inscrição'}</Button>
         </form>
         <div className="space-y-6">
-          {admin && <form onSubmit={create} className="space-y-4 rounded-2xl border bg-card p-6"><h2 className="flex items-center gap-2 text-xl font-semibold"><Plus /> Criar torneio</h2><p className="text-sm text-muted-foreground">Até 128 jogadores. O código é gerado automaticamente e as rodadas são calculadas ao iniciar.</p><label className="block text-sm">Nome do evento<Input className="mt-2" required minLength={3} maxLength={100} value={eventName} onChange={e => setEventName(e.target.value)} placeholder="Liguinha de sábado" /></label><Button type="submit" disabled={busy}>Criar torneio</Button></form>}
+          {admin && <form onSubmit={create} className="space-y-4 rounded-2xl border bg-card p-6"><h2 className="flex items-center gap-2 text-xl font-semibold"><Plus /> Criar torneio</h2><p className="text-sm text-muted-foreground">Até 128 jogadores. O código é gerado automaticamente e as rodadas são calculadas ao iniciar.</p><label className="block text-sm">Nome do evento<Input className="mt-2" required minLength={3} maxLength={100} value={eventName} onChange={e => setEventName(e.target.value)} placeholder="Liguinha de sábado" /></label><label className="block text-sm">Tempo por rodada (minutos)<Input className="mt-2" type="number" min={1} max={1440} step={1} required value={duration} onChange={e => setDuration(Number(e.target.value))} /></label><Button type="submit" disabled={busy}>Criar torneio</Button></form>}
           <div className="rounded-2xl border bg-card p-6"><h2 className="text-xl font-semibold">Como funciona</h2><ol className="mt-4 list-inside list-decimal space-y-3 text-sm text-muted-foreground"><li>Inscreva-se com o código enviado pelo organizador.</li><li>Confira seu adversário e o número da mesa a cada rodada.</li><li>Os dois informam Venci, Empate ou Perdi.</li><li>Resultados compatíveis atualizam a classificação.</li></ol></div>
         </div>
       </div>

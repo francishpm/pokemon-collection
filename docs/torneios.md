@@ -20,7 +20,18 @@ on conflict do nothing;
 
 Nenhuma credencial `service_role` é necessária no navegador. O repositório contém a migração, mas ela não é aplicada automaticamente ao banco remoto.
 
-Para habilitar **Excluir torneio**, execute também `frontend/supabase/migrations/20261103_add_tournament_deletion.sql`. Não execute novamente a migração inicial. Somente o organizador pode excluir, confirmando com o código do evento. A operação é definitiva e remove inscrições, partidas, resultados e auditoria daquele evento; preserva contas, favoritos e outros torneios.
+Execute também, em ordem, `frontend/supabase/migrations/20261103_add_tournament_deletion.sql` e `frontend/supabase/migrations/20261103_add_tournament_round_clock.sql`. Não execute novamente migrações que já foram aplicadas. Somente o organizador pode excluir, usando **Confirmar exclusão / Cancelar**, sem digitar código. A operação é definitiva e remove inscrições, partidas, resultados e auditoria daquele evento; preserva contas, favoritos e outros torneios.
+
+## Prontidão, tempo e encerramento
+
+- O criador escolhe um número inteiro de minutos por rodada (1–1440); o campo é livre, sem vincular a MD1/MD3. Pode ajustar até gerar a primeira rodada.
+- Gerar mesas encerra inscrições, mas não libera as partidas. Cada jogador toca **Estou pronto**; byes são dispensados. O organizador vê a contagem e quem ainda falta em cada mesa.
+- **Iniciar rodada para todas as mesas** fica habilitado quando todos confirmam. O banco verifica novamente a prontidão e a permissão do organizador; clientes não podem antecipar a liberação.
+- O servidor grava um início e um fim comuns à rodada. O navegador sincroniza seu relógio com o servidor, usa tempo monotônico e sincroniza novamente ao retornar à aba. O cronômetro continua ao recarregar a página; liberação aparece nos demais aparelhos na atualização periódica de até três segundos.
+- Antes da liberação, não é permitido registrar resultados, nem por correção administrativa da rodada atual. Após o tempo zerar, apenas se exibe o aviso: os resultados continuam sendo informados e confirmados normalmente.
+- Gerar a próxima rodada reinicia a prontidão e limpa o relógio anterior. Não permite reiniciar o cronômetro de uma rodada em andamento.
+- Torneios antigos já em andamento ou encerrados na aplicação da migração mantêm o fluxo anterior; inscrições ainda abertas passam a utilizar prontidão, com 30 minutos de duração inicial editável.
+- Ao finalizar, cada participante vê uma tela com colocação, pontos e mensagem de parabéns (campeão/metade superior) ou incentivo (demais posições). A colocação também fica em um card permanente. A tela é lembrada por navegador e usuário após fechar e pode ser reaberta; uma correção que mude colocação/pontos permite uma nova apresentação.
 
 ## Fluxo para testar
 
