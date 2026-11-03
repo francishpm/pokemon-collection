@@ -2,6 +2,16 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@keyframes tournament-celebrate { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg); } }
+@keyframes tournament-faint { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: .15; transform: translateY(30px) rotate(-12deg) scale(.85); } }
+@keyframes tournament-sparkle { from { transform: translateY(-12px); opacity: .2; } to { transform: translateY(12px); opacity: 1; } }
+.tournament-win { animation: tournament-celebrate 1s ease-in-out 3; }
+.tournament-loss { animation: tournament-faint 1.4s ease-out forwards; }
+.tournament-confetti { color: #facc15; animation: tournament-sparkle .8s alternate 4; }
+@media (prefers-reduced-motion: reduce) {
+  .tournament-win, .tournament-loss, .tournament-confetti { animation: none; }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

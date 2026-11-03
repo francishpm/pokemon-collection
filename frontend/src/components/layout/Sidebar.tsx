@@ -13,6 +13,7 @@ import {
     House,
     Star,
     Repeat,
+    Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ export function Sidebar() {
         { href: "/master-sets", icon: Layers3, label: "Master Sets" },
         { href: "/wishlist", icon: Star, label: "Wishlist" },
         { href: "/trades", icon: Repeat, label: "Trocas" },
+        { href: "/tournaments", icon: Trophy, label: "Torneios" },
         { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
         { href: "/price-history", icon: ChartNoAxesCombined, label: "Histórico de preços" },
     ];

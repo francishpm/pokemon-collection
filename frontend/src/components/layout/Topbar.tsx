@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Plus, User, Menu, X, House, FolderOpen, BookMarked, BookOpen, Layers3, Star, Repeat, ChartColumn, ChartNoAxesCombined, ChartPie, LogOut, Moon, Sun } from "lucide-react";
+import { Trophy, Bell, Plus, User, Menu, X, House, FolderOpen, BookMarked, BookOpen, Layers3, Star, Repeat, ChartColumn, ChartNoAxesCombined, ChartPie, LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import { useUiStore } from "@/store/uiStore";
@@ -13,6 +13,7 @@ import { useTheme } from "next-themes";
 import { useCollectionStore } from "@/store/collectionStore";
 
 const pages = {
+  "/tournaments": { title: "Torneios", subtitle: "Sua liga, suas partidas e sua classificação." },
   "/": { title: "Dashboard", subtitle: "Visão geral da sua coleção." },
   "/collection": { title: "Minha coleção", subtitle: "Gerencie todas as suas cartas." },
   "/album": { title: "Álbum", subtitle: "Folheie e aproveite sua coleção como em um fichário." },
@@ -35,6 +36,7 @@ const links = [
   { href: "/master-sets", icon: Layers3, label: "Master Sets" },
   { href: "/wishlist", icon: Star, label: "Wishlist" },
   { href: "/trades", icon: Repeat, label: "Trocas" },
+  { href: "/tournaments", icon: Trophy, label: "Torneios" },
   { href: "/market", icon: ChartColumn, label: "Ranking de Valiosas" },
   { href: "/price-history", icon: ChartNoAxesCombined, label: "Histórico de preços" },
 ];
@@ -49,7 +51,9 @@ export function Topbar() {
 
   if (pathname.startsWith("/public")) return null;
 
-  const page = pathname.startsWith("/master-sets/")
+  const page = pathname.startsWith("/tournaments/")
+    ? pages["/tournaments"]
+    : pathname.startsWith("/master-sets/")
     ? pages["/master-sets"]
     : pages[pathname as keyof typeof pages] ?? { title: "ColecionaDex", subtitle: "" };
 
