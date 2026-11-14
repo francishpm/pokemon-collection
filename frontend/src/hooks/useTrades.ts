@@ -15,6 +15,7 @@ export interface TradeItem {
   price: number | null;
   quantity?: number;
   variant_label?: string | null;
+  reviewed?: boolean;
   condition?: string;
   language?: string;
   card_name?: string | null;
@@ -88,6 +89,7 @@ interface TradesStore {
   addTrade: (card: PokemonCard, price?: number | null, condition?: string, language?: string, quantity?: number, variantLabel?: string) => Promise<boolean>;
   updateTradeDetails: (tradeId: string, newPrice: number | null, status: TradeStatus, quantity: number, variantLabel?: string) => Promise<boolean>;
   removeTrade: (tradeId: string) => Promise<void>;
+  resetReviews: () => Promise<boolean>;
 }
 
 export const useTrades = create<TradesStore>((set, get) => ({
@@ -199,12 +201,12 @@ export const useTrades = create<TradesStore>((set, get) => ({
       const variant_label = normalizeTradeVariant(variantLabel === undefined ? previousVariant : variantLabel);
       const variantChange = variant_label || previousVariant ? { variant_label } : {};
       if (!isValidTradeQuantity(quantity)) throw new Error("Quantidade inválida");
-      const { error } = await supabase.from("trades").update({ price: newPrice, status, quantity, ...variantChange }).eq("id", tradeId).select("id").single();
+      const { error } = await supabase.from("trades").update({ price: newPrice, status, quantity, reviewed: true, ...variantChange }).eq("id", tradeId).select("id").single();
       if (error) throw error;
       set((state) => ({
-        trades: state.trades.map((trade) => trade.id === tradeId ? { ...trade, price: newPrice, status, quantity, variant_label } : trade),
+        trades: state.trades.map((trade) => trade.id === tradeId ? { ...trade, price: newPrice, status, quantity, variant_label, reviewed: true } : trade),
         tradesView: state.tradesView.map((item) => item.trade.id === tradeId
-          ? { ...item, trade: { ...item.trade, price: newPrice, status, quantity, variant_label } }
+          ? { ...item, trade: { ...item.trade, price: newPrice, status, quantity, variant_label, reviewed: true } }
           : item),
       }));
       toast.success(status === "completed" ? "Negociação concluída!" : "Carta atualizada!");
@@ -213,6 +215,29 @@ export const useTrades = create<TradesStore>((set, get) => ({
       const message = tradeSaveErrorMessage(error, "Erro ao atualizar a carta.");
       console.error("Falha ao atualizar carta:", message);
       toast.error(message);
+      return false;
+    }
+  },
+
+  resetReviews: async () => {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (!user) throw new Error("Sessão expirada");
+      const { error } = await supabase.from("trades")
+        .update({ reviewed: false })
+        .eq("user_id", user.id)
+        .or("status.is.null,status.neq.completed")
+        .eq("reviewed", true);
+      if (error) throw error;
+      set((state) => ({
+        trades: state.trades.map((trade) => trade.status === "completed" ? trade : { ...trade, reviewed: false }),
+        tradesView: state.tradesView.map((item) => item.trade.status === "completed" ? item : { ...item, trade: { ...item.trade, reviewed: false } }),
+      }));
+      toast.success("Revisão reiniciada! As cartas disponíveis e reservadas estão como não revisadas.");
+      return true;
+    } catch (error) {
+      toast.error(tradeSaveErrorMessage(error, "Não foi possível reiniciar a revisão. Tente novamente."));
       return false;
     }
   },

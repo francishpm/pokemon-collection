@@ -19,11 +19,16 @@ import { TradeVariantBadge } from "@/components/trades/TradeVariantBadge";
 import { isValidTradeQuantity } from "@/lib/tradeQuantity";
 
 export default function TradesPage() {
-    const { tradesView, loading, removeTrade, updateTradeDetails, fetchTrades } = useTrades();
+    const { tradesView, loading, removeTrade, updateTradeDetails, fetchTrades, resetReviews } = useTrades();
+    const [resetReviewOpen, setResetReviewOpen] = useState(false);
+    const [resettingReviews, setResettingReviews] = useState(false);
+    const activeReviewTrades = tradesView.filter(({ trade }) => trade.status !== "completed");
+    const reviewedCount = activeReviewTrades.filter(({ trade }) => trade.reviewed).length;
     const searchParams = useSearchParams();
     const openSearchModal = useUiStore((state) => state.openSearchModal);
     const [localSearch, setLocalSearch] = useState("");
     const [sortBy, setSortBy] = useState("recent");
+    const [reviewFilter, setReviewFilter] = useState<"all" | "reviewed" | "unreviewed">("all");
     const [priceFilter, setPriceFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState<"active" | TradeStatus>("active");
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -47,7 +52,7 @@ export default function TradesPage() {
         reserved: tradesView.filter(({ trade }) => getStatus(trade.status) === "reserved").length,
         completed: tradesView.filter(({ trade }) => getStatus(trade.status) === "completed").length,
     }), [tradesView]);
-    const hasActiveFilters = Boolean(localSearch.trim()) || priceFilter !== "all" || sortBy !== "recent" || statusFilter !== "active";
+    const hasActiveFilters = reviewFilter !== "all" || Boolean(localSearch.trim()) || priceFilter !== "all" || sortBy !== "recent" || statusFilter !== "active";
     
     useEffect(() => {
         fetchTrades();
@@ -61,10 +66,11 @@ export default function TradesPage() {
     };
 
     const filteredTrades = useMemo(() => {
-        return filterAndSortTrades(tradesView, { search: localSearch, sortBy, priceFilter, statusFilter });
-    }, [tradesView, localSearch, priceFilter, sortBy, statusFilter]);
+        return filterAndSortTrades(tradesView, { search: localSearch, sortBy, priceFilter, statusFilter, reviewFilter });
+    }, [tradesView, localSearch, priceFilter, sortBy, statusFilter, reviewFilter]);
 
     const clearFilters = () => {
+        setReviewFilter("all");
         setLocalSearch("");
         setSortBy("recent");
         setPriceFilter("all");
@@ -129,7 +135,7 @@ export default function TradesPage() {
                 </div>
 
                 <div className="flex gap-2">
-                    <Link href={`/trades/print?${new URLSearchParams({ search: localSearch, sortBy, priceFilter, statusFilter }).toString()}`} target="_blank" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+                    <Link href={`/trades/print?${new URLSearchParams({ search: localSearch, sortBy, priceFilter, statusFilter, reviewFilter }).toString()}`} target="_blank" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
                         <FileDown size={18} />
                         <span className="hidden sm:inline">Gerar PDF</span>
                     </Link>
@@ -142,7 +148,7 @@ export default function TradesPage() {
 
             {/* Busca, filtros e ordenação */}
             <div className="space-y-3 rounded-xl border bg-card p-3">
-                <div className="grid gap-3 lg:grid-cols-[minmax(280px,1fr)_220px_180px_auto]">
+                <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(200px,1fr)_180px_160px_170px_auto]">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                         <Input
@@ -164,8 +170,20 @@ export default function TradesPage() {
                         <option value="priced">Com preço</option>
                         <option value="trade_only">Apenas troca</option>
                     </select>
+                    <select value={reviewFilter} disabled={statusFilter === "completed"} onChange={(event) => setReviewFilter(event.target.value as typeof reviewFilter)} className="h-11 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50" aria-label="Filtrar por revisão">
+                        <option value="all">Todas as revisões</option>
+                        <option value="unreviewed">Não revisadas</option>
+                        <option value="reviewed">Revisadas</option>
+                    </select>
                     <Button variant="outline" className="h-11 gap-2" disabled={!hasActiveFilters} onClick={clearFilters}>
                         <RotateCcw size={15} /> Limpar filtros
+                    </Button>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">{reviewedCount} revisada(s) · {activeReviewTrades.length - reviewedCount} não revisada(s) nas trocas ativas</p>
+                    <Button variant="outline" className="gap-2" disabled={loading || resettingReviews || !reviewedCount || Boolean(savingTradeId)} onClick={() => setResetReviewOpen(true)}>
+                        <RotateCcw size={15} /> Reiniciar revisão
                     </Button>
                 </div>
 
@@ -255,6 +273,7 @@ export default function TradesPage() {
 
                                     {/* BADGES IDIOMA E CONDIÇÃO */}
                                     <div className="flex flex-wrap justify-center gap-2 mt-1">
+                                        {status !== "completed" && <span className={`rounded-full px-3 py-1 text-xs font-semibold ${trade.reviewed ? "bg-teal-100 text-teal-800" : "bg-amber-100 text-amber-800"}`}>{trade.reviewed ? "Revisada" : "Não revisada"}</span>}
                                         <TradeVariantBadge label={trade.variant_label} />
                                         {(trade.quantity ?? 1) > 1 && <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700" aria-label={`${trade.quantity} unidades`}>{trade.quantity}×</span>}
                                         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -278,6 +297,31 @@ export default function TradesPage() {
                     })}
                 </div>
             )}
+
+            <Dialog open={resetReviewOpen} onOpenChange={(open) => { if (!resettingReviews) setResetReviewOpen(open); }}>
+                <DialogContent className="sm:max-w-md" showCloseButton={!resettingReviews}>
+                    <DialogHeader>
+                        <DialogTitle>Reiniciar a revisão das trocas?</DialogTitle>
+                        <DialogDescription>Suas cartas disponíveis e reservadas voltarão para “Não revisadas”, independentemente dos filtros. As concluídas permanecerão no histórico, fora da revisão. As cartas, preços e quantidades serão mantidos.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" disabled={resettingReviews} onClick={() => setResetReviewOpen(false)}>Cancelar</Button>
+                        <Button disabled={resettingReviews} onClick={async () => {
+                            if (resettingReviews) return;
+                            setResettingReviews(true);
+                            try {
+                                if (await resetReviews()) {
+                                    clearFilters();
+                                    setResetReviewOpen(false);
+                                }
+                            } finally { setResettingReviews(false); }
+                        }}>
+                            {resettingReviews && <Loader2 className="animate-spin" />}
+                            {resettingReviews ? "Reiniciando..." : "Reiniciar revisão"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={editingTrade !== undefined && completingTrade === undefined} onOpenChange={(open) => !open && setEditingId(null)}>
                 <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
@@ -359,6 +403,7 @@ export default function TradesPage() {
                                     <ExternalLink size={16} />
                                 </a>
 
+                                {tempStatus !== "completed" && <p className="text-xs text-muted-foreground">Ao salvar, esta carta será marcada como revisada, mesmo sem alterar os campos.</p>}
                                 <DialogFooter>
                                     <Button className="w-full" disabled={savingTradeId === trade.id || !validQuantity} onClick={() => handleSaveTrade(trade.id)}>
                                         {savingTradeId === trade.id && <Loader2 className="animate-spin" />}

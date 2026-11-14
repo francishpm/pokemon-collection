@@ -1,4 +1,7 @@
 import { PokemonCard } from "@/types/pokemon-card";
+import { deltaReignCards } from "@/lib/deltaReign";
+import { deltaReignPromos } from "@/lib/deltaReignPromos";
+import { stampedPromos } from "@/lib/stampedPromos";
 
 const BASE_URL = "https://api.pokemontcg.io/v2";
 const API_KEY = process.env.NEXT_PUBLIC_POKEMON_TCG_API_KEY || "";
@@ -25,6 +28,8 @@ interface GetCardResponse {
 }
 
 export async function getCardById(id: string): Promise<PokemonCard | null> {
+  const deltaCard = [...deltaReignCards, ...deltaReignPromos, ...stampedPromos].find((card) => card.id === id);
+  if (deltaCard) return deltaCard;
   const headers: Record<string, string> = {};
   if (API_KEY) headers["X-Api-Key"] = API_KEY;
 

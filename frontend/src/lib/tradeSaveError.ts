@@ -1,6 +1,9 @@
 export function tradeSaveErrorMessage(error: unknown, fallback: string) {
   if (typeof error !== "object" || error === null) return fallback;
   const { code, message } = error as { code?: string; message?: string };
+  if ((code === "42703" || code === "PGRST204") && /reviewed/i.test(message ?? "")) {
+    return "Falta atualizar o banco para salvar a revisão. Aplique a migração 20261114_add_trade_review.sql no Supabase e tente novamente.";
+  }
   if ((code === "42703" || code === "PGRST204") && /variant_label/i.test(message ?? "")) {
     return "Falta atualizar o banco para salvar a variante. Execute a migração de variante no Supabase e tente novamente.";
   }

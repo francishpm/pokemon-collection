@@ -34,6 +34,7 @@ export default function TradePrintPage() {
       search: searchParams.get("search") ?? "",
       sortBy: searchParams.get("sortBy") ?? "recent",
       priceFilter: searchParams.get("priceFilter") ?? "all",
+      reviewFilter: searchParams.get("reviewFilter") === "reviewed" ? "reviewed" : searchParams.get("reviewFilter") === "unreviewed" ? "unreviewed" : "all",
       statusFilter,
     }),
     [tradesView, searchParams, statusFilter],

@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { MASTER_SET_BY_ID, masterSetLogo } from "@/lib/masterSetConfig";
 import { MasterSetCatalog, MasterSetProgress, MasterSetVariant } from "@/types/master-set";
+import { deltaReignPromoSlots } from "@/lib/deltaReignPromos";
 
 export async function fetchMasterSetCatalog(setId: string): Promise<MasterSetCatalog | null> {
   const meta = MASTER_SET_BY_ID.get(setId);
@@ -17,7 +18,7 @@ export async function fetchMasterSetCatalog(setId: string): Promise<MasterSetCat
     name: meta.name,
     logo: masterSetLogo(meta.seriesId, meta),
     totalCards: meta.cards,
-    slots: data.map((row) => ({
+    slots: [...data.filter(row => setId !== "mep" || !deltaReignPromoSlots.some(slot => slot.cardId === row.card_id)).map((row) => ({
       id: `${row.card_id}:${row.variant}`,
       cardId: row.card_id,
       number: row.card_number,
@@ -27,7 +28,7 @@ export async function fetchMasterSetCatalog(setId: string): Promise<MasterSetCat
         : row.image_url.replace("/high.webp", "/low.webp"),
       rarity: row.rarity ?? undefined,
       variant: row.variant as MasterSetVariant,
-    })),
+    })), ...(setId === "mep" ? deltaReignPromoSlots : [])],
   };
 }
 

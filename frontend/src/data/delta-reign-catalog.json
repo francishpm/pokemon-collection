@@ -1,0 +1,4204 @@
+{
+  "cards": [
+    {
+      "id": "me06-001",
+      "name": "Heracross",
+      "number": "001",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/001/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/001/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-002",
+      "name": "Surskit",
+      "number": "002",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/002/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/002/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-003",
+      "name": "Masquerain",
+      "number": "003",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/003/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/003/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-004",
+      "name": "Cacnea",
+      "number": "004",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/004/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/004/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-005",
+      "name": "Cacturne",
+      "number": "005",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/005/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/005/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-006",
+      "name": "Combee",
+      "number": "006",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/006/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/006/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-007",
+      "name": "Vespiquen",
+      "number": "007",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/007/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/007/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-008",
+      "name": "Shaymin",
+      "number": "008",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/008/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/008/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-009",
+      "name": "Virizion",
+      "number": "009",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/009/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/009/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-010",
+      "name": "Wimpod",
+      "number": "010",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/010/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/010/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-011",
+      "name": "Mega Golisopod ex",
+      "number": "011",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/011/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/011/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-012",
+      "name": "Sprigatito",
+      "number": "012",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/012/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/012/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-013",
+      "name": "Floragato",
+      "number": "013",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/013/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/013/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-014",
+      "name": "Meowscarada ex",
+      "number": "014",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/014/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/014/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-015",
+      "name": "Smoliv",
+      "number": "015",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/015/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/015/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-016",
+      "name": "Dolliv",
+      "number": "016",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/016/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/016/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-017",
+      "name": "Arboliva",
+      "number": "017",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/017/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/017/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 2"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-018",
+      "name": "Growlithe",
+      "number": "018",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/018/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/018/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-019",
+      "name": "Arcanine",
+      "number": "019",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/019/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/019/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-020",
+      "name": "Magmar",
+      "number": "020",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/020/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/020/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-021",
+      "name": "Magmortar",
+      "number": "021",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/021/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/021/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-022",
+      "name": "Torkoal",
+      "number": "022",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/022/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/022/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-023",
+      "name": "Rotom Calor ex",
+      "number": "023",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/023/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/023/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-024",
+      "name": "Heatmor",
+      "number": "024",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/024/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/024/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-025",
+      "name": "Mantine",
+      "number": "025",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/025/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/025/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-026",
+      "name": "Kyogre",
+      "number": "026",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/026/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/026/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-027",
+      "name": "Frillish",
+      "number": "027",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/027/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/027/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-028",
+      "name": "Jellicent",
+      "number": "028",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/028/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/028/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-029",
+      "name": "Wishiwashi ex",
+      "number": "029",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/029/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/029/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-030",
+      "name": "Electabuzz",
+      "number": "030",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/030/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/030/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-031",
+      "name": "Electivire",
+      "number": "031",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/031/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/031/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-032",
+      "name": "Jolteon",
+      "number": "032",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/032/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/032/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-033",
+      "name": "Raikou ex",
+      "number": "033",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/033/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/033/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-034",
+      "name": "Rotom",
+      "number": "034",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/034/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/034/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-035",
+      "name": "Thundurus",
+      "number": "035",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/035/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/035/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-036",
+      "name": "Pincurchin",
+      "number": "036",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/036/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/036/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-037",
+      "name": "Pawmi",
+      "number": "037",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/037/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/037/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-038",
+      "name": "Pawmo",
+      "number": "038",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/038/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/038/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-039",
+      "name": "Pawmot",
+      "number": "039",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/039/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/039/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 2"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-040",
+      "name": "Wattrel",
+      "number": "040",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/040/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/040/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-041",
+      "name": "Kilowattrel",
+      "number": "041",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/041/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/041/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-042",
+      "name": "Miraidon",
+      "number": "042",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/042/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/042/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-043",
+      "name": "Drowzee",
+      "number": "043",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/043/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/043/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-044",
+      "name": "Hypno",
+      "number": "044",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/044/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/044/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-045",
+      "name": "Giratina",
+      "number": "045",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/045/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/045/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-046",
+      "name": "Golett",
+      "number": "046",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/046/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/046/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-047",
+      "name": "Mega Golurk ex",
+      "number": "047",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/047/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/047/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-048",
+      "name": "Enamorus",
+      "number": "048",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/048/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/048/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-049",
+      "name": "Sandshrew",
+      "number": "049",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/049/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/049/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-050",
+      "name": "Sandslash",
+      "number": "050",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/050/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/050/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-051",
+      "name": "Onix",
+      "number": "051",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/051/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/051/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-052",
+      "name": "Steelix",
+      "number": "052",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/052/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/052/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-053",
+      "name": "Groudon",
+      "number": "053",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/053/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/053/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-054",
+      "name": "Landorus",
+      "number": "054",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/054/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/054/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-055",
+      "name": "Nidoran♀",
+      "number": "055",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/055/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/055/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-056",
+      "name": "Nidorina",
+      "number": "056",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/056/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/056/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-057",
+      "name": "Nidoqueen",
+      "number": "057",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/057/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/057/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 2"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-058",
+      "name": "Spinarak",
+      "number": "058",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/058/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/058/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-059",
+      "name": "Ariados",
+      "number": "059",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/059/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/059/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-060",
+      "name": "Sableye",
+      "number": "060",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/060/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/060/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-061",
+      "name": "Carvanha",
+      "number": "061",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/061/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/061/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-062",
+      "name": "Sharpedo",
+      "number": "062",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/062/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/062/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-063",
+      "name": "Darkrai",
+      "number": "063",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/063/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/063/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-064",
+      "name": "Purrloin",
+      "number": "064",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/064/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/064/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-065",
+      "name": "Liepard",
+      "number": "065",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/065/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/065/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-066",
+      "name": "Zorua",
+      "number": "066",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/066/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/066/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-067",
+      "name": "Zoroark ex",
+      "number": "067",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/067/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/067/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-068",
+      "name": "Inkay",
+      "number": "068",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/068/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/068/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-069",
+      "name": "Mega Malamar ex",
+      "number": "069",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/069/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/069/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-070",
+      "name": "Morpeko",
+      "number": "070",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/070/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/070/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-071",
+      "name": "Zarude",
+      "number": "071",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/071/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/071/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-072",
+      "name": "Druddigon",
+      "number": "072",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/072/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/072/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-073",
+      "name": "Jangmo-o",
+      "number": "073",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/073/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/073/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-074",
+      "name": "Hakamo-o",
+      "number": "074",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/074/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/074/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-075",
+      "name": "Kommo-o",
+      "number": "075",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/075/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/075/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 2"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-076",
+      "name": "Cyclizar",
+      "number": "076",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/076/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/076/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-077",
+      "name": "Tauros",
+      "number": "077",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/077/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/077/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-078",
+      "name": "Eevee",
+      "number": "078",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/078/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/078/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-079",
+      "name": "Delibird",
+      "number": "079",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/079/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/079/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-080",
+      "name": "Azurill",
+      "number": "080",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/080/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/080/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-081",
+      "name": "Swablu",
+      "number": "081",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/081/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/081/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-082",
+      "name": "Altaria",
+      "number": "082",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/082/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/082/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-083",
+      "name": "Kecleon",
+      "number": "083",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/083/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/083/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-084",
+      "name": "Mega Rayquaza ex",
+      "number": "084",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/084/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/084/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-085",
+      "name": "Tornadus",
+      "number": "085",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/085/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/085/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-086",
+      "name": "Fletchling",
+      "number": "086",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/086/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/086/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-087",
+      "name": "Fletchinder",
+      "number": "087",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/087/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/087/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-088",
+      "name": "Talonflame ex",
+      "number": "088",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/088/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/088/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Rara Dupla",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-089",
+      "name": "Arão",
+      "number": "089",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/089/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/089/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-090",
+      "name": "Lanterna de Aventura",
+      "number": "090",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/090/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/090/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-091",
+      "name": "Colete Customizado",
+      "number": "091",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/091/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/091/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-092",
+      "name": "Hype da Emcee",
+      "number": "092",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/092/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/092/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-093",
+      "name": "Grisham",
+      "number": "093",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/093/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/093/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-094",
+      "name": "Tubo de Lava Lendário",
+      "number": "094",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/094/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/094/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-095",
+      "name": "Tubo de Lava Lendário",
+      "number": "095",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/095/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/095/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-096",
+      "name": "Pico Lendário",
+      "number": "096",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/096/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/096/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-097",
+      "name": "Pico Lendário",
+      "number": "097",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/097/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/097/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-098",
+      "name": "Abismo Lendário",
+      "number": "098",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/098/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/098/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-099",
+      "name": "Abismo Lendário",
+      "number": "099",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/099/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/099/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-100",
+      "name": "Chapéu de Mega Rayquaza",
+      "number": "100",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/100/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/100/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-101",
+      "name": "Onigiri Saboroso",
+      "number": "101",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/101/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/101/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Comum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-102",
+      "name": "Treinamento de Tate e Liza",
+      "number": "102",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/102/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/102/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-103",
+      "name": "Confiança da Zínia",
+      "number": "103",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/103/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/103/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Incomum",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-104",
+      "name": "Masquerain",
+      "number": "104",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/104/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/104/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-105",
+      "name": "Sprigatito",
+      "number": "105",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/105/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/105/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-106",
+      "name": "Growlithe",
+      "number": "106",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/106/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/106/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-107",
+      "name": "Magmortar",
+      "number": "107",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/107/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/107/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-108",
+      "name": "Electivire",
+      "number": "108",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/108/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/108/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-109",
+      "name": "Pincurchin",
+      "number": "109",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/109/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/109/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-110",
+      "name": "Enamorus",
+      "number": "110",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/110/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/110/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-111",
+      "name": "Groudon",
+      "number": "111",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/111/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/111/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-112",
+      "name": "Zorua",
+      "number": "112",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/112/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/112/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-113",
+      "name": "Inkay",
+      "number": "113",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/113/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/113/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-114",
+      "name": "Eevee",
+      "number": "114",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/114/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/114/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-115",
+      "name": "Azurill",
+      "number": "115",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/115/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/115/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-116",
+      "name": "Altaria",
+      "number": "116",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/116/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/116/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Estágio 1"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-117",
+      "name": "Kecleon",
+      "number": "117",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/117/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/117/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico"
+      ],
+      "rarity": "Ilustração Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-118",
+      "name": "Mega Golisopod ex",
+      "number": "118",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/118/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/118/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-119",
+      "name": "Rotom Calor ex",
+      "number": "119",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/119/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/119/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-120",
+      "name": "Wishiwashi ex",
+      "number": "120",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/120/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/120/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-121",
+      "name": "Raikou ex",
+      "number": "121",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/121/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/121/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-122",
+      "name": "Mega Golurk ex",
+      "number": "122",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/122/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/122/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-123",
+      "name": "Mega Malamar ex",
+      "number": "123",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/123/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/123/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-124",
+      "name": "Talonflame ex",
+      "number": "124",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/124/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/124/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-125",
+      "name": "Arão",
+      "number": "125",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/125/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/125/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-126",
+      "name": "Lanterna de Aventura",
+      "number": "126",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/126/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/126/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-127",
+      "name": "Colete Customizado",
+      "number": "127",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/127/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/127/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-128",
+      "name": "Hype da Emcee",
+      "number": "128",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/128/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/128/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-129",
+      "name": "Pegador de Pokémon",
+      "number": "129",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/129/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/129/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-130",
+      "name": "Treinamento de Tate e Liza",
+      "number": "130",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/130/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/130/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-131",
+      "name": "Confiança da Zínia",
+      "number": "131",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/131/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/131/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-132",
+      "name": "Energia Water Borbulhante",
+      "number": "132",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/132/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/132/high.webp"
+      },
+      "supertype": "Energia",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-133",
+      "name": "Energia Grass Crescente",
+      "number": "133",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/133/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/133/high.webp"
+      },
+      "supertype": "Energia",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-134",
+      "name": "Energia Fire Nitro",
+      "number": "134",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/134/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/134/high.webp"
+      },
+      "supertype": "Energia",
+      "subtypes": [],
+      "rarity": "Ultra Rara",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-135",
+      "name": "Mega Golisopod ex",
+      "number": "135",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/135/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/135/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ilustração Rara Especial",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-136",
+      "name": "Raikou ex",
+      "number": "136",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/136/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/136/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ilustração Rara Especial",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-137",
+      "name": "Mega Golurk ex",
+      "number": "137",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/137/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/137/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ilustração Rara Especial",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-138",
+      "name": "Mega Rayquaza ex",
+      "number": "138",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/138/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/138/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Ilustração Rara Especial",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-139",
+      "name": "Arão",
+      "number": "139",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/139/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/139/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ilustração Rara Especial",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-140",
+      "name": "Confiança da Zínia",
+      "number": "140",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/140/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/140/high.webp"
+      },
+      "supertype": "Treinador",
+      "subtypes": [],
+      "rarity": "Ilustração Rara Especial",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    },
+    {
+      "id": "me06-141",
+      "name": "Mega Rayquaza ex",
+      "number": "141",
+      "language": "PT",
+      "images": {
+        "small": "https://assets.tcgdex.net/pt/me/me06/141/low.webp",
+        "large": "https://assets.tcgdex.net/pt/me/me06/141/high.webp"
+      },
+      "supertype": "Pokémon",
+      "subtypes": [
+        "Básico",
+        "EX"
+      ],
+      "rarity": "Mega Hiper Raro",
+      "set": {
+        "id": "me06",
+        "name": "Reinado Delta",
+        "series": "Megaevolução",
+        "printedTotal": 103
+      }
+    }
+  ],
+  "slots": [
+    {
+      "id": "me06-001:normal",
+      "cardId": "me06-001",
+      "number": "001",
+      "name": "Heracross",
+      "image": "https://assets.tcgdex.net/pt/me/me06/001/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-002:normal",
+      "cardId": "me06-002",
+      "number": "002",
+      "name": "Surskit",
+      "image": "https://assets.tcgdex.net/pt/me/me06/002/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-003:normal",
+      "cardId": "me06-003",
+      "number": "003",
+      "name": "Masquerain",
+      "image": "https://assets.tcgdex.net/pt/me/me06/003/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-004:normal",
+      "cardId": "me06-004",
+      "number": "004",
+      "name": "Cacnea",
+      "image": "https://assets.tcgdex.net/pt/me/me06/004/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-005:normal",
+      "cardId": "me06-005",
+      "number": "005",
+      "name": "Cacturne",
+      "image": "https://assets.tcgdex.net/pt/me/me06/005/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-006:normal",
+      "cardId": "me06-006",
+      "number": "006",
+      "name": "Combee",
+      "image": "https://assets.tcgdex.net/pt/me/me06/006/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-007:normal",
+      "cardId": "me06-007",
+      "number": "007",
+      "name": "Vespiquen",
+      "image": "https://assets.tcgdex.net/pt/me/me06/007/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-008:normal",
+      "cardId": "me06-008",
+      "number": "008",
+      "name": "Shaymin",
+      "image": "https://assets.tcgdex.net/pt/me/me06/008/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-009:normal",
+      "cardId": "me06-009",
+      "number": "009",
+      "name": "Virizion",
+      "image": "https://assets.tcgdex.net/pt/me/me06/009/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-010:normal",
+      "cardId": "me06-010",
+      "number": "010",
+      "name": "Wimpod",
+      "image": "https://assets.tcgdex.net/pt/me/me06/010/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-011:normal",
+      "cardId": "me06-011",
+      "number": "011",
+      "name": "Mega Golisopod ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/011/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-012:normal",
+      "cardId": "me06-012",
+      "number": "012",
+      "name": "Sprigatito",
+      "image": "https://assets.tcgdex.net/pt/me/me06/012/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-013:normal",
+      "cardId": "me06-013",
+      "number": "013",
+      "name": "Floragato",
+      "image": "https://assets.tcgdex.net/pt/me/me06/013/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-014:normal",
+      "cardId": "me06-014",
+      "number": "014",
+      "name": "Meowscarada ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/014/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-015:normal",
+      "cardId": "me06-015",
+      "number": "015",
+      "name": "Smoliv",
+      "image": "https://assets.tcgdex.net/pt/me/me06/015/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-016:normal",
+      "cardId": "me06-016",
+      "number": "016",
+      "name": "Dolliv",
+      "image": "https://assets.tcgdex.net/pt/me/me06/016/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-017:normal",
+      "cardId": "me06-017",
+      "number": "017",
+      "name": "Arboliva",
+      "image": "https://assets.tcgdex.net/pt/me/me06/017/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-018:normal",
+      "cardId": "me06-018",
+      "number": "018",
+      "name": "Growlithe",
+      "image": "https://assets.tcgdex.net/pt/me/me06/018/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-019:normal",
+      "cardId": "me06-019",
+      "number": "019",
+      "name": "Arcanine",
+      "image": "https://assets.tcgdex.net/pt/me/me06/019/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-020:normal",
+      "cardId": "me06-020",
+      "number": "020",
+      "name": "Magmar",
+      "image": "https://assets.tcgdex.net/pt/me/me06/020/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-021:normal",
+      "cardId": "me06-021",
+      "number": "021",
+      "name": "Magmortar",
+      "image": "https://assets.tcgdex.net/pt/me/me06/021/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-022:normal",
+      "cardId": "me06-022",
+      "number": "022",
+      "name": "Torkoal",
+      "image": "https://assets.tcgdex.net/pt/me/me06/022/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-023:normal",
+      "cardId": "me06-023",
+      "number": "023",
+      "name": "Rotom Calor ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/023/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-024:normal",
+      "cardId": "me06-024",
+      "number": "024",
+      "name": "Heatmor",
+      "image": "https://assets.tcgdex.net/pt/me/me06/024/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-025:normal",
+      "cardId": "me06-025",
+      "number": "025",
+      "name": "Mantine",
+      "image": "https://assets.tcgdex.net/pt/me/me06/025/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-026:normal",
+      "cardId": "me06-026",
+      "number": "026",
+      "name": "Kyogre",
+      "image": "https://assets.tcgdex.net/pt/me/me06/026/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-027:normal",
+      "cardId": "me06-027",
+      "number": "027",
+      "name": "Frillish",
+      "image": "https://assets.tcgdex.net/pt/me/me06/027/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-028:normal",
+      "cardId": "me06-028",
+      "number": "028",
+      "name": "Jellicent",
+      "image": "https://assets.tcgdex.net/pt/me/me06/028/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-029:normal",
+      "cardId": "me06-029",
+      "number": "029",
+      "name": "Wishiwashi ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/029/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-030:normal",
+      "cardId": "me06-030",
+      "number": "030",
+      "name": "Electabuzz",
+      "image": "https://assets.tcgdex.net/pt/me/me06/030/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-031:normal",
+      "cardId": "me06-031",
+      "number": "031",
+      "name": "Electivire",
+      "image": "https://assets.tcgdex.net/pt/me/me06/031/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-032:normal",
+      "cardId": "me06-032",
+      "number": "032",
+      "name": "Jolteon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/032/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-033:normal",
+      "cardId": "me06-033",
+      "number": "033",
+      "name": "Raikou ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/033/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-034:normal",
+      "cardId": "me06-034",
+      "number": "034",
+      "name": "Rotom",
+      "image": "https://assets.tcgdex.net/pt/me/me06/034/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-035:normal",
+      "cardId": "me06-035",
+      "number": "035",
+      "name": "Thundurus",
+      "image": "https://assets.tcgdex.net/pt/me/me06/035/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-036:normal",
+      "cardId": "me06-036",
+      "number": "036",
+      "name": "Pincurchin",
+      "image": "https://assets.tcgdex.net/pt/me/me06/036/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-037:normal",
+      "cardId": "me06-037",
+      "number": "037",
+      "name": "Pawmi",
+      "image": "https://assets.tcgdex.net/pt/me/me06/037/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-038:normal",
+      "cardId": "me06-038",
+      "number": "038",
+      "name": "Pawmo",
+      "image": "https://assets.tcgdex.net/pt/me/me06/038/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-039:normal",
+      "cardId": "me06-039",
+      "number": "039",
+      "name": "Pawmot",
+      "image": "https://assets.tcgdex.net/pt/me/me06/039/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-040:normal",
+      "cardId": "me06-040",
+      "number": "040",
+      "name": "Wattrel",
+      "image": "https://assets.tcgdex.net/pt/me/me06/040/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-041:normal",
+      "cardId": "me06-041",
+      "number": "041",
+      "name": "Kilowattrel",
+      "image": "https://assets.tcgdex.net/pt/me/me06/041/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-042:normal",
+      "cardId": "me06-042",
+      "number": "042",
+      "name": "Miraidon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/042/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-043:normal",
+      "cardId": "me06-043",
+      "number": "043",
+      "name": "Drowzee",
+      "image": "https://assets.tcgdex.net/pt/me/me06/043/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-044:normal",
+      "cardId": "me06-044",
+      "number": "044",
+      "name": "Hypno",
+      "image": "https://assets.tcgdex.net/pt/me/me06/044/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-045:normal",
+      "cardId": "me06-045",
+      "number": "045",
+      "name": "Giratina",
+      "image": "https://assets.tcgdex.net/pt/me/me06/045/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-046:normal",
+      "cardId": "me06-046",
+      "number": "046",
+      "name": "Golett",
+      "image": "https://assets.tcgdex.net/pt/me/me06/046/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-047:normal",
+      "cardId": "me06-047",
+      "number": "047",
+      "name": "Mega Golurk ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/047/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-048:normal",
+      "cardId": "me06-048",
+      "number": "048",
+      "name": "Enamorus",
+      "image": "https://assets.tcgdex.net/pt/me/me06/048/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-049:normal",
+      "cardId": "me06-049",
+      "number": "049",
+      "name": "Sandshrew",
+      "image": "https://assets.tcgdex.net/pt/me/me06/049/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-050:normal",
+      "cardId": "me06-050",
+      "number": "050",
+      "name": "Sandslash",
+      "image": "https://assets.tcgdex.net/pt/me/me06/050/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-051:normal",
+      "cardId": "me06-051",
+      "number": "051",
+      "name": "Onix",
+      "image": "https://assets.tcgdex.net/pt/me/me06/051/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-052:normal",
+      "cardId": "me06-052",
+      "number": "052",
+      "name": "Steelix",
+      "image": "https://assets.tcgdex.net/pt/me/me06/052/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-053:normal",
+      "cardId": "me06-053",
+      "number": "053",
+      "name": "Groudon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/053/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-054:normal",
+      "cardId": "me06-054",
+      "number": "054",
+      "name": "Landorus",
+      "image": "https://assets.tcgdex.net/pt/me/me06/054/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-055:normal",
+      "cardId": "me06-055",
+      "number": "055",
+      "name": "Nidoran♀",
+      "image": "https://assets.tcgdex.net/pt/me/me06/055/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-056:normal",
+      "cardId": "me06-056",
+      "number": "056",
+      "name": "Nidorina",
+      "image": "https://assets.tcgdex.net/pt/me/me06/056/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-057:normal",
+      "cardId": "me06-057",
+      "number": "057",
+      "name": "Nidoqueen",
+      "image": "https://assets.tcgdex.net/pt/me/me06/057/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-058:normal",
+      "cardId": "me06-058",
+      "number": "058",
+      "name": "Spinarak",
+      "image": "https://assets.tcgdex.net/pt/me/me06/058/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-059:normal",
+      "cardId": "me06-059",
+      "number": "059",
+      "name": "Ariados",
+      "image": "https://assets.tcgdex.net/pt/me/me06/059/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-060:normal",
+      "cardId": "me06-060",
+      "number": "060",
+      "name": "Sableye",
+      "image": "https://assets.tcgdex.net/pt/me/me06/060/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-061:normal",
+      "cardId": "me06-061",
+      "number": "061",
+      "name": "Carvanha",
+      "image": "https://assets.tcgdex.net/pt/me/me06/061/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-062:normal",
+      "cardId": "me06-062",
+      "number": "062",
+      "name": "Sharpedo",
+      "image": "https://assets.tcgdex.net/pt/me/me06/062/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-063:normal",
+      "cardId": "me06-063",
+      "number": "063",
+      "name": "Darkrai",
+      "image": "https://assets.tcgdex.net/pt/me/me06/063/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-064:normal",
+      "cardId": "me06-064",
+      "number": "064",
+      "name": "Purrloin",
+      "image": "https://assets.tcgdex.net/pt/me/me06/064/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-065:normal",
+      "cardId": "me06-065",
+      "number": "065",
+      "name": "Liepard",
+      "image": "https://assets.tcgdex.net/pt/me/me06/065/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-066:normal",
+      "cardId": "me06-066",
+      "number": "066",
+      "name": "Zorua",
+      "image": "https://assets.tcgdex.net/pt/me/me06/066/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-067:normal",
+      "cardId": "me06-067",
+      "number": "067",
+      "name": "Zoroark ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/067/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-068:normal",
+      "cardId": "me06-068",
+      "number": "068",
+      "name": "Inkay",
+      "image": "https://assets.tcgdex.net/pt/me/me06/068/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-069:normal",
+      "cardId": "me06-069",
+      "number": "069",
+      "name": "Mega Malamar ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/069/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-070:normal",
+      "cardId": "me06-070",
+      "number": "070",
+      "name": "Morpeko",
+      "image": "https://assets.tcgdex.net/pt/me/me06/070/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-071:normal",
+      "cardId": "me06-071",
+      "number": "071",
+      "name": "Zarude",
+      "image": "https://assets.tcgdex.net/pt/me/me06/071/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-072:normal",
+      "cardId": "me06-072",
+      "number": "072",
+      "name": "Druddigon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/072/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-073:normal",
+      "cardId": "me06-073",
+      "number": "073",
+      "name": "Jangmo-o",
+      "image": "https://assets.tcgdex.net/pt/me/me06/073/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-074:normal",
+      "cardId": "me06-074",
+      "number": "074",
+      "name": "Hakamo-o",
+      "image": "https://assets.tcgdex.net/pt/me/me06/074/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-075:normal",
+      "cardId": "me06-075",
+      "number": "075",
+      "name": "Kommo-o",
+      "image": "https://assets.tcgdex.net/pt/me/me06/075/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-076:normal",
+      "cardId": "me06-076",
+      "number": "076",
+      "name": "Cyclizar",
+      "image": "https://assets.tcgdex.net/pt/me/me06/076/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-077:normal",
+      "cardId": "me06-077",
+      "number": "077",
+      "name": "Tauros",
+      "image": "https://assets.tcgdex.net/pt/me/me06/077/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-078:normal",
+      "cardId": "me06-078",
+      "number": "078",
+      "name": "Eevee",
+      "image": "https://assets.tcgdex.net/pt/me/me06/078/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-079:normal",
+      "cardId": "me06-079",
+      "number": "079",
+      "name": "Delibird",
+      "image": "https://assets.tcgdex.net/pt/me/me06/079/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-080:normal",
+      "cardId": "me06-080",
+      "number": "080",
+      "name": "Azurill",
+      "image": "https://assets.tcgdex.net/pt/me/me06/080/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-081:normal",
+      "cardId": "me06-081",
+      "number": "081",
+      "name": "Swablu",
+      "image": "https://assets.tcgdex.net/pt/me/me06/081/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-082:normal",
+      "cardId": "me06-082",
+      "number": "082",
+      "name": "Altaria",
+      "image": "https://assets.tcgdex.net/pt/me/me06/082/low.webp",
+      "rarity": "Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-083:normal",
+      "cardId": "me06-083",
+      "number": "083",
+      "name": "Kecleon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/083/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-084:normal",
+      "cardId": "me06-084",
+      "number": "084",
+      "name": "Mega Rayquaza ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/084/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-085:normal",
+      "cardId": "me06-085",
+      "number": "085",
+      "name": "Tornadus",
+      "image": "https://assets.tcgdex.net/pt/me/me06/085/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-086:normal",
+      "cardId": "me06-086",
+      "number": "086",
+      "name": "Fletchling",
+      "image": "https://assets.tcgdex.net/pt/me/me06/086/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-087:normal",
+      "cardId": "me06-087",
+      "number": "087",
+      "name": "Fletchinder",
+      "image": "https://assets.tcgdex.net/pt/me/me06/087/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-088:normal",
+      "cardId": "me06-088",
+      "number": "088",
+      "name": "Talonflame ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/088/low.webp",
+      "rarity": "Rara Dupla",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-089:normal",
+      "cardId": "me06-089",
+      "number": "089",
+      "name": "Arão",
+      "image": "https://assets.tcgdex.net/pt/me/me06/089/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-090:normal",
+      "cardId": "me06-090",
+      "number": "090",
+      "name": "Lanterna de Aventura",
+      "image": "https://assets.tcgdex.net/pt/me/me06/090/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-091:normal",
+      "cardId": "me06-091",
+      "number": "091",
+      "name": "Colete Customizado",
+      "image": "https://assets.tcgdex.net/pt/me/me06/091/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-092:normal",
+      "cardId": "me06-092",
+      "number": "092",
+      "name": "Hype da Emcee",
+      "image": "https://assets.tcgdex.net/pt/me/me06/092/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-093:normal",
+      "cardId": "me06-093",
+      "number": "093",
+      "name": "Grisham",
+      "image": "https://assets.tcgdex.net/pt/me/me06/093/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-094:normal",
+      "cardId": "me06-094",
+      "number": "094",
+      "name": "Tubo de Lava Lendário",
+      "image": "https://assets.tcgdex.net/pt/me/me06/094/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-095:normal",
+      "cardId": "me06-095",
+      "number": "095",
+      "name": "Tubo de Lava Lendário",
+      "image": "https://assets.tcgdex.net/pt/me/me06/095/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-096:normal",
+      "cardId": "me06-096",
+      "number": "096",
+      "name": "Pico Lendário",
+      "image": "https://assets.tcgdex.net/pt/me/me06/096/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-097:normal",
+      "cardId": "me06-097",
+      "number": "097",
+      "name": "Pico Lendário",
+      "image": "https://assets.tcgdex.net/pt/me/me06/097/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-098:normal",
+      "cardId": "me06-098",
+      "number": "098",
+      "name": "Abismo Lendário",
+      "image": "https://assets.tcgdex.net/pt/me/me06/098/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-099:normal",
+      "cardId": "me06-099",
+      "number": "099",
+      "name": "Abismo Lendário",
+      "image": "https://assets.tcgdex.net/pt/me/me06/099/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-100:normal",
+      "cardId": "me06-100",
+      "number": "100",
+      "name": "Chapéu de Mega Rayquaza",
+      "image": "https://assets.tcgdex.net/pt/me/me06/100/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-101:normal",
+      "cardId": "me06-101",
+      "number": "101",
+      "name": "Onigiri Saboroso",
+      "image": "https://assets.tcgdex.net/pt/me/me06/101/low.webp",
+      "rarity": "Comum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-102:normal",
+      "cardId": "me06-102",
+      "number": "102",
+      "name": "Treinamento de Tate e Liza",
+      "image": "https://assets.tcgdex.net/pt/me/me06/102/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-103:normal",
+      "cardId": "me06-103",
+      "number": "103",
+      "name": "Confiança da Zínia",
+      "image": "https://assets.tcgdex.net/pt/me/me06/103/low.webp",
+      "rarity": "Incomum",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-104:normal",
+      "cardId": "me06-104",
+      "number": "104",
+      "name": "Masquerain",
+      "image": "https://assets.tcgdex.net/pt/me/me06/104/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-105:normal",
+      "cardId": "me06-105",
+      "number": "105",
+      "name": "Sprigatito",
+      "image": "https://assets.tcgdex.net/pt/me/me06/105/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-106:normal",
+      "cardId": "me06-106",
+      "number": "106",
+      "name": "Growlithe",
+      "image": "https://assets.tcgdex.net/pt/me/me06/106/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-107:normal",
+      "cardId": "me06-107",
+      "number": "107",
+      "name": "Magmortar",
+      "image": "https://assets.tcgdex.net/pt/me/me06/107/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-108:normal",
+      "cardId": "me06-108",
+      "number": "108",
+      "name": "Electivire",
+      "image": "https://assets.tcgdex.net/pt/me/me06/108/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-109:normal",
+      "cardId": "me06-109",
+      "number": "109",
+      "name": "Pincurchin",
+      "image": "https://assets.tcgdex.net/pt/me/me06/109/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-110:normal",
+      "cardId": "me06-110",
+      "number": "110",
+      "name": "Enamorus",
+      "image": "https://assets.tcgdex.net/pt/me/me06/110/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-111:normal",
+      "cardId": "me06-111",
+      "number": "111",
+      "name": "Groudon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/111/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-112:normal",
+      "cardId": "me06-112",
+      "number": "112",
+      "name": "Zorua",
+      "image": "https://assets.tcgdex.net/pt/me/me06/112/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-113:normal",
+      "cardId": "me06-113",
+      "number": "113",
+      "name": "Inkay",
+      "image": "https://assets.tcgdex.net/pt/me/me06/113/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-114:normal",
+      "cardId": "me06-114",
+      "number": "114",
+      "name": "Eevee",
+      "image": "https://assets.tcgdex.net/pt/me/me06/114/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-115:normal",
+      "cardId": "me06-115",
+      "number": "115",
+      "name": "Azurill",
+      "image": "https://assets.tcgdex.net/pt/me/me06/115/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-116:normal",
+      "cardId": "me06-116",
+      "number": "116",
+      "name": "Altaria",
+      "image": "https://assets.tcgdex.net/pt/me/me06/116/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-117:normal",
+      "cardId": "me06-117",
+      "number": "117",
+      "name": "Kecleon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/117/low.webp",
+      "rarity": "Ilustração Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-118:normal",
+      "cardId": "me06-118",
+      "number": "118",
+      "name": "Mega Golisopod ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/118/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-119:normal",
+      "cardId": "me06-119",
+      "number": "119",
+      "name": "Rotom Calor ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/119/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-120:normal",
+      "cardId": "me06-120",
+      "number": "120",
+      "name": "Wishiwashi ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/120/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-121:normal",
+      "cardId": "me06-121",
+      "number": "121",
+      "name": "Raikou ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/121/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-122:normal",
+      "cardId": "me06-122",
+      "number": "122",
+      "name": "Mega Golurk ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/122/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-123:normal",
+      "cardId": "me06-123",
+      "number": "123",
+      "name": "Mega Malamar ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/123/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-124:normal",
+      "cardId": "me06-124",
+      "number": "124",
+      "name": "Talonflame ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/124/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-125:normal",
+      "cardId": "me06-125",
+      "number": "125",
+      "name": "Arão",
+      "image": "https://assets.tcgdex.net/pt/me/me06/125/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-126:normal",
+      "cardId": "me06-126",
+      "number": "126",
+      "name": "Lanterna de Aventura",
+      "image": "https://assets.tcgdex.net/pt/me/me06/126/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-127:normal",
+      "cardId": "me06-127",
+      "number": "127",
+      "name": "Colete Customizado",
+      "image": "https://assets.tcgdex.net/pt/me/me06/127/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-128:normal",
+      "cardId": "me06-128",
+      "number": "128",
+      "name": "Hype da Emcee",
+      "image": "https://assets.tcgdex.net/pt/me/me06/128/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-129:normal",
+      "cardId": "me06-129",
+      "number": "129",
+      "name": "Pegador de Pokémon",
+      "image": "https://assets.tcgdex.net/pt/me/me06/129/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-130:normal",
+      "cardId": "me06-130",
+      "number": "130",
+      "name": "Treinamento de Tate e Liza",
+      "image": "https://assets.tcgdex.net/pt/me/me06/130/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-131:normal",
+      "cardId": "me06-131",
+      "number": "131",
+      "name": "Confiança da Zínia",
+      "image": "https://assets.tcgdex.net/pt/me/me06/131/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-132:normal",
+      "cardId": "me06-132",
+      "number": "132",
+      "name": "Energia Water Borbulhante",
+      "image": "https://assets.tcgdex.net/pt/me/me06/132/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-133:normal",
+      "cardId": "me06-133",
+      "number": "133",
+      "name": "Energia Grass Crescente",
+      "image": "https://assets.tcgdex.net/pt/me/me06/133/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-134:normal",
+      "cardId": "me06-134",
+      "number": "134",
+      "name": "Energia Fire Nitro",
+      "image": "https://assets.tcgdex.net/pt/me/me06/134/low.webp",
+      "rarity": "Ultra Rara",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-135:normal",
+      "cardId": "me06-135",
+      "number": "135",
+      "name": "Mega Golisopod ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/135/low.webp",
+      "rarity": "Ilustração Rara Especial",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-136:normal",
+      "cardId": "me06-136",
+      "number": "136",
+      "name": "Raikou ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/136/low.webp",
+      "rarity": "Ilustração Rara Especial",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-137:normal",
+      "cardId": "me06-137",
+      "number": "137",
+      "name": "Mega Golurk ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/137/low.webp",
+      "rarity": "Ilustração Rara Especial",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-138:normal",
+      "cardId": "me06-138",
+      "number": "138",
+      "name": "Mega Rayquaza ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/138/low.webp",
+      "rarity": "Ilustração Rara Especial",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-139:normal",
+      "cardId": "me06-139",
+      "number": "139",
+      "name": "Arão",
+      "image": "https://assets.tcgdex.net/pt/me/me06/139/low.webp",
+      "rarity": "Ilustração Rara Especial",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-140:normal",
+      "cardId": "me06-140",
+      "number": "140",
+      "name": "Confiança da Zínia",
+      "image": "https://assets.tcgdex.net/pt/me/me06/140/low.webp",
+      "rarity": "Ilustração Rara Especial",
+      "variant": "normal"
+    },
+    {
+      "id": "me06-141:normal",
+      "cardId": "me06-141",
+      "number": "141",
+      "name": "Mega Rayquaza ex",
+      "image": "https://assets.tcgdex.net/pt/me/me06/141/low.webp",
+      "rarity": "Mega Hiper Raro",
+      "variant": "normal"
+    }
+  ]
+}

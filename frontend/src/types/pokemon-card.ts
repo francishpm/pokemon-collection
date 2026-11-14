@@ -1,6 +1,7 @@
 export interface PokemonCard {
   id: string;
   language?: "PT" | "EN" | "JP";
+  imageReferenceLanguage?: "PT" | "EN" | "JP";
   prizePack?: {
     series: number[];
     variant: string;

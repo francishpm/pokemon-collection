@@ -4,6 +4,8 @@ import { PokemonCard } from "@/types/pokemon-card";
 import * as cheerio from "cheerio";
 import { normalizeSearchNumber, searchNumberVariants } from "@/lib/cardSearchNumber";
 import { getPrizePackCard, isPrizePackSearch, searchPrizePacks } from "@/lib/prizePacks";
+import { searchDeltaReign } from "@/lib/deltaReign";
+import { stampedPromos } from "@/lib/stampedPromos";
 
 const TCG_API_URL = "https://api.pokemontcg.io/v2/cards";
 const TCGDEX_API_URL = "https://api.tcgdex.net/v2/en/cards";
@@ -326,6 +328,7 @@ function normalizeIdentityPart(value: string) {
 }
 
 function cardIdentity(card: PokemonCard) {
+  if (stampedPromos.some((promo) => promo.id === card.id)) return card.id;
   if (card.prizePack) return card.id;
   const number = card.number.replace(/^([a-z]*?)0+(?=\d)/i, "$1");
   const total = String(card.set.printedTotalLabel ?? card.set.printedTotal).replace(/^0+(?=\d)/, "");
@@ -350,7 +353,7 @@ export async function GET(request: Request) {
     searchTcgDex(term, "ja").catch(() => []),
   ]);
   const uniqueCards = new Map<string, PokemonCard>();
-  for (const card of [...tcgDexCards, ...ligaCards, ...japaneseCodeCards, ...japaneseCards, ...prizeCards]) {
+  for (const card of [...searchDeltaReign(term), ...tcgDexCards, ...ligaCards, ...japaneseCodeCards, ...japaneseCards, ...prizeCards]) {
     const identity = cardIdentity(card);
     const existing = uniqueCards.get(identity);
     if (!existing) {

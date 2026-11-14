@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { MASTER_SET_BY_ID, masterSetLogo } from "@/lib/masterSetConfig";
 import { MasterSetCatalog, MasterSetSlot, MasterSetVariant } from "@/types/master-set";
 import anniversaryCatalog from "@/data/anniversary-catalog.json";
+import deltaReignCatalog from "@/data/delta-reign-catalog.json";
+import { deltaReignPromoSlots } from "@/lib/deltaReignPromos";
 
 const TCGDEX_ROOT = "https://api.tcgdex.net/v2";
 
@@ -63,6 +65,14 @@ export async function GET(_: Request, context: { params: Promise<{ setId: string
   const configuredSet = MASTER_SET_BY_ID.get(setId);
   if (!configuredSet) return NextResponse.json({ error: "Coleção inválida." }, { status: 404 });
 
+  if (setId === "me06") {
+    return NextResponse.json({
+      id: setId, name: configuredSet.name,
+      logo: masterSetLogo(configuredSet.seriesId, configuredSet),
+      totalCards: configuredSet.cards, slots: deltaReignCatalog.slots,
+    });
+  }
+
   if (setId === "30th" || setId === "30th-c") {
     return NextResponse.json({
       id: setId,
@@ -115,8 +125,10 @@ export async function GET(_: Request, context: { params: Promise<{ setId: string
       id: set.id,
       name: set.name,
       logo: set.logo ? `${set.logo}.webp` : masterSetLogo(configuredSet.seriesId, configuredSet),
-      totalCards: Math.max(set.cardCount.total, englishSet.cardCount.total),
-      slots,
+      totalCards: Math.max(configuredSet.cards, set.cardCount.total, englishSet.cardCount.total),
+      slots: setId === "mep"
+        ? [...slots.filter(slot => !deltaReignPromoSlots.some(promo => promo.cardId === slot.cardId)), ...deltaReignPromoSlots]
+        : slots,
     };
     return NextResponse.json(catalog);
   } catch (error) {

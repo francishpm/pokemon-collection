@@ -25,6 +25,7 @@ import { MASTER_SET_BY_ID } from "@/lib/masterSetConfig";
 import { normalizeSearchNumber, searchNumberVariants } from "@/lib/cardSearchNumber";
 import { CardScanner } from "./CardScanner";
 import { CardImage } from "./CardImage";
+import { searchDeltaReign } from "@/lib/deltaReign";
 
 interface CardSearchDialogProps {
   open: boolean;
@@ -136,13 +137,15 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
       try {
         setLoading(true);
         setSearchError(null);
+        const deltaCards = prizePacksOnly ? [] : searchDeltaReign(term);
+        setApiCards(deltaCards);
         const masterSetSearch = prizePacksOnly || /\bprizes?\b/i.test(term) ? Promise.resolve([]) : searchMasterSetCards(term);
         void masterSetSearch.then((localCards) => {
-          if (!cancelled && localCards.length > 0) setApiCards(localCards);
+          if (!cancelled && localCards.length > 0) setApiCards([...new Map([...localCards, ...deltaCards].map(card => [card.id, card])).values()]);
         }).catch(() => undefined);
 
         const results = await Promise.allSettled([searchCards(term, prizePacksOnly), masterSetSearch]);
-        const cards = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+        const cards = [...results.flatMap((result) => result.status === "fulfilled" ? result.value : []), ...deltaCards];
         if (cards.length === 0 && results.some((result) => result.status === "rejected")) {
           throw new Error("Não foi possível pesquisar os catálogos agora.");
         }
@@ -170,7 +173,10 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
     if (prizePacksOnly || /\bprizes?\b/i.test(term)) return apiCards;
     if (!term) return [];
 
+    const localIds = new Set(searchDeltaReign(term).map(card => card.id));
+
     return apiCards.filter((card) => {
+      if (localIds.has(card.id)) return true;
       const fullNumber = `${card.number}/${card.set.printedTotalLabel ?? card.set.printedTotal}`.toLowerCase();
       if (namedCard) {
         const numberMatches = namedCard.printedTotal
@@ -179,6 +185,7 @@ export function CardSearchDialog({ open, onOpenChange }: CardSearchDialogProps) 
         return card.name.toLowerCase().includes(namedCard.name) && numberMatches;
       }
       return (
+        (card.set.id === "mep" && new RegExp(`^mep[\\s-]*0*${Number(card.number)}$`, "i").test(term)) ||
         card.name.toLowerCase().includes(term) ||
         card.number.toLowerCase().includes(term) ||
         normalizeSearchNumber(card.number) === normalizeSearchNumber(term) ||

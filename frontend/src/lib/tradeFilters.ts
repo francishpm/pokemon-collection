@@ -1,16 +1,21 @@
 import type { TradeView, TradeStatus } from "../hooks/useTrades.ts";
 
 export interface TradeFilters {
+  reviewFilter?: "all" | "reviewed" | "unreviewed";
   search: string;
   sortBy: string;
   priceFilter: string;
   statusFilter: "active" | TradeStatus;
 }
 
-export function filterAndSortTrades(tradesView: TradeView[], { search, sortBy, priceFilter, statusFilter }: TradeFilters): TradeView[] {
+export function filterAndSortTrades(tradesView: TradeView[], { search, sortBy, priceFilter, statusFilter, reviewFilter = "all" }: TradeFilters): TradeView[] {
         const term = search.trim().toLowerCase();
 
         return tradesView.filter(({ trade, pokemon }) => {
+            if (trade.status !== "completed") {
+                if (reviewFilter === "reviewed" && !trade.reviewed) return false;
+                if (reviewFilter === "unreviewed" && trade.reviewed) return false;
+            }
             const status = (trade.status ?? "available");
             if (statusFilter === "active" ? status === "completed" : status !== statusFilter) return false;
             if (priceFilter === "priced" && trade.price == null) return false;

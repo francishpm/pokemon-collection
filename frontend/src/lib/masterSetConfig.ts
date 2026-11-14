@@ -25,13 +25,14 @@ export const MASTER_SET_SERIES: MasterSetSeriesDefinition[] = [
     sets: [
       { id: "30th", name: "Celebração de 30 Anos", cards: 158, printedCards: 128, logo: "/30th-celebration.png" },
       { id: "30th-c", name: "30 Anos — Coleção Clássica", cards: 30, special: true, logo: "/30th-celebration.png" },
+      { id: "me06", name: "Reinado Delta", cards: 141, printedCards: 103, logo: assetLogo("pt", "me", "me01") },
       { id: "me05", name: "Escuridão Absoluta", cards: 120, printedCards: 84, logo: assetLogo("en", "me", "me05") },
       { id: "me04", name: "Caos Ascendente", cards: 122, printedCards: 86 },
       { id: "me03", name: "Equilíbrio Perfeito", cards: 124, printedCards: 88 },
       { id: "me02.5", name: "Heróis Excelsos", cards: 295, printedCards: 217 },
       { id: "me02", name: "Fogo Fantasmagórico", cards: 130, printedCards: 94 },
       { id: "me01", name: "Megaevolução", cards: 188, printedCards: 132 },
-      { id: "mep", name: "Promos Mega Evolution", cards: 110, special: true, logo: assetLogo("pt", "me", "me01") },
+      { id: "mep", name: "Promos Mega Evolution", cards: 114, special: true, logo: assetLogo("pt", "me", "me01") },
     ],
   },
   {

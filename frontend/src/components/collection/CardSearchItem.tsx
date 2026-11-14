@@ -37,6 +37,7 @@ export function CardSearchItem({
                     #{card.number}/{card.set.printedTotalLabel ?? card.set.printedTotal}
                 </p>
                 {card.prizePack?.imageUnavailable && <p className="mt-1 text-xs text-muted-foreground">Imagem com selo ainda indisponível.</p>}
+                {card.imageReferenceLanguage === "EN" && <p className="mt-1 text-xs text-muted-foreground">Imagem de referência em inglês.</p>}
             </div>
 
             <Button
