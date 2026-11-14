@@ -148,11 +148,12 @@ export default function TradesPage() {
 
             {/* Busca, filtros e ordenação */}
             <div className="space-y-3 rounded-xl border bg-card p-3">
-                <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(200px,1fr)_180px_160px_170px_auto]">
-                    <div className="relative">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(170px,1fr)_160px_150px_160px_auto_auto]">
+                    <div className="relative min-w-0 sm:col-span-2 lg:col-span-3 xl:col-span-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                         <Input
-                            placeholder="Pesquisar nas suas cartas para troca..."
+                            placeholder="Pesquisar cartas..."
+                            aria-label="Pesquisar cartas para troca"
                             className="h-11 border-border bg-background pl-10 text-foreground"
                             value={localSearch}
                             onChange={(event) => setLocalSearch(event.target.value)}
@@ -178,18 +179,16 @@ export default function TradesPage() {
                     <Button variant="outline" className="h-11 gap-2" disabled={!hasActiveFilters} onClick={clearFilters}>
                         <RotateCcw size={15} /> Limpar filtros
                     </Button>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs text-muted-foreground">{reviewedCount} revisada(s) · {activeReviewTrades.length - reviewedCount} não revisada(s) nas trocas ativas</p>
-                    <Button variant="outline" className="gap-2" disabled={loading || resettingReviews || !reviewedCount || Boolean(savingTradeId)} onClick={() => setResetReviewOpen(true)}>
+                    <Button variant="outline" className="h-11 gap-2" disabled={loading || resettingReviews || !reviewedCount || Boolean(savingTradeId)} onClick={() => setResetReviewOpen(true)}>
                         <RotateCcw size={15} /> Reiniciar revisão
                     </Button>
                 </div>
 
-                <p className="text-xs font-medium text-muted-foreground">
-                    Exibindo {filteredTrades.length} de {tradesView.length} cartas
-                </p>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                    <p className="font-medium">Exibindo {filteredTrades.length} de {tradesView.length} cartas</p>
+                    <span aria-hidden="true">·</span>
+                    <p title="Revisão das cartas disponíveis e reservadas">{reviewedCount} {reviewedCount === 1 ? "revisada" : "revisadas"} · {activeReviewTrades.length - reviewedCount} {activeReviewTrades.length - reviewedCount === 1 ? "não revisada" : "não revisadas"}</p>
+                </div>
 
                 <div className="flex flex-wrap gap-2" role="tablist" aria-label="Status das negociações">
                     {([
