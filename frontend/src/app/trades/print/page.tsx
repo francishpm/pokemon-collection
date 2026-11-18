@@ -10,6 +10,12 @@ import { TradeStatus, useTrades } from "@/hooks/useTrades";
 
 const CARDS_PER_PAGE = 16;
 
+const flagImages: Record<string, string> = {
+  PT: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20"><path fill="#009c3b" d="M0 0h30v20H0z"/><path fill="#ffdf00" d="M15 2 27 10 15 18 3 10z"/><circle fill="#002776" cx="15" cy="10" r="4.6"/></svg>',
+  EN: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20"><path fill="#fff" d="M0 0h30v20H0z"/><path stroke="#b22234" stroke-width="1.54" d="M0 .77h30M0 3.85h30M0 6.93h30M0 10h30M0 13.08h30M0 16.16h30M0 19.23h30"/><path fill="#3c3b6e" d="M0 0h12.6v10.8H0z"/></svg>',
+  JP: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 20"><path fill="#fff" d="M0 0h30v20H0z"/><circle fill="#bc002d" cx="15" cy="10" r="6"/></svg>',
+};
+
 const statusOf = (status?: TradeStatus): TradeStatus => status ?? "available";
 
 export default function TradePrintPage() {
@@ -18,9 +24,9 @@ export default function TradePrintPage() {
   const requestedStatus = searchParams.get("statusFilter");
   const statusFilter = requestedStatus === "available" || requestedStatus === "reserved" || requestedStatus === "completed" ? requestedStatus : "active";
   const [settledImageIds, setSettledImageIds] = useState<Set<string>>(() => new Set());
-  const [photoCount, setPhotoCount] = useState(36);
+  const [photoCount, setPhotoCount] = useState(49);
   const [showPrices, setShowPrices] = useState(true);
-  const [photoExport, setPhotoExport] = useState<{ photos: string[]; missingImages: number } | null>(null);
+  const [photoExport, setPhotoExport] = useState<{ photos: string[]; missingImages: number; missingCards: string[] } | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoProgress, setPhotoProgress] = useState(0);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -119,7 +125,7 @@ export default function TradePrintPage() {
         {photoError && <p role="alert" className="text-sm text-red-700">{photoError}</p>}
         {photoExport && <>
           <p role="status" className="text-sm font-semibold">{photoExport.photos.length} foto(s) pronta(s). Baixe cada uma abaixo.</p>
-          {photoExport.missingImages > 0 && <p role="alert" className="text-sm text-amber-700">{photoExport.missingImages} imagem(ns) não carregaram. Confira as fotos ou clique em Gerar fotos para tentar novamente.</p>}
+          {photoExport.missingImages > 0 && <p role="alert" className="text-sm text-amber-700">{photoExport.missingImages} imagem(ns) não carregaram e aparecem identificadas nas fotos: {photoExport.missingCards.join(", ")}. Você pode baixar as fotos ou tentar gerar novamente.</p>}
           <div className="grid gap-6 md:grid-cols-2">
             {photoExport.photos.map((photo, index) => <section key={index} className="space-y-2 rounded-xl border bg-slate-50 p-3">
               <a href={photo} download={`cartas-troca-${index + 1}.jpg`} className={"inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white"}><ImageDown size={16} /> Salvar foto {index + 1}</a>
@@ -163,16 +169,17 @@ export default function TradePrintPage() {
                         onError={() => markImageAsSettled(trade.id)}
                         className="h-full w-full object-contain"
                       />
-                      {reserved && <span className="absolute right-0 top-0 rounded bg-amber-500 px-1 py-0.5 text-[5.5pt] font-black uppercase text-white">Reservada</span>}
+                      {(trade.quantity ?? 1) > 1 && <span className="absolute right-1 top-1 rounded-full bg-slate-950 px-2 py-0.5 text-[7pt] font-black text-white">{trade.quantity}×</span>}
+                      {reserved && <span className="absolute left-1 top-1 rounded bg-amber-500 px-1 py-0.5 text-[5.5pt] font-black uppercase text-white">Reservada</span>}
+                      {showPrices && <span className="absolute bottom-1 left-1/2 max-w-[95%] -translate-x-1/2 whitespace-nowrap rounded-full bg-yellow-400 px-2 py-0.5 text-[8pt] font-black text-slate-950">
+                        {trade.price != null ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca"}
+                      </span>}
                     </div>
                     <div className="mt-[1mm] text-center leading-tight">
                       <h3 className="truncate text-[7pt] font-black">{pokemon.name}</h3>
                       {trade.variant_label?.trim() && <p className="truncate text-[6pt] font-bold text-amber-700">{trade.variant_label}</p>}
-                      {(trade.quantity ?? 1) > 1 && <p className="text-[6pt] font-bold text-violet-700">{trade.quantity}× disponíveis</p>}
+                      <p className="flex items-center justify-center gap-1 text-[6pt] text-slate-600">{trade.language && flagImages[trade.language] ? <img src={`data:image/svg+xml,${encodeURIComponent(flagImages[trade.language])}`} alt={trade.language} className="h-[3mm] w-[4.5mm] border border-slate-200 object-fill" /> : trade.language} · {trade.condition}</p>
                       <p className="mt-0.5 truncate text-[5.5pt] text-slate-500">#{pokemon.number}/{pokemon.set.printedTotalLabel ?? pokemon.set.printedTotal} · {pokemon.set.name}</p>
-                      {showPrices && <p className="mt-0.5 text-[7pt] font-black text-emerald-700">
-                        {trade.price != null ? trade.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "Apenas troca"}
-                      </p>}
                     </div>
                   </article>
                 );
@@ -187,7 +194,7 @@ export default function TradePrintPage() {
       </div>
 
       <style jsx global>{`
-        .trade-pdf-page { width: 210mm; height: 297mm; }
+        .trade-pdf-page { width: 210mm; height: 297mm; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
         @page { size: A4 portrait; margin: 0; }
         @media print {
           html, body { background: white !important; }

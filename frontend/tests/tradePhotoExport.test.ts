@@ -67,7 +67,7 @@ test("loads CDN images with CORS and falls back to the optimizer on failure", as
 test("master set photos render the language, variant and extra quantity", async (t) => {
   const captions: string[] = [];
   const context = {
-    fillRect() {}, strokeRect() {}, drawImage() {},
+    fillRect() {}, strokeRect() {}, drawImage() {}, beginPath() {}, roundRect() {}, fill() {}, save() {}, restore() {}, translate() {}, moveTo() {}, lineTo() {}, closePath() {}, arc() {},
     fillText(value: string) { captions.push(value); },
     measureText(value: string) { return { width: value.length * 5 }; },
   };
@@ -98,5 +98,10 @@ test("master set photos render the language, variant and extra quantity", async 
   captions.length = 0;
   await createTradePhotos([trade], 36, () => {}, true);
   assert.ok(captions.some((caption) => caption.includes("R$")));
+  const missingTrade = { ...trade, pokemon: { ...trade.pokemon, images: { small: "/missing.webp", large: "/missing.webp" } } };
+  const partial = await createTradePhotos([trade, missingTrade], 16, () => {}, true);
+  assert.equal(partial.photos.length, 1);
+  assert.equal(partial.missingImages, 1);
+  assert.match(partial.missingCards[0], /Pikachu/);
   await assert.rejects(createCardPhotos([{ name: "Carta", image: "/missing.webp", details: "001", metadata: "", value: "1 extra" }], 36, () => {}), /evitar cartas em branco/);
 });
